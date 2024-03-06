@@ -1,8 +1,13 @@
 body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+    padding: 50px;
+
+    /* Font is Roboto */
+    font-family: 'Roboto', sans-serif;
+
+    /* Background is off-white */
+    background-color: #F5F5F5;
 }
 
 a {
-  color: #00B7FF;
+    color: #00B7FF;
 }

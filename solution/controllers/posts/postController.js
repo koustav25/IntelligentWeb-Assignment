@@ -7,9 +7,7 @@ function getPost(req, res) {
 
 function getPlant(req, res) {
     //TODO: Render the plant view
-    //res.render('plant', { title: 'Plant' })
-
-    res.send('Plant')
+    res.render('posts/plant_details', { title: 'Plant' })
 }
 
 module.exports = {
