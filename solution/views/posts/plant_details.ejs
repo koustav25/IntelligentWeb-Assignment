@@ -1,23 +1,41 @@
 <!-- TODO: Remove these links once the full layout is implemented -->
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- Bootstrap CSS and JS -->
 <link rel="stylesheet" href="/stylesheets/bootstrap.min.css">
 <script src="/javascripts/jquery.min.js"></script>
 <script src="/javascripts/bootstrap.min.js"></script>
 
+<!-- Font Awesome -->
+<script src="https://kit.fontawesome.com/4d524946a0.js" crossorigin="anonymous"></script>
+
 <!-- Custom CSS and JS -->
 <link rel="stylesheet" href="/stylesheets/style.css">
 
 <div class="container-fluid vh-100">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h4 class="card-title text-center">[Post Name]</h4>
+    <div class="row justify-content-center mt-3">
+        <div class="col-12 col-md-6">
+            <div class="card bg-light-subtle shadow-sm">
+                <div class="mt-3 px-4">
+                    <div class="rounded-pill bg-success-subtle p-1">
+                        <p class="p-0 m-0 align-content-center d-flex">
+                            <img class="rounded-5 my-auto mx-1" src="https://ui-avatars.com/api/?name=John+Doe" width="20">
+                            <a class="link-hover-text text-decoration-none fw-medium"><span
+                                        class="">[Username]</span></a>
+                        </p>
+                    </div>
                 </div>
+                <div class="mt-3 px-4 text-center">
+                    <h5 class="card-title text-center align-content-center py-auto my-auto text-wrap">[Post Namee]</h5>
+                </div>
+
+                <hr class="mx-4">
+
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-12 text-center">
+                    <div class="row justify-content-center">
+                        <div class="col-12 text-center">
                             <div>
+                                <!-- TODO: Integrate actual photo carousel -->
                                 <div class="carousel slide carousel-dark" id="plantImages">
                                     <div class="carousel-indicators">
                                         <button type="button" data-bs-target="#plantImages" data-bs-slide-to="0"
@@ -55,8 +73,14 @@
                                     </button>
                                 </div>
                             </div>
+                        </div>
+                    </div>
 
-
+                    <div class="row justify-content-center">
+                        <div class="col-md-12">
+                            <div class="mt-3 bg-light border border-1 border-opacity-10 overflow-y-scroll">
+                                <textarea class="card-text align-content-center py-auto my-auto px-2 text-wrap bg-transparent border-0 w-100 long-text-box">[Post Description Description Description Description Description Description Description Description Description Description Description Description Description Description Description Description Description Description Description Description Description Description Description Description Description Description Description Description Description Description]</textarea>
+                            </div>
                         </div>
                     </div>
                 </div>

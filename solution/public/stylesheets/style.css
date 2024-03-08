@@ -1,6 +1,4 @@
 body {
-    padding: 50px;
-
     /* Font is Roboto */
     font-family: 'Roboto', sans-serif;
 
@@ -10,4 +8,38 @@ body {
 
 a {
     color: #00B7FF;
+}
+
+.link-hover {
+    transition: 0.3s;
+    color: var(--bs-light-text-emphasis);
+}
+
+.link-hover:hover {
+    transition: 0.3s;
+    color: var(--bs-dark-bg-subtle);
+}
+
+.link-hover-text {
+    transition: 0.3s;
+    color: var(--bs-light-text-emphasis);
+}
+
+.link-hover-text:hover {
+    transition: 0.3s;
+    color: var(--bs-dark-bg-subtle);
+}
+
+.pill-hover {
+    transition: 0.3s;
+    background-color: var(--bs-success-bg-subtle);
+}
+
+.pill-hover:hover {
+    transition: 0.3s;
+    background-color: var(--bs-success);
+}
+
+.long-text-box {
+    max-height: 200px;
 }
