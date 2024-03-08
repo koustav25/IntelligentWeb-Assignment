@@ -41,5 +41,12 @@ a {
 }
 
 .long-text-box {
-    max-height: 200px;
+    min-height: 10rem;
+    max-height: 10rem;
+}
+
+.dbpedia-info {
+    max-height: 4.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
