@@ -6,10 +6,6 @@ body {
     background-color: #F5F5F5;
 }
 
-a {
-    color: #00B7FF;
-}
-
 .link-hover {
     transition: 0.3s;
     color: var(--bs-light-text-emphasis);
