@@ -1,8 +1,57 @@
 body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+    /* Font Family is Roboto */
+    font-family: 'Roboto', sans-serif;
 }
 
 a {
   color: #00B7FF;
+}
+
+.searchBox {
+    transition: 0.5s;
+
+    opacity: 25%;
+}
+
+.searchBox:has(input:focus) {
+    transition: 0.5s;
+
+    opacity: 50%;
+    outline: 2px solid var(--bs-info);
+}
+
+.searchBox i {
+    transition: 0.5s;
+
+    scale: 50%;
+
+    opacity: 25%;
+}
+
+.searchBox:has(input:focus) i {
+    transition: 0.5s;
+
+    scale: 75%;
+
+    opacity: 50%;
+}
+
+.searchBox:has(input:focus) i:hover {
+    transition: 0.2s;
+
+    opacity: 100%;
+}
+
+.searchBox input {
+    transition: 0.2s;
+
+    scale: 90%;
+
+    outline: 0;
+}
+
+.searchBox input:focus {
+    transition: 0.5s;
+
+    scale: 100%;
 }

@@ -8,3 +8,6 @@
 /dataSources.local.xml
 # CodeStream ignored files
 /../../solution\.idea/codestream.xml
+
+codestream.xml
+copilot/*
