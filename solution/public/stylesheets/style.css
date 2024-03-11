@@ -6,3 +6,7 @@ body {
 a {
   color: #00B7FF;
 }
+
+.max-width-868 {
+  max-width: 868px;
+}

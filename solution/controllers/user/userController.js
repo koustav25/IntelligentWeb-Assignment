@@ -6,10 +6,128 @@ function getProfile(req, res) {
 }
 
 function getNotifications(req, res) {
-    //TODO: Render the notifications view
-    //res.render('notifications', { title: 'Notifications' });
+    const notifications = [
+        {
+            date: new Date('2024-02-05T08:00:00Z'),
+            plantName: 'FLower 1',
+            postId: 123,
+            time: '08:00:00 AM',
+            dateTime: '2024-02-05 08:00:00 AM',
+            ownerId: 1,
+            content: "Chuck Norris added a comment: \"This plant is such a beautiful fruit...\"",
+            seen: false,
 
-    res.send('Notifications');
+        },
+        {
+            date: new Date('2024-01-15T14:30:00Z'),
+            plantName: 'Flower 2',
+            postId: 456,
+            time: '02:30:00 PM',
+            dateTime: '2024-01-15 02:30:00 PM',
+            ownerId: 1,
+            content: "Chuck Norris added a comment: \"This plant is such a beautiful fruit...\"",
+            seen: false,
+
+
+        },
+        {
+            date: new Date('2024-03-01T10:45:00Z'),
+            plantName: 'Flower 222',
+            postId: 789,
+            time: '10:45:00 AM',
+            dateTime: '2024-03-01 10:45:00 AM',
+            ownerId: 1,
+            content: "Chuck Norris added a comment: \"This plant is such a beautiful fruit...\"",
+            seen: false,
+
+
+        },
+        {
+            date: new Date('2024-02-20T17:20:00Z'),
+            plantName: 'Flower 3',
+            postId: 321,
+            time: '05:20:00 PM',
+            dateTime: '2024-02-20 05:20:00 PM',
+            ownerId: 2,
+            content: "Chuck Norris added a comment: \"This plant is such a beautiful fruit...\"",
+            seen: false,
+
+
+        },
+        {
+            date: new Date('2024-01-10T09:15:00Z'),
+            plantName: 'Flower 22135',
+            postId: 654,
+            time: '09:15:00 AM',
+            dateTime: '2024-01-10 09:15:00 AM',
+            ownerId: 1,
+            content: "Chuck Norris added a comment: \"This plant is such a beautiful fruit...\"",
+            seen: true,
+
+
+        },
+        {
+            date: new Date('2024-02-25T12:45:00Z'),
+            plantName: 'Flower 1242352',
+            postId: 987,
+            time: '12:45:00 PM',
+            dateTime: '2024-02-25 12:45:00 PM',
+            ownerId: 7,
+            content: "Chuck Norris added a comment: \"This plant is such a beautiful fruit...\"",
+            seen: true,
+
+
+        },
+        {
+            date: new Date('2024-01-05T11:30:00Z'),
+            plantName: 'Flower 266661',
+            postId: 135,
+            time: '11:30:00 AM',
+            dateTime: '2024-01-05 11:30:00 AM',
+            ownerId: 7,
+            content: "Chuck Norris added a comment: \"This plant is such a beautiful fruit...\"",
+            seen: true,
+
+
+        },
+        {
+            date: new Date('2024-03-10T16:00:00Z'),
+            plantName: 'Tomato',
+            postId: 246,
+            time: '04:00:00 PM',
+            dateTime: '2024-03-10 04:00:00 PM',
+            ownerId: 7,
+            content: "Chuck Norris added a comment: \"This plant is such a beautiful fruit...\"",
+            seen: true,
+
+
+        },
+        {
+            date: new Date('2024-02-15T13:20:00Z'),
+            plantName: 'Beef',
+            postId: 579,
+            time: '01:20:00 PM',
+            dateTime: '2024-02-15 01:20:00 PM',
+            ownerId: 1,
+            content: "Chuck Norris added a comment: \"This plant is such a beautiful fruit...\"",
+            seen: true,
+
+
+        },
+        {
+            date: new Date('2024-03-05T10:10:00Z'),
+            plantName: 'Chicken',
+            postId: 369,
+            time: '10:10:00 AM',
+            dateTime: '2024-03-05 10:10:00 AM',
+            ownerId: 2,
+            content: "Chuck Norris added a comment: \"This plant is such a beautiful fruit...\"",
+            seen: true,
+
+
+        }
+    ];
+    res.render('user/notifications', {title: 'Notifications', notifications, user: {id: 1}});
 }
 
 module.exports = {
