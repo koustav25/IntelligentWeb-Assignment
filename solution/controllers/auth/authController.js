@@ -18,9 +18,17 @@ const loginUser = (req,res,next) => {
     res.send("OK")
 }
 
+const logoutUser = (req,res,next) => {
+    req.logout(err => {
+        if(err) return next(err)
+        res.redirect("/login")
+    })
+}
+
 module.exports = {
     getLogin,
     getRegister,
     registerUser,
-    loginUser
+    loginUser,
+    logoutUser
 }
