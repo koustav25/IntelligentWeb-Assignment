@@ -40,7 +40,7 @@ const authenticationStrategy = new LocalStrategy({
 
 // Authorisation / Login function
 const authenticate = passport.authenticate('local', {
-        successReturnToOrRedirect: '/dashboard',
+        successReturnToOrRedirect: '/feed',
         failureRedirect: '/login',
         failureMessage: true
     }
