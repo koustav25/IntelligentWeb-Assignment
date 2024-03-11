@@ -10,4 +10,5 @@
 /../../solution\.idea/codestream.xml
 
 codestream.xml
-copilot/*
+copilot/*# GitHub Copilot persisted chat sessions
+/copilot/chatSessions

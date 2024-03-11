@@ -31,6 +31,7 @@ a {
 .searchBox:has(input:focus) i {
     transition: 0.5s;
 
+    animation: searchPop 0.5s;
     scale: 75%;
 
     opacity: 50%;
@@ -54,4 +55,45 @@ a {
     transition: 0.5s;
 
     scale: 100%;
+}
+
+.notification-icon {
+    transition: 0.5s;
+
+    scale: 50%;
+
+    opacity: 25%;
+}
+
+.notification-icon:hover {
+    transition: 0.2s;
+
+    scale: 75%;
+
+    /* 'Ding' the bell by rotating it and then returning it to its original position as an animation */
+    animation: ding 0.3s;
+
+
+    opacity: 50%;
+}
+
+@keyframes ding {
+    0% {
+        transform: rotate(0deg);
+    }
+    50% {
+        transform: rotate(15deg);
+    }
+    100% {
+        transform: rotate(0deg);
+    }
+}
+
+@keyframes searchPop {
+    50% {
+        transform: scale(120%);
+    }
+    100% {
+
+    }
 }
