@@ -1,17 +1,25 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const passport = require("passport")
 
-var adminRouter = require('./routes/admin');
-var authRouter = require('./routes/auth');
-var debugRouter = require('./routes/debug');
-var indexRouter = require('./routes/index');
-var postsRouter = require('./routes/posts');
-var userRouter = require('./routes/user');
+const adminRouter = require('./routes/admin');
+const authRouter = require('./routes/auth');
+const debugRouter = require('./routes/debug');
+const indexRouter = require('./routes/index');
+const postsRouter = require('./routes/posts');
+const userRouter = require('./routes/user');
 
-var app = express();
+const {
+  authenticationStrategy,
+  serializeUser,
+  deserializeUser, sessionErrorHandler, sessionSetup
+} = require("./auth/passportAuth");
+const { isAuthenticated, authInfo} = require("./middlewares/auth")
+
+const app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -22,6 +30,18 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// TODO Uncomment Authentication Setup Once MongoDB and User Schema are created.
+/* Session Auth Setup */
+//app.use(sessionSetup);
+//app.use(passport.authenticate('session'))
+/* Session Error Handler */
+//app.use(sessionErrorHandler);
+
+/* Passport setup */
+//passport.use(authenticationStrategy)
+//passport.serializeUser(serializeUser)
+//passport.deserializeUser(deserializeUser)
 
 //Serve stylesheets and Javascript for libraries in node_modules
 app.use("/stylesheets", express.static(path.join(__dirname, "node_modules/bootstrap/dist/css")))
