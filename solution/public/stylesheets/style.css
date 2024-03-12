@@ -1,12 +1,51 @@
 body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+    /* Font is Roboto */
+    font-family: 'Roboto', sans-serif;
+
+    /* Background is off-white */
+    background-color: #F5F5F5;
 }
 
-a {
-  color: #00B7FF;
+.link-hover {
+    transition: 0.3s;
+    color: var(--bs-light-text-emphasis);
+}
+
+.link-hover:hover {
+    transition: 0.3s;
+    color: var(--bs-dark-bg-subtle);
+}
+
+.link-hover-text {
+    transition: 0.3s;
+    color: var(--bs-light-text-emphasis);
+}
+
+.link-hover-text:hover {
+    transition: 0.3s;
+    color: var(--bs-dark-bg-subtle);
+}
+.pill-hover {
+    transition: 0.3s;
+    background-color: var(--bs-success-bg-subtle);
+}
+
+.pill-hover:hover {
+    transition: 0.3s;
+    background-color: var(--bs-success);
+}
+
+.long-text-box {
+    min-height: 10rem;
+    max-height: 10rem;
+}
+
+.dbpedia-info {
+    max-height: 4.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .max-width-868 {
-  max-width: 868px;
+    max-width: 868px;
 }
