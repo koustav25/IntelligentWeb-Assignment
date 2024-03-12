@@ -25,6 +25,7 @@ body {
     transition: 0.3s;
     color: var(--bs-dark-bg-subtle);
 }
+
 .pill-hover {
     transition: 0.3s;
     background-color: var(--bs-success-bg-subtle);
@@ -45,3 +46,4 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
