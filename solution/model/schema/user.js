@@ -20,6 +20,10 @@ const userSchema = new mongoose.Schema({
             type: Buffer,
             required: true,
         },
+        avatarUrl: {
+            type:String,
+            required: true
+        }
 
     },
     {
