@@ -1,4 +1,7 @@
 /* Middleware to secure routes */
+
+const {ADMIN} = require("../model/enum/roleTypes")
+
 const isAuthenticated = (req, res, next) => {
     req.isLoggedIn = false;
     if(req.isAuthenticated() && req.user){
@@ -16,7 +19,7 @@ const authInfo = (req, res, next) => {
 }
 
 const isAdmin = (req,res,next) => {
-    if(req.user.role < 1){
+    if(req.user.role < ADMIN){
         res.redirect("/dashboard")
     }
     next();
