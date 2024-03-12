@@ -1,0 +1,57 @@
+<div class="card bg-light-subtle">
+    <div class="card-body p-2 p-lg-3">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-inline-flex justify-content-between align-content-center w-100">
+                    <p class="m-0 p-0 align-content-center d-flex">
+                        <img class="rounded-5 my-auto mx-1"
+                             src="https://ui-avatars.com/api/?name=John+Doe"
+                             width="20">
+                        <a class="link-hover
+                                                                    text-decoration-none fw-medium my-auto px-2"><span
+                                    class="fs-6"><%= comment.username %></span></a>
+                    </p>
+                    <p class="m-0 p-0 align-content-center my-auto fs-6">
+                        <%- comment.date %>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <p class="m-0 p-0 pt-1 text-wrap"><%= comment.content %></p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="d-inline-flex justify-content-start justify-content-lg-start align-content-center w-100">
+                    <button class="btn my-auto"><i
+                                class="fa-regular fa-heart"></i>
+                        <%= comment.likes %>
+                    </button>
+                    <button class="btn my-auto">Reply</button>
+                </div>
+            </div>
+        </div>
+
+        <% if(comment.replies && comment.replies.length > 0) { %>
+            <div class="container-fluid m-0 p-0">
+                <div style="max-height: 150px;"
+                     class="overflow-y-scroll overflow-x-hidden px-2 card">
+                    <div class="card-body px-0 py-0">
+
+                        <% comment.replies.forEach((reply) => { %>
+                            <div class="row p-0">
+                                <div class="col-12 p-2 p-lg-1">
+                                    <%- include('comment', {comment: reply}) %>
+                                </div>
+                            </div>
+                        <% }) %>
+
+                    </div>
+                </div>
+            </div>
+        <% } %>
+    </div>
+</div>
