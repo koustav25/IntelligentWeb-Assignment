@@ -13,7 +13,6 @@ const MONGO_PASS = process.env.MONGO_PASS;
 const MONGO_DBNAME = process.env.MONGO_DBNAME || "test";
 const MONGO_CONNNAME = process.env.MONGO_CONNNAME || "mongodb";
 
-console.log(process.env.MONGO_USER)
 /* Connection String */
 const connectionString = `mongodb+srv://${MONGO_USER}:${MONGO_PASS}@${MONGO_HOST}/${MONGO_DBNAME}?retryWrites=true&w=majority`;
 
