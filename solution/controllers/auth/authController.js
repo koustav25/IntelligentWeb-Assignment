@@ -1,18 +1,26 @@
 function getLogin(req, res) {
-    //TODO: Render login page
-    //res.render('login');
-
-    res.send('Login');
+    res.render("authentication/login", {title: "Login"});
 }
 
 function getRegister(req, res) {
-    //TODO: Render register page
-    //res.render('register');
+    res.render("authentication/register", {title: "Register Account"});
+}
 
-    res.send('Register');
+const registerUser = (req,res,next) => {
+    const {username, password, confirmPassword} = req.body
+    console.log(username, password, confirmPassword)
+    res.send("OK")
+}
+
+const loginUser = (req,res,next) => {
+    const {username, password} = req.body
+    console.log(username, password)
+    res.send("OK")
 }
 
 module.exports = {
     getLogin,
-    getRegister
+    getRegister,
+    registerUser,
+    loginUser
 }

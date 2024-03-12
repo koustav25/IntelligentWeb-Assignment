@@ -8,7 +8,8 @@
 /dataSources.local.xml
 # CodeStream ignored files
 /../../solution\.idea/codestream.xml
+# GitHub Copilot persisted chat sessions
+/copilot/chatSessions
 
 codestream.xml
 copilot/*# GitHub Copilot persisted chat sessions
-/copilot/chatSessions
