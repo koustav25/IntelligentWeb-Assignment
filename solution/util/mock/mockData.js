@@ -122,6 +122,28 @@ const getUserNotifications = () => {
     ];
 }
 
+const getMockData= () =>{
+    return{
+        firstName:"Steve",
+        lastName:"Jobes",
+        addressFirst:"47 Scotland",
+        addressSecond:"Mars Campus",
+        city:"Space X",
+        country:"USA",
+        postCode:"Sheffield",
+        dateOfBirth:"28.06.2000",
+        plantName:"Rose Plant",
+        plantDescription:"Large Plants with Flowers",
+        location:"Sheffield",
+        plantSize:"4 meters",
+        plantFlower:"Rose",
+        plantCharacteristics:"Green",
+        plantFirstSeen:"Sheffield",
+        email:"km@gmail.com"
+    }
+}
+
 module.exports ={
-    getUserNotifications
+    getUserNotifications,
+    getMockData
 }
