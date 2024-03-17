@@ -23,7 +23,7 @@
 
             <div class="collapse navbar-collapse justify-content-between" id="navbarSupportedContent">
                 <ul class="navbar-nav mb-2 mb-lg-0">
-                    <% if (typeof (user) !== 'undefined') { %>
+                    <% if (isLoggedIn) { %>
                         <li class="nav-item">
                             <a class="nav-link" href="/feed">Home</a>
                         </li>
@@ -37,7 +37,7 @@
                 </ul>
 
                 <div class="navbar-nav w-50 d-none d-lg-block">
-                    <% if (typeof (user) !== 'undefined') { %>
+                    <% if (isLoggedIn) { %>
                         <form class="p-0 m-0 w-100 d-inline-flex w-100 nav-item rounded-2 bg-success-subtle searchBox"
                               action="/search">
                             <label for="searchBox" class="visually-hidden">Search</label>
@@ -52,11 +52,11 @@
                 </div>
 
                 <ul class="navbar-nav mb-2 mb-lg-0 justify-content-center">
-                    <% if (typeof (user) !== 'undefined') { %>
+                    <% if (isLoggedIn) { %>
                         <li class="nav-item align-content-center d-inline-flex">
                             <a class="nav-link d-lg-none" href="/notifications">Notifications</a>
-                            <a class="nav-item d-none d-lg-block my-auto" href="/notifications">
-                                <i class="fa-solid fa-bell fa-2x text-white notification-icon"></i>
+                            <a class="nav-item d-none d-lg-block my-auto py-auto align-content-center d-inline-flex" href="/notifications">
+                                <i class="fa-solid fa-bell fa-2x text-white notification-icon my-auto"></i>
                             </a>
                         </li>
                         <li class="nav-item">
