@@ -1,60 +1,58 @@
-<%- include("../components/header")%>
-<div class="container">
-    <form method="POST" name="editProfile" class="w-100">
-        <h2 class="mt-5 mb-4">Plant Sightings Profile</h2>
-        <h4 class="text-center mb-3">Basic details</h4>
-        <div class="shadow p-4 mb-4 bg-body rounded">
-            <div class="mb-3">
-                <label for="firstName" class="form-label">First Name:</label>
-                <input name="firstName" id="firstName" class="form-control" value="<%= profile.firstName %>"/>
-            </div>
-            <div class="mb-3">
-                <label for="lastName" class="form-label">Last Name:</label>
-                <input name="lastName" id="lastName" class="form-control" value="<%= profile.lastName %>"/>
-            </div>
-            <div class="mb-3">
-                <label for="email" class="form-label">Email:</label>
-                <input name="email" id="email" class="form-control" value="<%= profile.email %>"/>
-            </div>
-            <div class="mb-3">
-                <label for="addressFirst" class="form-label">Address Line 1:</label>
-                <input name="addressFirst" id="addressFirst" class="form-control" value="<%= profile.addressFirst %>"/>
-            </div>
-            <div class="mb-3">
-                <label for="addressSecond" class="form-label">Address Line 2:</label>
-                <input name="addressSecond" id="addressSecond" class="form-control" value="<%= profile.addressSecond %>"/>
-            </div>
-            <div class="mb-3">
-                <label for="postCode" class="form-label">Post Code:</label>
-                <input name="postCode" id="postCode" class="form-control" value="<%= profile.postCode %>"/>
-            </div>
-            <div class="mb-3">
-                <label for="city" class="form-label">City:</label>
-                <input name="city" id="city" class="form-control" value="<%= profile.city %>"/>
-            </div>
-            <div class="mb-3">
-                <label for="country" class="form-label">Country:</label>
-                <input name="country" id="country" class="form-control" value="<%= profile.country %>"/>
-            </div>
-            <div class="mb-3">
-                <label for="plantSize" class="form-label">Plant Sighting</label>
-                <input name="plantSize" id="plantSize" class="form-control" value="<%=profile.plantSize%>">
-            </div>
-            <div class="mb-3">
-                <label for="plantFlowers" class="form-label">Plant Flowers</label>
-                <input name="plantFlower" id="plantFlower" class="form-control" value="<%= profile.plantFlower %>">
-            </div>
-            <div class="mb-3">
-                <label for="plantDescription" class="form-label">Plant Description</label>
-                <input name="plantDescription" id="plantDescription" class="form-control" value="<%= profile.plantDescription%>">
-            </div>
-            <div class="mb-3">
-                <label for="plantFirstSeen" class="form-label">Plant First Seen</label>
-                <input name="plantFirstSeen" id="plantFirstSeen" class="form-control" value="<%= profile.plantFirstSeen%>">
+<%- include("../components/header") %>
+
+<div class="container-fluid vh-100">
+    <div class="row justify-content-center my-3">
+        <div class="col-12 col-lg-8">
+            <div class="card bg-light shadow-sm mb-2">
+                <div class="card-body p-0 px-4 my-4">
+                    <div class="row justify-content-center">
+                        <div class="col-12 text-center">
+                            <div class="card-body p-2 p-lg-3">
+                                <img class="rounded-circle mb-3" src="https://ui-avatars.com/api/?name=Adrian+Bond"
+                                     width="100" alt="John Doe Avatar">
+                                <div class="mb-1">
+                                    <label class="form-label">Adrian Bond</label>
+                                </div>
+                                <div class="mb-1">
+                                    <label class="form-label">km@gmail.com</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row justify-content-center mt-3">
+                        <div class="col-12 col-lg-8">
+                            <div class="card bg-light shadow-sm">
+                                <div class="card-body p-0 px-4 my-4 d-flex flex-column justify-content-center">
+                                    <div class="row justify-content-center">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Current Password</label>
+                                            <input type="password" class="form-control">
+
+                                            <label class="form-label">New Password</label>
+                                            <input type="password" class="form-control">
+
+                                            <label class="form-label">Confirm Password</label>
+                                            <input type="password" class="form-control mb-3g">
+                                            <input type="button" value="Change Password" class="form-control">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row mt-1">
+                        <h2 class="fs-3 text-center">Posts</h2>
+                    </div>
+
+                    <%- include("../posts/post", {}) %>
+
+                </div>
             </div>
         </div>
-        <div class="d-grid gap-2">
-            <button class="btn btn-primary" type="submit">Save details</button>
-        </div>
-    </form>
+    </div>
 </div>
+
+
+

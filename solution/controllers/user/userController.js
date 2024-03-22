@@ -1,12 +1,7 @@
 const { getUserNotifications } = require("../../util/mock/mockData")
-const {getMockData} = require("../../util/mock/mockData")
 function getProfile(req, res) {
     //TODO: Render the profile view
-   const profile = getMockData();
-
-
-
-    res.render('user/profile',{profile});
+    res.render('user/profile',{});
 }
 
 function getNotifications(req, res) {
