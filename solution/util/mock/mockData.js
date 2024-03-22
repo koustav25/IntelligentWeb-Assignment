@@ -122,6 +122,61 @@ const getUserNotifications = () => {
     ];
 }
 
+const getUsers = () => {
+    return [
+        {
+            "username": "SunnyShine123",
+            "email": "sunnyshine123@example.com"
+        },
+
+        {
+            "username": "LunaDreamer77",
+            "email": "lunadreamer77@example.com"
+        },
+
+        {
+            "username": "MightyMuffin22",
+            "email": "mightymuffin22@example.com"
+        },
+
+        {
+            "username": "OceanBreeze99",
+            "email": "oceanbreeze99@example.com"
+        },
+
+        {
+            "username": "MountainHiker55",
+            "email": "mountainhiker55@example.com"
+        },
+
+        {
+            "username": "ForestExplorer88",
+            "email": "forestexplorer88@example.com"
+        },
+
+        {
+            "username": "AdventureSeeker123",
+            "email": "adventureseeker123@example.com"
+        },
+
+        {
+            "username": "TechEnthusiast44",
+            "email": "techenthusiast44@example.com"
+        },
+
+        {
+            "username": "GamerGirl789",
+            "email": "gamergirl789@example.com"
+        },
+
+        {
+            "username": "ArtisticSoul567",
+            "email": "artisticsoul567@example.com"
+        }
+    ]
+}
+
 module.exports ={
+    getUsers,
     getUserNotifications
 }

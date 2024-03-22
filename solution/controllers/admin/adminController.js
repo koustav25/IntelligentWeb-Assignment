@@ -1,15 +1,17 @@
+const {getUsers} = require("../../util/mock/mockData");
+
 function getAdminDashboard(req, res) {
     //TODO: Add admin dashboard rendering logic here
     //res.render('admin/dashboard', { title: 'Admin Dashboard' });
 
-    res.send('Admin Dashboard');
+    res.render("admin/index", {isLoggedIn: true})
 }
 
 function getAdminUsers(req, res) {
     //TODO: Add admin users rendering logic here
     //res.render('admin/users', { title: 'Admin Users' });
-
-    res.send('Admin Users');
+    const users = getUsers()
+    res.render("admin/users", {isLoggedIn: true, searchQuery:"lorem ipsum", users})
 }
 
 function getAdminUserDetails(req, res) {
