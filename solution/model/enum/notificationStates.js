@@ -4,8 +4,7 @@ const UNREAD = 2;
 
 const notificationStates = {
     NEW,
-    READ,
-    UNREAD
+    READ
 };
 
 module.exports = notificationStates;
