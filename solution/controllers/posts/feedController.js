@@ -1,8 +1,9 @@
+const { getMockFeed } = require("../../util/mock/mockData")
+
 function getFeed(req, res) {
     //TODO: Render the feed view
-    //res.render('feed', { title: 'Feed' })
-
-    res.send('Feed')
+    const posts = getMockFeed()
+    res.render('posts/feed', {title: 'Feed', isLoggedIn: true, posts})
 }
 
 module.exports = {

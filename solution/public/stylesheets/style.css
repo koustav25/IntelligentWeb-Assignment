@@ -117,6 +117,10 @@ body {
     opacity: 50%;
 }
 
+.mh-200 {
+    max-height: 200px;
+}
+
 @keyframes ding {
     0% {
         transform: rotate(0deg);
