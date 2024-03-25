@@ -122,6 +122,8 @@ const getUserNotifications = () => {
     ];
 }
 
+
+
 module.exports ={
     getUserNotifications
 }
