@@ -5,13 +5,14 @@
             <div class="card bg-light p-3">
                 <div class="row my-3">
                     <div class="col-md-3 text-center">
-                        <h4>Logo</h4>
+                        <img class="mb-3 img-fluid w-50" src="https://placehold.co/600x400?text=Plant+Image"
+                                  width="100" alt="John Doe Avatar">
                     </div>
                     <div class="col-md-6">
                         <input type="text" class="form-control" placeholder="Search">
                     </div>
                     <div class="col-md-3 text-center">
-                        <h4>Logout</h4>
+                        <h4><a href="">Logout</a></h4>
                     </div>
                 </div>
                 <hr>
@@ -44,10 +45,7 @@
 
                 <h4>Posts</h4>
                 <hr>
-                <%- include("../user/post") %>
-                <%- include("../user/post") %>
-                <%- include("../user/post") %>
-
+                <%- include("../posts/post") %>
             </div>
         </div>
     </div>

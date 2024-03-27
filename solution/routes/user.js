@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 
-const {getProfile, getNotifications,getSearchAndSorting} = require("../controllers/user/userController");
+const {getProfile, getNotifications,getSearch} = require("../controllers/user/userController");
 
 router.get('/notifications', getNotifications);
 
 router.get('/profile', getProfile);
 
-router.get('/search',getSearchAndSorting)
+router.get('/search',getSearch)
 
 module.exports = router;
