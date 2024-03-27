@@ -1,11 +1,61 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
-  </head>
-  <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
-  </body>
-</html>
+<%- include("components/navbar.ejs")%>
+
+<main class="mt-4 container-fluid">
+  <div id="landing-carousel" class="carousel slide col-10 me-auto ms-auto">
+    <div class="carousel-indicators justify-content-center">
+      <button type="button" data-bs-target="#landing-carousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+      <button type="button" data-bs-target="#landing-carousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+      <button type="button" data-bs-target="#landing-carousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+    </div>
+    <div class="carousel-inner">
+      <div class="carousel-item active">
+        <img src="/images/slider1.jpg" class="d-block w-100 object-fit-cover" alt="...">
+      </div>
+      <div class="carousel-item">
+        <img src="/images/slider2.jpg" class="d-block w-100 object-fit-cover" alt="...">
+      </div>
+      <div class="carousel-item">
+        <img src="/images/slider3.jpg" class="d-block w-100 object-fit-cover" alt="...">
+      </div>
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#landing-carousel" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#landing-carousel" data-bs-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Next</span>
+    </button>
+  </div>
+
+  <div class="container">
+    <div class="container mt-5 mb-5">
+      <h2 class="text-center mb-4">Features</h2>
+      <div class="row gx-md-2">
+        <div class="col-md-4 p-3">
+          <div class="text-center">
+            <h3 class="title">Plant Identification</h3>
+            <p class="description">Query plant information that matches the description based on the information provided by the user.</p>
+          </div>
+        </div>
+        <div class="col-md-4 p-3">
+          <div class="text-center">
+            <h3 class="title">Communication</h3>
+            <p class="description">You can discuss the published plant posts through the comment area to increase interaction and the accuracy of the plants.</p>
+          </div>
+        </div>
+        <div class="col-md-4 p-3">
+          <div class="text-center">
+            <h3 class="title">Knowledge Expansion</h3>
+            <p class="description">Get information about the plants around you and learn about the plants around you.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</main>
+
+
+<%- include("components/footer.ejs") %>

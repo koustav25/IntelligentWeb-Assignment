@@ -47,3 +47,97 @@ body {
     text-overflow: ellipsis;
 }
 
+.searchBox {
+    transition: 0.5s;
+
+    opacity: 25%;
+}
+
+.searchBox:has(input:focus) {
+    transition: 0.5s;
+
+    opacity: 50%;
+    outline: 2px solid var(--bs-info);
+}
+
+.searchBox i {
+    transition: 0.5s;
+
+    scale: 50%;
+
+    opacity: 25%;
+}
+
+.searchBox:has(input:focus) i {
+    transition: 0.5s;
+
+    animation: searchPop 0.5s;
+    scale: 75%;
+
+    opacity: 50%;
+}
+
+.searchBox:has(input:focus) i:hover {
+    transition: 0.2s;
+
+    opacity: 100%;
+}
+
+.searchBox input {
+    transition: 0.2s;
+
+    scale: 90%;
+
+    outline: 0;
+}
+
+.searchBox input:focus {
+    transition: 0.5s;
+
+    scale: 100%;
+}
+
+.notification-icon {
+    transition: 0.5s;
+
+    scale: 50%;
+
+    opacity: 25%;
+}
+
+.notification-icon:hover {
+    transition: 0.2s;
+
+    scale: 75%;
+
+    /* 'Ding' the bell by rotating it and then returning it to its original position as an animation */
+    animation: ding 0.3s;
+
+
+    opacity: 50%;
+}
+
+.mh-200 {
+    max-height: 200px;
+}
+
+@keyframes ding {
+    0% {
+        transform: rotate(0deg);
+    }
+    50% {
+        transform: rotate(15deg);
+    }
+    100% {
+        transform: rotate(0deg);
+    }
+}
+
+@keyframes searchPop {
+    50% {
+        transform: scale(120%);
+    }
+    100% {
+
+    }
+}
