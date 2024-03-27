@@ -122,61 +122,102 @@ const getUserNotifications = () => {
     ];
 }
 
-const getUsers = () => {
+const getMockFeed = () => {
     return [
         {
-            "username": "SunnyShine123",
-            "email": "sunnyshine123@example.com"
+            plantId: 5,
+            title: "Rose",
+            shortDesc: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras vel magna ac sem sagittis pulvinar. Aenean dolor sapien, malesuada ac libero nec, facilisis porttitor nibh. Donec quis blandit magna quis.",
+            time: new Date(2024, 4, 1), // May 1, 2024
+            img: "https://source.unsplash.com/random/?plants&page=1",
+            numOfComments: 10,
+            identification: "Completed"
         },
-
         {
-            "username": "LunaDreamer77",
-            "email": "lunadreamer77@example.com"
+            plantId: 5,
+            title: "Lavender",
+            shortDesc: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras vel magna ac sem sagittis pulvinar. Aenean dolor sapien, malesuada ac libero nec, facilisis porttitor nibh. Donec quis blandit magna quis.",
+            time: new Date(2024, 3, 15), // April 15, 2024
+            img: "https://source.unsplash.com/random/?plants&page=2",
+            numOfComments: 5,
+            identification: "In Progress"
         },
-
         {
-            "username": "MightyMuffin22",
-            "email": "mightymuffin22@example.com"
+            plantId: 5,
+            title: "Sunflower",
+            shortDesc: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras vel magna ac sem sagittis pulvinar. Aenean dolor sapien, malesuada ac libero nec, facilisis porttitor nibh. Donec quis blandit magna quis.",
+            time: new Date(2024, 5, 1), // June 1, 2024
+            img: "https://source.unsplash.com/random/?plants&page=3",
+            numOfComments: 8,
+            identification: "Completed"
         },
-
         {
-            "username": "OceanBreeze99",
-            "email": "oceanbreeze99@example.com"
+            plantId: 5,
+            title: "Fern",
+            shortDesc: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras vel magna ac sem sagittis pulvinar. Aenean dolor sapien, malesuada ac libero nec, facilisis porttitor nibh. Donec quis blandit magna quis.",
+            time: new Date(2024, 1, 1), // February 1, 2024
+            img: "https://source.unsplash.com/random/?plants&page=4",
+            numOfComments: 3,
+            identification: "In Progress"
         },
-
         {
-            "username": "MountainHiker55",
-            "email": "mountainhiker55@example.com"
+            plantId: 5,
+            title: "Succulent",
+            shortDesc: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras vel magna ac sem sagittis pulvinar. Aenean dolor sapien, malesuada ac libero nec, facilisis porttitor nibh. Donec quis blandit magna quis.",
+            time: new Date(2024, 6, 1), // July 1, 2024
+            img: "https://source.unsplash.com/random/?plants&page=5",
+            numOfComments: 2,
+            identification: "In Progress"
         },
-
         {
-            "username": "ForestExplorer88",
-            "email": "forestexplorer88@example.com"
+            plantId: 5,
+            title: "Orchid",
+            shortDesc: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras vel magna ac sem sagittis pulvinar. Aenean dolor sapien, malesuada ac libero nec, facilisis porttitor nibh. Donec quis blandit magna quis.",
+            time: new Date(2024, 4, 15), // May 15, 2024
+            img: "https://source.unsplash.com/random/?plants&page=6",
+            numOfComments: 6,
+            identification: "In Progress"
         },
-
         {
-            "username": "AdventureSeeker123",
-            "email": "adventureseeker123@example.com"
+            plantId: 5,
+            title: "Bamboo",
+            shortDesc: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras vel magna ac sem sagittis pulvinar. Aenean dolor sapien, malesuada ac libero nec, facilisis porttitor nibh. Donec quis blandit magna quis.",
+            time: new Date(2024, 2, 15), // March 15, 2024
+            img: "https://source.unsplash.com/random/?plants&page=7",
+            numOfComments: 4,
+            identification: "In Progress"
         },
-
         {
-            "username": "TechEnthusiast44",
-            "email": "techenthusiast44@example.com"
+            plantId: 5,
+            title: "Cactus",
+            shortDesc: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras vel magna ac sem sagittis pulvinar. Aenean dolor sapien, malesuada ac libero nec, facilisis porttitor nibh. Donec quis blandit magna quis.",
+            time: new Date(2024, 0, 1), // January 1, 2024
+            img: "https://source.unsplash.com/random/?plants&page=8",
+            numOfComments: 7,
+            identification: "In Progress"
         },
-
         {
-            "username": "GamerGirl789",
-            "email": "gamergirl789@example.com"
+            plantId: 5,
+            title: "Tulip",
+            shortDesc: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras vel magna ac sem sagittis pulvinar. Aenean dolor sapien, malesuada ac libero nec, facilisis porttitor nibh. Donec quis blandit magna quis.",
+            time: new Date(2024, 3, 1), // April 1, 2024
+            img: "https://source.unsplash.com/random/?plants&page=9",
+            numOfComments: 9,
+            identification: "In Progress"
         },
-
         {
-            "username": "ArtisticSoul567",
-            "email": "artisticsoul567@example.com"
+            plantId: 5,
+            title: "Maple",
+            shortDesc: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras vel magna ac sem sagittis pulvinar. Aenean dolor sapien, malesuada ac libero nec, facilisis porttitor nibh. Donec quis blandit magna quis.",
+            time: new Date(2024, 8, 15), // September 15, 2024
+            img: "https://source.unsplash.com/random/200x200?plants&page=10",
+            numOfComments: 1,
+            identification: "In Progress"
         }
-    ]
+    ];
 }
 
 module.exports ={
-    getUsers,
-    getUserNotifications
+    getUserNotifications,
+    getMockFeed
 }
