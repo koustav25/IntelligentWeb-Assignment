@@ -122,6 +122,17 @@ const getUserNotifications = () => {
     ];
 }
 
+const getMockSearch = () =>{
+    return[
+
+                {user:'Victor',DateTime:'2023-12-25 10:30:00', Location:'London',Comments:'Rose Plant'},
+                {user:'Prince',DateTime:'2023-11-10 12:30:09', Location:'New York', Comments:'Sunflower Plant is beautiful'},
+                {user:'David',DateTime: '2023-09-10 00:30:49',Location:'Bangalore',Comments:'Coconut Plant'},
+
+    ];
+
+}
+
 const getMockFeed = () => {
     return [
         {
@@ -219,5 +230,6 @@ const getMockFeed = () => {
 
 module.exports ={
     getUserNotifications,
-    getMockFeed
+    getMockFeed,
+    getMockSearch
 }
