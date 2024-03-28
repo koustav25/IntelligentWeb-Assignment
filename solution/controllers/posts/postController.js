@@ -3,6 +3,8 @@ const postStates = require("../../model/enum/postStates");
 const leafTypes = require("../../model/enum/leafTypes");
 const exposureTypes = require("../../model/enum/exposureTypes");
 const seedTypes = require("../../model/enum/seedTypes");
+const {mongo} = require("mongoose");
+const mongoose = require("mongoose");
 
 function getPost(req, res) {
     //TODO: Render the post view
@@ -14,6 +16,13 @@ function getPost(req, res) {
 async function getPlant(req, res, next) {
     //Get the post ID from the URL
     const id = req.params.id
+
+    //Check if the ID is valid
+    if (!id) {
+        res.status(400);
+        res.send("Invalid ID");
+        return;
+    }
 
     try {
         const post = await getPostById(id)

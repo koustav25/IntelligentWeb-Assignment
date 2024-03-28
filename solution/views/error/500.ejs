@@ -1,0 +1,22 @@
+<%- include('../components/navbar') %>
+
+<div class="container-fluid mt-2">
+    <div class="row justify-content-center mb-2">
+        <div class="col-12 col-md-8 col-lg-6">
+            <h1 class="text-center">Oh no!</h1>
+            <p class="text-center">We seem to have run into a problem. Please try again later.</p>
+
+            <div class="d-flex justify-content-center">
+                <i class="fa-regular fa-circle-xmark fa-5x text-center text-danger">
+                </i>
+            </div>
+
+            <div class="border border-2 border-danger-subtle rounded-3 p-3 mt-3">
+
+                <p class="text-center p-0 m-0"><%= message %></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../components/footer') %>
