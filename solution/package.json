@@ -23,7 +23,8 @@
     "morgan": "~1.9.1",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
-    "regex-escape": "^3.4.10"
+    "regex-escape": "^3.4.10",
+    "socket.io": "^4.7.5"
   },
   "devDependencies": {
     "nodemon": "^3.1.0"

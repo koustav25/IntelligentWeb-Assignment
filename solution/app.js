@@ -47,6 +47,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use("/stylesheets", express.static(path.join(__dirname, "node_modules/bootstrap/dist/css")))
 app.use("/javascripts", express.static(path.join(__dirname, "node_modules/bootstrap/dist/js")))
 app.use("/javascripts", express.static(path.join(__dirname, "node_modules/jquery/dist")))
+app.use("/javascripts", express.static(path.join(__dirname, "node_modules/socket.io/client-dist")))
 
 app.use('/', indexRouter);
 app.use('/', userRouter);
