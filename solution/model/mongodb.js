@@ -49,6 +49,10 @@ const searchUser = async (filter) => {
     return User.findOne(filter);
 }
 
+const getPostById = async (id) => {
+    return Post.findOne({ _id: id });
+}
+
 /**
  * Add a post to the database
  * @param posting_user {String} The ID of the user posting the post
@@ -160,5 +164,6 @@ module.exports = {
     addPost,
     addPostPotentialIdentification,
     addComment,
-    addReply
+    addReply,
+    getPostById,
 }

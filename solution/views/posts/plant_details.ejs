@@ -1,17 +1,6 @@
-<!-- TODO: Remove these links once the full layout is implemented -->
+<%- include("../components/navbar") %>
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- Bootstrap CSS and JS -->
-<link rel="stylesheet" href="/stylesheets/bootstrap.min.css">
-<script src="/javascripts/jquery.min.js"></script>
-<script src="/javascripts/bootstrap.bundle.min.js"></script>
-
-<!-- Font Awesome -->
-<script src="https://kit.fontawesome.com/4d524946a0.js" crossorigin="anonymous"></script>
-
-<!-- Custom CSS and JS -->
-<link rel="stylesheet" href="/stylesheets/style.css">
-
+<% if (plant.identification?.is_accepted) { %>
 <!-- TODO: Remove this once the actual DBPedia logic is implemented -->
 <script>
     //Simulate the loading of the DBPedia content
@@ -55,8 +44,9 @@
         }, 2000);
     });
 </script>
+<% } %>
 
-<div class="container-fluid vh-100">
+<div class="container-fluid h-100">
     <div class="row justify-content-center mt-3">
         <div class="col-12 col-lg-8">
             <div class="card bg-light-subtle shadow-sm">
@@ -64,16 +54,17 @@
                     <!-- User Info Row -->
                     <div class="border p-3">
                         <p class="p-0 m-0 align-content-center d-flex overflow-x-hidden text-nowrap">
-                            <img class="rounded-5 my-auto mx-1" src="https://ui-avatars.com/api/?name=John+Doe"
+                            <img class="rounded-5 my-auto mx-1"
+                                 src="https://ui-avatars.com/api/?name=<%= `${plant.posting_user?.first_name}+${plant.posting_user?.last_name}` %>"
                                  width="50">
                             <a class="link-hover text-decoration-none fw-medium my-auto px-2"><span
-                                        class="fs-5">[Username]</span></a>
+                                        class="fs-5"><%= `${plant.posting_user?.first_name} ${plant.posting_user?.last_name}` %></span></a>
                         </p>
                     </div>
 
                     <!-- Post Name Row -->
                     <div class="mt-3 text-center">
-                        <h3 class="card-title text-center align-content-center py-auto my-auto text-wrap">[Post Name]</h3>
+                        <h3 class="card-title text-center align-content-center py-auto my-auto text-wrap"><%= plant.title %></h3>
                     </div>
 
                     <hr>
@@ -85,29 +76,35 @@
                                 <!-- TODO: Integrate actual photo carousel -->
                                 <div class="carousel slide carousel-dark" id="plantImages">
                                     <div class="carousel-indicators">
-                                        <button type="button" data-bs-target="#plantImages" data-bs-slide-to="0"
-                                                class="active" aria-current="true" aria-label="Slide 1"></button>
-                                        <button type="button" data-bs-target="#plantImages" data-bs-slide-to="1"
-                                                aria-label="Slide 2"></button>
-                                        <button type="button" data-bs-target="#plantImages" data-bs-slide-to="2"
-                                                aria-label="Slide 3"></button>
+                                        <% if (plant.images?.length > 0) { %>
+                                            <% plant.images.forEach((image, index) => { %>
+                                                <button type="button" data-bs-target="#plantImages"
+                                                        data-bs-slide-to="<%= index %>"
+                                                        class="<%= index === 0 ? 'active' : '' %>"
+                                                        aria-current="<%= index === 0 %>"
+                                                        aria-label="Slide <%= index + 1 %>"></button>
+                                            <% }) %>
+                                        <% } else { %>
+                                            <button type="button" data-bs-target="#plantImages" data-bs-slide-to="0"
+                                                    class="active" aria-current="true" aria-label="Slide 1"></button>
+                                        <% } %>
                                     </div>
                                     <div class="carousel-inner">
-                                        <div class="carousel-item active">
-                                            <img src="https://placehold.co/600x400?text=I1" class="img-fluid"
-                                                 height="400"
-                                                 alt="Post Image">
-                                        </div>
-                                        <div class="carousel-item">
-                                            <img src="https://placehold.co/600x400?text=I2" class="img-fluid"
-                                                 height="400"
-                                                 alt="Post Image">
-                                        </div>
-                                        <div class="carousel-item">
-                                            <img src="https://placehold.co/600x400?text=I3" class="img-fluid"
-                                                 height="400"
-                                                 alt="Post Image">
-                                        </div>
+                                        <% if(plant.images?.length > 0) { %>
+                                            <% plant.images.forEach((image, index) => { %>
+                                                <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
+                                                    <img src="data:<%= image.image_type %>;base64,<%= image.image_data %>"
+                                                         height="400"
+                                                         alt="Post Image">
+                                                </div>
+                                            <% }) %>
+                                        <% } else { %>
+                                            <div class="carousel-item active">
+                                                <img src="https://placehold.co/600x400?text=No Images" class="img-fluid"
+                                                     height="400"
+                                                     alt="Post Image">
+                                            </div>
+                                        <% } %>
                                     </div>
 
                                     <button class="carousel-control-prev" type="button" data-bs-target="#plantImages"
@@ -137,7 +134,13 @@
 
                                             <input id="seenAt" readonly
                                                    class="form-control-plaintext fw-bolder text-center text-md-start p-0"
-                                                   value="01/01/1970 00:00:00">
+                                                   value="<%= plant.seen_at.toLocaleDateString('en-GB', {
+                                                       day: "numeric",
+                                                       month: "short",
+                                                       year: "numeric",
+                                                       hour: "numeric",
+                                                       minute: "numeric"
+                                                   }) %>">
                                         </div>
 
                                     </div>
@@ -151,10 +154,10 @@
                                     <div class="col-12 my-auto p-0">
                                         <div class="d-flex d-inline  justify-content-between">
                                             <p class="m-0 p-0 me-2">Status:</p>
-                                            <div class="alert alert-info p-0 m-0 w-100 h-auto">
+                                            <div class="alert <%= postStates.postStateToColor(plant.state, "alert-") %> p-0 m-0 w-100 h-auto">
                                                 <p id="seenAt"
                                                    class="fw-bolder text-center p-0 m-0">
-                                                    "New Post"
+                                                    <%= postStates.postStateToString(plant.state) %>
                                                 </p>
                                             </div>
                                         </div>
@@ -170,7 +173,7 @@
                             <div class="mt-3 bg-light">
                                 <label for="postDescription" class="d-none visually-hidden">Post Description</label>
                                 <textarea id="postDescription" readonly
-                                          class="form-control-plaintext card-text align-content-center py-auto my-auto px-2 text-wrap w-100 long-text-box">[Post Description]</textarea>
+                                          class="form-control-plaintext card-text py-auto my-auto px-2 text-wrap w-100 long-text-box"><%= plant.description %></textarea>
                             </div>
                         </div>
                     </div>
@@ -178,12 +181,13 @@
                     <!-- Map & Location Row -->
                     <div class="row justify-content-center mt-3">
                         <div class="col-12">
-                            <p>Sighted at: <span class="fw-bolder">[Location Name/LatLong]</span></p>
+                            <p>Sighted at: <span class="fw-bolder"><%= plant.location?.location_name %></span></p>
 
                             <div class="card">
                                 <div class="card-body p-0 m-0">
                                     <div class="w-100 bg-dark-subtle align-content-center" style="height: 200px;">
-                                        <p class="text-center my-auto py-auto">[Map Here]</p>
+                                        <p class="text-center my-auto py-auto">[Map Here]
+                                            (Of <%= `${plant.location?.latitude}, ${plant.location?.longitude}` %>)</p>
                                     </div>
                                 </div>
                             </div>
@@ -205,9 +209,8 @@
                                     <p class="p-0 m-0">Height (cm):</p>
                                 </div>
                                 <div class="col-7">
-                                    <p
-                                            class="fw-bolder p-0 m-0">
-                                        [Height]
+                                    <p class="fw-bolder p-0 m-0">
+                                        <%= plant.details.height %>
                                     </p>
                                 </div>
                             </div>
@@ -218,7 +221,7 @@
                                 <div class="col-7">
                                     <p
                                             class="fw-bolder p-0 m-0">
-                                        [Spread]
+                                        <%= plant.details.spread %>
                                     </p>
                                 </div>
                             </div>
@@ -229,21 +232,12 @@
                                 <div class="col-7">
                                     <div class="d-inline-flex w-100">
                                         <p class="fw-bolder p-0 m-0 my-auto w-auto">
-                                            [Exposure]
+                                            <%= exposureTypes.exposureTypeToString(plant.details.exposure) %>
                                         </p>
                                         <!-- TODO: Change colours based on sun exposure -->
-                                        <!-- TODO: Set the icon based on the sun exposure -->
 
                                         <!-- Full Sun -->
-                                        <span class="fa-solid fa-sun px-2 my-auto"
-                                              style="color: rgb(255, 155, 20)"></span>
-
-                                        <!-- Partial Sun -->
-                                        <span class="fa-solid fa-cloud-sun px-2 my-auto"
-                                              style="color: rgb(255, 155, 20)"></span>
-
-                                        <!-- Full Shade -->
-                                        <span class="fa-solid fa-cloud px-2 my-auto"
+                                        <span class="fa-solid <%= exposureTypes.exposureTypeToIcon(plant.details.exposure) %> px-2 my-auto"
                                               style="color: rgb(255, 155, 20)"></span>
                                     </div>
                                 </div>
@@ -256,11 +250,9 @@
                                     <p class="m-0 text-lg-end">Has Flowers:</p>
                                 </div>
                                 <div class="col-7">
-                                    <!-- TODO: Change alert colour from secondary to success when the plant has flowers -->
-                                    <div class="alert alert-secondary p-0 m-0 w-100 h-auto">
-                                        <p
-                                                class="fw-bolder text-center p-0 m-0">
-                                            [Has Flowers]
+                                    <div class="alert alert-<%= (plant.details.has_flowers) ? "success" : "secondary" %> p-0 m-0 w-100 h-auto">
+                                        <p class="fw-bolder text-center p-0 m-0">
+                                            <%= (plant.details.has_flowers) ? "Yes" : "No" %>
                                         </p>
                                     </div>
                                 </div>
@@ -290,7 +282,7 @@
                                     <div class="alert alert-secondary p-0 m-0 w-100 h-auto">
                                         <p
                                                 class="fw-bolder p-0 m-0 text-center">
-                                            [Leaf Type]
+                                            <%= leafTypes.leafTypeToString(plant.details.leaf_type) %>
                                         </p>
                                     </div>
                                 </div>
@@ -300,27 +292,14 @@
                                     <p class="m-0 text-lg-end">Fruits/Seeds?:</p>
                                 </div>
                                 <div class="col-7">
-                                    <div class="d-inline-flex w-100">
-                                        <p class="fw-bolder p-0 m-0 my-auto w-auto">
-                                            [Type]
+                                    <div class="d-inline-flex w-100 justify-content-center">
+                                        <p class="fw-bolder p-0 m-0 my-auto w-auto text-center">
+                                            <%= seedTypes.seedTypeToString(plant.details.seed_type) %>
                                         </p>
 
                                         <!-- TODO: Change colours based on fruit/seed type -->
-                                        <!-- TODO: Set the icon based on the fruit/seed type -->
                                         <!-- Seed -->
-                                        <span class="fa-solid fa-seedling px-2 my-auto"
-                                              style="color: rgb(255, 155, 20)"></span>
-
-                                        <!-- Fruit -->
-                                        <span class="fa-solid fa-lemon px-2 my-auto"
-                                              style="color: rgb(255, 155, 20)"></span>
-
-                                        <!-- None -->
-                                        <span class="fa-solid fa-circle-xmark px-2 my-auto"
-                                              style="color: rgb(255, 155, 20)"></span>
-
-                                        <!-- Unknown/Other -->
-                                        <span class="fa-solid fa-circle-question px-2 my-auto"
+                                        <span class="fa-solid <%= seedTypes.seedTypeToIcon(plant.details.seed_type) %> px-2 my-auto"
                                               style="color: rgb(255, 155, 20)"></span>
                                     </div>
                                 </div>
@@ -338,141 +317,175 @@
                     <div class="row">
                         <div class="col-12">
                             <!-- TODO: Change from secondary-subtle to success-subtle when the identification is complete/accepted -->
-                            <div class="card bg-success-subtle">
+                            <div class="card bg-<%= plant.identification.is_accepted ? "success" : "secondary" %>-subtle">
                                 <div class="card-body">
-                                    <!-- TODO: Show this row if the plant has no identifications yet -->
-                                    <div class="row d-none">
-                                        <div class="col-12">
-                                            <p class="m-0 p-0 text-center">No identification has been made yet.</p>
-                                            <button class="btn btn-outline-success w-100 mt-2">Suggest Identification
-                                            </button>
+                                    <% if (plant.identification?.potentials?.length === 0) { %>
+                                        <div class="row" id="no_id_row">
+                                            <div class="col-12">
+                                                <p class="m-0 p-0 text-center">No identification has been made yet.</p>
+                                                <button class="btn btn-outline-success w-100 mt-2"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#suggestIdentificationModal">
+                                                    Suggest Identification
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
+                                    <% } else if (plant.identification.is_accepted) { %>
+                                        <div class="row pb-2">
+                                            <div class="col-12">
+                                                <div class="d-inline-flex justify-content-center align-content-center w-100">
+                                                    <span class="fa-regular fa-circle-check fa-2x my-auto px-2"></span>
+                                                    <p class="text-center my-auto p-0">
+                                                        This identification has been accepted by the poster
+                                                    </p>
+                                                </div>
+                                            </div>
 
-                                    <div class="row pb-2">
-                                        <div class="col-12">
-                                            <div class="d-inline-flex justify-content-center align-content-center w-100">
-                                                <span class="fa-regular fa-circle-check fa-2x my-auto px-2"></span>
-                                                <p class="text-center my-auto p-0">
-                                                    This identification has been accepted by the poster
+                                        </div>
+
+
+                                        <hr>
+
+                                        <div class="row">
+                                            <div class="col-12 text-center">
+                                                <p class="m-0 p-0">Identified as:
+                                                    <span class="fw-bolder m-0 p-0"><%= plant.identification?.potentials?.at(plant.identification?.accepted_potential)?.name %></span>
                                                 </p>
                                             </div>
                                         </div>
 
-                                    </div>
-
-                                    <hr>
-
-                                    <div class="row">
-                                        <div class="col-12 text-center">
-                                            <p class="m-0 p-0">Identified as:
-                                                <span class="fw-bolder m-0 p-0">[Plant Name]</span>
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div class="row pt-2">
-                                        <div class="col-12">
-                                            <p class="m-0 p-0 text-center">On:
-                                                <span class="fw-bolder m-0 p-0">[Date]</span>
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div class="row pt-2">
-                                        <div class="col-12">
-                                            <div class="d-flex justify-content-center align-content-center">
-
-                                                <p class="m-0 my-auto p-0 me-2">By:</p>
-
-                                                <button class="btn btn-outline-success py-1 px-2 w-100">
-                                                    <p class="p-0 m-0 align-content-center justify-content-start text-center d-flex">
-                                                        <img class="rounded-5 my-auto mx-1"
-                                                             src="https://ui-avatars.com/api/?name=John+Doe"
-                                                             width="20">
-                                                        <span>[User]</span>
-                                                    </p>
-                                                </button>
+                                        <div class="row pt-2">
+                                            <div class="col-12">
+                                                <p class="m-0 p-0 text-center">On:
+                                                    <span class="fw-bolder m-0 p-0">
+                                                        <%= plant.identification?.date_accepted.toLocaleDateString('en-GB', {
+                                                            day: "numeric",
+                                                            month: "short",
+                                                            year: "numeric",
+                                                            hour: "numeric",
+                                                            minute: "numeric"
+                                                        }) %>
+                                                    </span>
+                                                </p>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <div class="row pt-2 mb-2 mb-lg-0">
+                                        <div class="row pt-2">
+                                            <div class="col-12">
+                                                <div class="d-flex justify-content-center align-content-center">
 
-                                        <div class="col-12">
-                                            <div class="card mb-2">
-                                                <div class="card-body">
-                                                    <div class="collapse show" id="dbPediaSpinner">
-                                                        <div class="row justify-content-center">
-                                                            <div class="col-4">
-                                                                <div class="d-flex justify-content-between align-items-center">
-                                                                    <strong role="status">Loading...</strong>
-                                                                    <div class="spinner-border text-success mx-2"
-                                                                         role="status"
-                                                                         aria-hidden="true"></div>
+                                                    <p class="m-0 my-auto p-0 me-2">By:</p>
+
+                                                    <button class="btn btn-outline-success py-1 px-2 w-100">
+                                                        <p class="p-0 m-0 align-content-center justify-content-start text-center d-flex">
+                                                            <img class="rounded-5 my-auto mx-1"
+                                                                 src="https://ui-avatars.com/api/?name=<% `${plant.identification?.potentials?.at(plant.identification?.accepted_potential)?.suggesting_user?.first_name}+${plant.identification?.potentials?.at(plant.identification?.accepted_potential)?.suggesting_user?.last_name}` %>"
+                                                                 width="20">
+                                                            <span>
+                                                                <%= `${plant.identification?.potentials?.at(plant.identification?.accepted_potential)?.suggesting_user?.first_name} ${plant.identification?.potentials?.at(plant.identification?.accepted_potential)?.suggesting_user?.last_name}` %>
+                                                            </span>
+                                                        </p>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row pt-2 mb-2 mb-lg-0">
+
+                                            <div class="col-12">
+                                                <div class="card mb-2">
+                                                    <div class="card-body">
+                                                        <div class="collapse show" id="dbPediaSpinner">
+                                                            <div class="row justify-content-center">
+                                                                <div class="col-4">
+                                                                    <div class="d-flex justify-content-between align-items-center">
+                                                                        <strong role="status">Loading...</strong>
+                                                                        <div class="spinner-border text-success mx-2"
+                                                                             role="status"
+                                                                             aria-hidden="true"></div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- TODO: Remove the d-none class once the content from DBPedia has loaded -->
+                                                        <div class="collapse" id="dbpediaContent">
+
+                                                            <div class="row">
+                                                                <div class="col-md-4 pb-2 pb-lg-0">
+                                                                    <img class="img-fluid rounded-2" id="dbPediaImage"
+                                                                         src="https://placehold.co/600x400"/>
+                                                                </div>
+
+                                                                <div class="col-md-8">
+                                                                    <h5 class="card-title" id="dbPediaName">[Plant
+                                                                        Name]</h5>
+                                                                    <p class="m-0 p-0 dbpedia-info"
+                                                                       id="dbPediaDescription">
+                                                                        [Short Description
+                                                                        Description Description Description Description
+                                                                        Description Description Description Description
+                                                                        Description Description Description Description
+                                                                        Description Description Description Description
+                                                                        Description Description Description
+                                                                        Description]</p>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="row justify-content-end">
+                                                                <div class="col-lg-4 col-12">
+                                                                    <p class="text-center text-lg-end px-2">From <a
+                                                                                href="/"
+                                                                                id="dbPediaLink"
+                                                                                class="link-hover text-decoration-none">DBPedia</a>...
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="collapse" id="dbPediaFailed">
+                                                            <div class="row justify-content-center align-items-center">
+                                                                <div class="col-12 my-auto">
+                                                                    <p class="text-center text-danger p-0 m-0"
+                                                                       id="dbPediaFailedMessage"></p>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
 
-                                                    <!-- TODO: Remove the d-none class once the content from DBPedia has loaded -->
-                                                    <div class="collapse" id="dbpediaContent">
-
-                                                        <div class="row">
-                                                            <div class="col-md-4 pb-2 pb-lg-0">
-                                                                <img class="img-fluid rounded-2" id="dbPediaImage"
-                                                                     src="https://placehold.co/600x400"/>
-                                                            </div>
-
-                                                            <div class="col-md-8">
-                                                                <h5 class="card-title" id="dbPediaName">[Plant
-                                                                    Name]</h5>
-                                                                <p class="m-0 p-0 dbpedia-info" id="dbPediaDescription">
-                                                                    [Short Description
-                                                                    Description Description Description Description
-                                                                    Description Description Description Description
-                                                                    Description Description Description Description
-                                                                    Description Description Description Description
-                                                                    Description Description Description Description]</p>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="row justify-content-end">
-                                                            <div class="col-lg-4 col-12">
-                                                                <p class="text-center text-lg-end px-2">From <a href="/"
-                                                                                                                id="dbPediaLink"
-                                                                                                                class="link-hover text-decoration-none">DBPedia</a>...
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="collapse" id="dbPediaFailed">
-                                                        <div class="row justify-content-center align-items-center">
-                                                            <div class="col-12 my-auto">
-                                                                <p class="text-center text-danger p-0 m-0"
-                                                                   id="dbPediaFailedMessage"></p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
                                                 </div>
-
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <hr>
+                                        <hr>
 
-                                    <div class="row">
-                                        <div class="col-12">
-                                            <p class="m-0 p-0 text-center">Disagree? Suggest an identification:</p>
-                                            <button class="btn btn-outline-success w-100 mt-2"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#suggestIdentificationModal">Suggest
-                                                Identification
-                                            </button>
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <p class="m-0 p-0 text-center">Disagree? Suggest an identification:</p>
+                                                <button class="btn btn-outline-success w-100 mt-2"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#suggestIdentificationModal">Suggest
+                                                    Identification
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
+
+                                    <% } else { %>
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <p class="m-0 p-0 text-center">This identification is still pending.</p>
+
+                                                <p class="m-0 p-0 text-center">Want to contribute to the
+                                                    conversation?</p>
+
+                                                <button class="btn btn-outline-success w-100 mt-2"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#suggestIdentificationModal">
+                                                    Suggest Identification
+                                                </button>
+                                            </div>
+                                        </div>
+                                    <% } %>
                                 </div>
                             </div>
                         </div>
@@ -489,8 +502,8 @@
                         <div style="max-height: 400px;"
                              class="overflow-y-scroll overflow-x-hidden w-100 card rounded-bottom-0">
                             <div class="card-body px-0 py-0">
-                                <% if (comments && comments.length > 0) { %>
-                                    <% comments.forEach((comment) => { %>
+                                <% if (plant.comments?.length > 0) { %>
+                                    <% plant.comments?.forEach((comment) => { %>
                                         <div class="row pb-1">
                                             <div class="col-12">
                                                 <%- include('comment', {comment: comment}) %>
@@ -548,41 +561,17 @@
                         <h6>Suggestions provided by the community:</h6>
 
                         <!-- TODO: Update the list of suggestions based on the database -->
-                        <div class="row pt-2">
-                            <div class="col-lg-6 pb-2 pb-lg-0">
-                                <div class="d-flex align-content-center my-auto w-100 overflow-x-scroll">
-                                    <p class="fw-semibold my-auto py-auto  text-nowrap py-1 w-100">
-                                        [Plant Name]</p>
+                        <% if (plant.identification.potentials?.length > 0) { %>
+                            <% plant.identification.potentials?.forEach((suggestion) => { %>
+                                <%- include('suggestion', {suggestion: suggestion}) %>
+                            <% }) %>
+                        <% } else { %>
+                            <div class="row" id="no-suggestions-row">
+                                <div class="col-12">
+                                    <p class="text-center">No suggestions have been made yet.</p>
                                 </div>
                             </div>
-
-                            <div class="col-lg-6">
-                                <div class="d-inline-flex justify-content-center align-content-center w-100">
-                                    <!-- TODO: Change the colour of the arrows based on which suggestion has been voted on, and in which direction -->
-                                    <i class="fa-solid fa-arrow-up fa-2x my-auto"></i>
-                                    <div class="progress-stacked w-100 my-auto mx-2">
-                                        <div class="progress" role="progressbar"
-                                             aria-valuenow="25"
-                                             aria-valuemin="0" aria-valuemax="100"
-                                             style="width: 15%">
-                                            <div class="progress-bar bg-success-subtle text-success-emphasis">
-                                                15
-                                            </div>
-                                        </div>
-                                        <div class="progress" role="progressbar"
-                                             aria-valuenow="25"
-                                             aria-valuemin="0" aria-valuemax="100"
-                                             style="width: 85%">
-                                            <div class="progress-bar bg-danger-subtle text-danger-emphasis">
-                                                85
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <i class="fa-solid fa-arrow-down fa-2x my-auto"></i>
-                                </div>
-                            </div>
-
-                        </div>
+                        <% } %>
 
                         <hr class="my-2">
                     </div>
@@ -611,3 +600,5 @@
         </div>
     </div>
 </section>
+
+<%- include("../components/footer") %>

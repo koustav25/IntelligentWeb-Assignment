@@ -1,3 +1,9 @@
+const {getPostById} = require("../../model/mongodb");
+const postStates = require("../../model/enum/postStates");
+const leafTypes = require("../../model/enum/leafTypes");
+const exposureTypes = require("../../model/enum/exposureTypes");
+const seedTypes = require("../../model/enum/seedTypes");
+
 function getPost(req, res) {
     //TODO: Render the post view
     //res.render('post', { title: 'Post' })
@@ -5,58 +11,31 @@ function getPost(req, res) {
     res.send('Post')
 }
 
-function getPlant(req, res) {
-    //TODO: Render the plant view
+async function getPlant(req, res, next) {
+    //Get the post ID from the URL
+    const id = req.params.id
 
-    const comments = [
-        {
-            username: "user1",
-            content: "This is a comment",
-            likes: 5,
-            date: "2020-01-01",
-            replies: [
-                {
-                    username: "user2",
-                    content: "This is a reply",
-                    likes: 2,
-                    date: "2020-01-02",
-                    replies: []
-                }
-            ]
-        },
-        {
-            username: "user1",
-            content: "This is a comment",
-            likes: 5,
-            date: "2020-01-01",
-            replies: [
-                {
-                    username: "user2",
-                    content: "This is a reply",
-                    likes: 2,
-                    date: "2020-01-02",
-                    replies: []
-                }
-            ]
-        },
-        {
-            username: "user1",
-            content: "This is a comment",
-            likes: 5,
-            date: "2020-01-01",
-            replies: [
-                {
-                    username: "user2",
-                    content: "This is a reply",
-                    likes: 2,
-                    date: "2020-01-02",
-                    replies: []
-                }
-            ]
-        },
-    ]
+    try {
+        const post = await getPostById(id)
+        //TODO: Add the correct auth info once available
+        res.render('posts/plant_details', {title: 'Plant', plant: post, postStates, exposureTypes, leafTypes, seedTypes, upvotesDownvotesAsAPercentage, user: {id: "6605a97814ddcdf43b5697d4"}, isLoggedIn: true})
+    } catch (err) {
+        console.log(err)
+        res.status(500);
+        next(err);
+    }
+}
 
-    res.render('posts/plant_details', { title: 'Plant', comments: comments})
+function upvotesDownvotesAsAPercentage(upvotes, downvotes) {
+    const total = upvotes + downvotes;
+    if (total === 0) {
+        return 0;
+    }
+
+    const upvotePercentage = Math.floor((upvotes / total) * 100);
+    const downvotePercentage = 100 - upvotePercentage;
+
+    return {upvote: upvotePercentage, downvote: downvotePercentage};
 }
 
 module.exports = {

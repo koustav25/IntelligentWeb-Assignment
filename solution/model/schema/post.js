@@ -99,6 +99,11 @@ const postSchema = new mongoose.Schema({
         identification: {
             potentials: [
                 {
+                    id: {
+                        type: mongoose.Schema.ObjectId,
+                        required: true,
+                        default: new mongoose.Types.ObjectId()
+                    },
                     name: {
                         type: String,
                         required: true
@@ -116,7 +121,21 @@ const postSchema = new mongoose.Schema({
                     downvotes: {
                         type: Number,
                         required: true
-                    }
+                    },
+                    upvoters: [
+                        {
+                            type: mongoose.Schema.Types.ObjectId,
+                            ref: 'User',
+                            required: false,
+                        }
+                    ],
+                    downvoters: [
+                        {
+                            type: mongoose.Schema.Types.ObjectId,
+                            ref: 'User',
+                            required: false,
+                        }
+                    ]
                 }
             ],
             is_accepted: {
