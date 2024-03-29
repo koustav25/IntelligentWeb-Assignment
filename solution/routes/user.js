@@ -7,6 +7,4 @@ router.get('/notifications', getNotifications);
 
 router.get('/profile', getProfile);
 
-router.get('/search',getSearch)
-
 module.exports = router;

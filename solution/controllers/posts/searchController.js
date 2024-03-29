@@ -1,8 +1,8 @@
-function getSearch(req, res) {
-    //TODO: Render the search view
-    //res.render('search', { title: 'Search' });
+const {getMockSearch} = require("../../util/mock/mockData");
 
-    res.send('Search');
+function getSearch(req, res) {
+    const getData = getMockSearch();
+    res.render('posts/search',{isLoggedIn: true, getData});
 }
 
 module.exports = {

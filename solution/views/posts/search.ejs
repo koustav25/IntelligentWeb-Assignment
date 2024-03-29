@@ -1,33 +1,8 @@
-<%- include("../components/header")%>
+<%- include("../components/navbar.ejs") %>
 <div class="container">
     <div class="row justify-content-center mt-3">
         <div class="col-12 col-lg-10">
             <div class="card bg-light p-3">
-                <div class="row my-3">
-                    <div class="col-md-3 text-center">
-                        <img class="mb-3 img-fluid w-50" src="https://placehold.co/600x400?text=Plant+Image"
-                                  width="100" alt="John Doe Avatar">
-                    </div>
-                    <div class="col-md-6">
-                        <input type="text" class="form-control" placeholder="Search">
-                    </div>
-                    <div class="col-md-3 text-center">
-                        <h4><a href="">Logout</a></h4>
-                    </div>
-                </div>
-                <hr>
-                <div class="row my-4">
-                    <div class="col-md-2 text-center">
-                        <h5>For</h5>
-                    </div>
-                    <div class="col-md-10">
-                        <select class="form-select">
-                            <option value="rose">Rose Plant</option>
-                            <option value="sunflower">Sunflower Plant</option>
-                            <option value="cactus">Cactus Plant</option>
-                        </select>
-                    </div>
-                </div>
                 <div class="row my-4">
                     <div class="col-md-2 text-center">
                         <h5>Order</h5>
@@ -36,17 +11,33 @@
                         <select class="form-select">
                             <option value="recent">Most Recent</option>
                             <option value="least-recent">Least Recent</option>
-                            <option value="oldest-first">Oldest First</option>
+                            <option value="oldest-first">By User</option>
                         </select>
                     </div>
                 </div>
 
                 <hr>
 
-                <h4>Posts</h4>
+                <h4 class="text-center">Posts</h4>
                 <hr>
                 <%- include("../posts/post") %>
+                <div class="container">
+                    <div class="row justify-content-end">
+                        <div class="col-12">
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination">
+                                    <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">1</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+<%- include("../components/footer")%>

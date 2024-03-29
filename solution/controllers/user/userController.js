@@ -10,15 +10,7 @@ function getNotifications(req, res) {
     res.render('user/notifications', {title: 'Notifications', notifications, user: {id: 1}});
 }
 
-function getSearch(req,res){
-
-    const getData = getMockSearch();
-        res.render('posts/search',{getData});
-
-}
-
 module.exports = {
     getProfile,
-    getNotifications,
-    getSearch
+    getNotifications
 }
