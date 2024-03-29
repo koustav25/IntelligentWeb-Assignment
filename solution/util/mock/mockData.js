@@ -125,9 +125,9 @@ const getUserNotifications = () => {
 const getMockSearch = () =>{
     return[
 
-                {posting_user:'Victor',title:'',state:'',seen_at:'2023-12-25 10:30:00',description:'Rose Plant',location:'London',lattitude:'66° 34′',longitude:'77',isAccepted:true,date_accepted:2023-11-15},
-                {posting_user:'Prince',title:'',state:'',seen_at:'2023-11-10 12:30:09',description:'Sunflower Plant is beautiful',location:'Paris',lattitude: '23° 26′',longitude:'78',isAccepted: false,date_accepted:2023-11-15 },
-                {posting_user:'David',title:'',state:'',seen_at: '2023-09-10 00:30:49',description:'Coconut Plant',location:'Warshaw',lattitude: '23° 26′',longitude:'79',isAccepted: true,date_accepted: 2023-11-15},
+                {posting_user:'Victor',title:'Great Plant',state:'South Yorkshire',seen_at:'2023-12-25 10:30:00',description:'Rose Plant',location:'London',lattitude:'66° 34′',longitude:'77',isAccepted:true,date_accepted:2023-11-15},
+                {posting_user:'Prince',title:'The Green',state:'Scotland',seen_at:'2023-11-10 12:30:09',description:'Sunflower Plant is beautiful',location:'Paris',lattitude: '23° 26′',longitude:'78',isAccepted: false,date_accepted:2023-11-15 },
+                {posting_user:'David',title:'Blue',state:'London',seen_at: '2023-09-10 00:30:49',description:'Coconut Plant',location:'Warshaw',lattitude: '23° 26′',longitude:'79',isAccepted: true,date_accepted: 2023-11-15},
 
     ];
 
