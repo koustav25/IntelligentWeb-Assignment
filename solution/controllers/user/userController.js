@@ -1,4 +1,4 @@
-const { getUserNotifications,getMockSearch } = require("../../util/mock/mockData")
+const { getUserNotifications } = require("../../util/mock/mockData")
 function getProfile(req, res) {
     //TODO: Render the profile view
     res.render('user/profile',{});
