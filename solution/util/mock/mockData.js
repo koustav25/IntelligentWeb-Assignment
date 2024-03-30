@@ -217,7 +217,14 @@ const getMockFeed = () => {
     ];
 }
 
-module.exports ={
+const getMockPlants = () => {
+    return [
+        {_id: '1', postname: 'plant1', username: 'xxxxxxxxxx'},
+        {_id: '2', postname: 'plant2', username: 'yyyyy'},
+    ];
+}
+module.exports = {
     getUserNotifications,
-    getMockFeed
+    getMockFeed,
+    getMockPlants
 }
