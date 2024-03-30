@@ -141,3 +141,8 @@ body {
 
     }
 }
+
+#postMap {
+    z-index: 500;
+    position: relative;
+}

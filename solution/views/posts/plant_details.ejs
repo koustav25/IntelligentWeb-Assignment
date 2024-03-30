@@ -1,49 +1,51 @@
 <%- include("../components/navbar") %>
 
+<script src="/javascripts/posts/plant_details.js"></script>
+
 <% if (plant.identification?.is_accepted) { %>
-<!-- TODO: Remove this once the actual DBPedia logic is implemented -->
-<script>
-    //Simulate the loading of the DBPedia content
-    document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(() => {
+    <!-- TODO: Remove this once the actual DBPedia logic is implemented -->
+    <script>
+        //Simulate the loading of the DBPedia content
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
 
-            $('#dbPediaSpinner').collapse();
+                $('#dbPediaSpinner').collapse();
 
-            //Randomly pick a number between 1 and 9
-            const random = Math.floor(Math.random() * 9) + 1;
+                //Randomly pick a number between 1 and 9
+                const random = Math.floor(Math.random() * 9) + 1;
 
-            //If the number is 1, show the content
-            if (random <= 5) {
-                $('#dbpediaContent').collapse('show');
-            }
+                //If the number is 1, show the content
+                if (random <= 5) {
+                    $('#dbpediaContent').collapse('show');
+                }
 
-            //If the number is 2, show the failed to retrieve message (offline)
-            else if (random === 6) {
-                $('#dbPediaFailedMessage').text('Failed to retrieve information from DBPedia. Are you offline?');
-                $('#dbPediaFailed').collapse();
-            }
+                //If the number is 2, show the failed to retrieve message (offline)
+                else if (random === 6) {
+                    $('#dbPediaFailedMessage').text('Failed to retrieve information from DBPedia. Are you offline?');
+                    $('#dbPediaFailed').collapse();
+                }
 
-            //If the number is 3, show the failed to retrieve message (unknown plant)
-            else if (random === 7) {
-                $('#dbPediaFailedMessage').text('Failed to retrieve information from DBPedia. The plant may not be in the database.');
-                $('#dbPediaFailed').collapse();
-            }
+                //If the number is 3, show the failed to retrieve message (unknown plant)
+                else if (random === 7) {
+                    $('#dbPediaFailedMessage').text('Failed to retrieve information from DBPedia. The plant may not be in the database.');
+                    $('#dbPediaFailed').collapse();
+                }
 
-            //If the number is 4, show the failed to retrieve message (unknown error)
-            else if (random === 8) {
-                $('#dbPediaFailedMessage').text('Failed to retrieve information from DBPedia. An unknown error occurred.');
-                $('#dbPediaFailed').collapse();
-            }
+                //If the number is 4, show the failed to retrieve message (unknown error)
+                else if (random === 8) {
+                    $('#dbPediaFailedMessage').text('Failed to retrieve information from DBPedia. An unknown error occurred.');
+                    $('#dbPediaFailed').collapse();
+                }
 
-            //If the number is 5, show the failed to retrieve message (no identification)
-            else if (random === 9) {
-                $('#dbPediaFailedMessage').text('Failed to retrieve information from DBPedia. No identification has been made yet.');
-                $('#dbPediaFailed').collapse();
-            }
+                //If the number is 5, show the failed to retrieve message (no identification)
+                else if (random === 9) {
+                    $('#dbPediaFailedMessage').text('Failed to retrieve information from DBPedia. No identification has been made yet.');
+                    $('#dbPediaFailed').collapse();
+                }
 
-        }, 2000);
-    });
-</script>
+            }, 2000);
+        });
+    </script>
 <% } %>
 
 <div class="container-fluid h-100">
@@ -185,9 +187,19 @@
 
                             <div class="card">
                                 <div class="card-body p-0 m-0">
-                                    <div class="w-100 bg-dark-subtle align-content-center" style="height: 200px;">
-                                        <p class="text-center my-auto py-auto">[Map Here]
-                                            (Of <%= `${plant.location?.latitude}, ${plant.location?.longitude}` %>)</p>
+                                    <div class="w-100 bg-dark-subtle align-content-center rounded-1"
+                                         style="height: 200px;">
+                                        <script>
+                                            const postCoords = {
+                                                latitude: <%= plant.location?.latitude ?? 0.0 %>,
+                                                longitude: <%= plant.location?.longitude ?? 0.0 %>
+                                            };
+                                        </script>
+                                        <div id="map" class="w-100 h-100 rounded-2">
+                                            <!--                                        <p class="text-center my-auto py-auto">[Map Here]-->
+                                            <!--                                            (Of <%= `${plant.location?.latitude}, ${plant.location?.longitude}` %>)</p>-->
+                                            <!--                                        </div>-->
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -322,7 +334,8 @@
                                     <% if (plant.identification?.potentials?.length === 0) { %>
                                         <div class="row" id="no_id_row">
                                             <div class="col-12">
-                                                <p class="m-0 p-0 text-center">No identification has been made yet.</p>
+                                                <p class="m-0 p-0 text-center">No identification has been made
+                                                    yet.</p>
                                                 <button class="btn btn-outline-success w-100 mt-2"
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#suggestIdentificationModal">
@@ -413,7 +426,8 @@
 
                                                             <div class="row">
                                                                 <div class="col-md-4 pb-2 pb-lg-0">
-                                                                    <img class="img-fluid rounded-2" id="dbPediaImage"
+                                                                    <img class="img-fluid rounded-2"
+                                                                         id="dbPediaImage"
                                                                          src="https://placehold.co/600x400"/>
                                                                 </div>
 
@@ -423,10 +437,14 @@
                                                                     <p class="m-0 p-0 dbpedia-info"
                                                                        id="dbPediaDescription">
                                                                         [Short Description
-                                                                        Description Description Description Description
-                                                                        Description Description Description Description
-                                                                        Description Description Description Description
-                                                                        Description Description Description Description
+                                                                        Description Description Description
+                                                                        Description
+                                                                        Description Description Description
+                                                                        Description
+                                                                        Description Description Description
+                                                                        Description
+                                                                        Description Description Description
+                                                                        Description
                                                                         Description Description Description
                                                                         Description]</p>
                                                                 </div>
@@ -461,7 +479,8 @@
 
                                         <div class="row">
                                             <div class="col-12">
-                                                <p class="m-0 p-0 text-center">Disagree? Suggest an identification:</p>
+                                                <p class="m-0 p-0 text-center">Disagree? Suggest an
+                                                    identification:</p>
                                                 <button class="btn btn-outline-success w-100 mt-2"
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#suggestIdentificationModal">Suggest
@@ -473,7 +492,8 @@
                                     <% } else { %>
                                         <div class="row">
                                             <div class="col-12">
-                                                <p class="m-0 p-0 text-center">This identification is still pending.</p>
+                                                <p class="m-0 p-0 text-center">This identification is still
+                                                    pending.</p>
 
                                                 <p class="m-0 p-0 text-center">Want to contribute to the
                                                     conversation?</p>
@@ -520,19 +540,20 @@
                                 <% } %>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Add Comment Row -->
-                    <div class="row mt-0 my-3">
-                        <div class="col-12">
-                            <div class="input-group">
-                                <input type="text" class="form-control rounded-top-0" placeholder="Comment"
-                                       aria-label="Comment" aria-describedby="addComment">
-                                <button class="btn btn-outline-success rounded-top-0" type="button"
-                                        id="addComment">Add
-                                </button>
+
+                        <!-- Add Comment Row -->
+                        <div class="row mt-0 my-3">
+                            <div class="col-12">
+                                <div class="input-group">
+                                    <input type="text" class="form-control rounded-top-0" placeholder="Comment"
+                                           aria-label="Comment" aria-describedby="addComment">
+                                    <button class="btn btn-outline-success rounded-top-0" type="button"
+                                            id="addComment">Add
+                                    </button>
+                                </div>
+
                             </div>
-
                         </div>
                     </div>
                 </div>

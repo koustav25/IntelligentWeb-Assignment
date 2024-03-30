@@ -45,10 +45,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 //passport.deserializeUser(deserializeUser)
 
 //Serve stylesheets and Javascript for libraries in node_modules
-app.use("/stylesheets", express.static(path.join(__dirname, "node_modules/bootstrap/dist/css")))
-app.use("/javascripts", express.static(path.join(__dirname, "node_modules/bootstrap/dist/js")))
-app.use("/javascripts", express.static(path.join(__dirname, "node_modules/jquery/dist")))
-app.use("/javascripts", express.static(path.join(__dirname, "node_modules/socket.io/client-dist")))
+app.use("/stylesheets", express.static(path.join(__dirname, "node_modules/bootstrap/dist/css")));
+app.use("/javascripts", express.static(path.join(__dirname, "node_modules/bootstrap/dist/js")));
+
+app.use("/javascripts", express.static(path.join(__dirname, "node_modules/jquery/dist")));
+app.use("/javascripts", express.static(path.join(__dirname, "node_modules/socket.io/client-dist")));
+
+app.use("/stylesheets", express.static(path.join(__dirname, "node_modules/leaflet/dist")));
+app.use("/javascripts", express.static(path.join(__dirname, "node_modules/leaflet/dist")));
 
 app.use('/', indexRouter);
 app.use('/', userRouter);
