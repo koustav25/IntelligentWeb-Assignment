@@ -50,7 +50,11 @@ const searchUser = async (filter) => {
 }
 
 const getPostById = async (id) => {
-    return Post.findOne({ _id: id });
+    const post = await Post.findOne({_id: id});
+    if (post.comments?.length > 0) {
+        post.comments.sort((a, b) => b.createdAt - a.createdAt);
+    }
+    return post;
 }
 
 /**
@@ -100,18 +104,21 @@ const addPostPotentialIdentification = async (postId, potential) => {
  * This function will not work for adding a reply to a comment. Use {@link addReply} instead.
  * @param postId {String} The ID of the post to add the comment to
  * @param data{{userID: String, content: String, likes: Number}} The data object containing the comment information
- * @returns {Promise<Post>} Returns the updated post object with the new comment
+ * @returns {Promise<Comment>} Returns the updated post object with the new comment
  */
 const addComment = async (postId, data) => {
-    const post = await Post.findById(postId);
+    const post = await Post.findOne({_id: postId});
     const comment = {
         user: data.userID,
         content: data.content,
-        likes: data.likes
+        likes: data.likes,
     }
 
-    post.comments.push(comment);
-    return post.save();
+    post.comments?.push(comment);
+    await post.save();
+
+    const returnComment = post.comments[post.comments.length - 1];
+    return returnComment;
 }
 
 /**
@@ -140,10 +147,23 @@ const addReply = async (postId, commentId, data) => {
 }
 
 /**
+ * Get a comment from a post
+ * @param postId The ID of the post
+ * @param commentId The ID of the comment
+* @returns {Promise<{user: String, content: String, likes: Number, replies: Array|null}>} The comment object if found, otherwise null
+ */
+const getCommentFromPost = async (postId, commentId) => {
+    const post = await getPostById(postId);
+    const comment = findComment(post.comments, commentId);
+
+    return comment;
+}
+
+/**
  * Finds a comment inside a comments array
  * @param comments {Array} The array of comments to search
  * @param id {String} The ID of the comment to find
- * @returns {{user: String, content: String, likes: Number, replies: Array|null}|null} Returns the comment object if found, otherwise null
+ * @returns {{user: String, content: String, likes: Number, date: Date, replies: Array|null}|null} Returns the comment object if found, otherwise null
  */
 const findComment = (comments, id) => {
     for (const comment of comments) {
@@ -166,4 +186,5 @@ module.exports = {
     addComment,
     addReply,
     getPostById,
+    getCommentFromPost,
 }

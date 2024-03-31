@@ -1,20 +1,24 @@
 const mongoose = require('mongoose');
 const commentSchema = new mongoose.Schema({
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true,
-        autopopulate: true
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: true,
+            autopopulate: true
+        },
+        content: {
+            type: String,
+            required: true
+        },
+        likes: {
+            type: Number,
+            required: true
+        },
     },
-    content: {
-        type: String,
-        required: true
-    },
-    likes: {
-        type: Number,
-        required: true
+    {
+        timestamps: true
     }
-});
+);
 commentSchema.add({replies: [commentSchema, {required: false}]})
 
 const postSchema = new mongoose.Schema({
@@ -168,5 +172,5 @@ const postSchema = new mongoose.Schema({
 postSchema.plugin(require('mongoose-autopopulate'));
 
 module.exports = {
-    Post: mongoose.model('Post', postSchema)
+    Post: mongoose.model('Post', postSchema),
 }

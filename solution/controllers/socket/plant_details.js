@@ -10,27 +10,27 @@ function registerPlantDetailsSockets(io, socket) {
     });
 
     socket.on('new_suggestion', (room, data) => {
-        io.sockets.in(room).emit('new_suggestion', data);
+        socket.broadcast.to(room).emit('new_suggestion', data);
     });
 
     socket.on('upvote_count', (room, data) => {
-        io.sockets.in(room).emit('upvote_count', data);
+        socket.broadcast.to(room).emit('upvote_count', data);
     });
 
     socket.on('downvote_count', (room, data) => {
-        io.sockets.in(room).emit('downvote_count', data);
+        socket.broadcast.to(room).emit('downvote_count', data);
     });
 
     socket.on('new_comment', (room, data) => {
-        io.sockets.in(room).emit('new_comment', data);
+        socket.broadcast.to(room).emit('new_comment', data);
     });
 
     socket.on('new_reply', (room, data) => {
-        io.sockets.in(room).emit('new_reply', data);
+        socket.broadcast.to(room).emit('new_reply', data);
     });
 
     socket.on('like_count', (room, data) => {
-        io.sockets.in(room).emit('like_count', data);
+        socket.broadcast.to(room).emit('like_count', data);
     });
 }
 

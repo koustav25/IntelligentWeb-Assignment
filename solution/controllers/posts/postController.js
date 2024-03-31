@@ -1,4 +1,4 @@
-const {getPostById} = require("../../model/mongodb");
+const {getPostById, addComment, getCommentFromPost} = require("../../model/mongodb");
 const postStates = require("../../model/enum/postStates");
 const leafTypes = require("../../model/enum/leafTypes");
 const exposureTypes = require("../../model/enum/exposureTypes");
@@ -35,6 +35,48 @@ async function getPlant(req, res, next) {
     }
 }
 
+async function postComment(req, res, next) {
+    //Get the post ID from the URL
+    const plant_id = req.params.id;
+
+    //Get the text and user ID from the request
+    const text = req.body.text;
+    const user_id = req.body.user_id;
+
+    //Check if the ID is valid
+    if (!plant_id) {
+        res.status(400);
+        res.send("Invalid ID");
+        return;
+    }
+
+    if (!text || !user_id) {
+        res.status(400);
+        res.send("Invalid body");
+        return;
+    }
+
+    try {
+        const post = await addComment(plant_id, {userID: user_id, content: text, likes: 0})
+        res.status(200).send(post);
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({error: err});
+    }
+}
+
+async function getCommentHTML(req, res) {
+    //Get the plant_id and comment_id from the URL
+    const plant_id = req.params.plant_id;
+    const comment_id = req.params.comment_id;
+
+    //Get the comment from the post
+    const comment = await getCommentFromPost(plant_id, comment_id);
+
+    //Render the comment HTML from the EJS template
+    res.render('posts/comment', {comment: comment});
+}
+
 function upvotesDownvotesAsAPercentage(upvotes, downvotes) {
     const total = upvotes + downvotes;
     if (total === 0) {
@@ -49,5 +91,7 @@ function upvotesDownvotesAsAPercentage(upvotes, downvotes) {
 
 module.exports = {
     getPost,
-    getPlant
+    getPlant,
+    postComment,
+    getCommentHTML
 }

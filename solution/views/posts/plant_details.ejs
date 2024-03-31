@@ -50,6 +50,7 @@
 
 <script>
     const plantID = '<%= plant._id %>';
+    const userID = '<%= user.id %>';
 </script>
 
 <div class="container-fluid h-100">
@@ -525,7 +526,7 @@
                     <div class="container-fluid w-100 m-0 p-0">
                         <div style="max-height: 400px;"
                              class="overflow-y-scroll overflow-x-hidden w-100 card rounded-bottom-0">
-                            <div class="card-body px-0 py-0">
+                            <div class="card-body px-0 py-0" id="commentsContainer">
                                 <% if (plant.comments?.length > 0) { %>
                                     <% plant.comments?.forEach((comment) => { %>
                                         <div class="row pb-1">
@@ -535,7 +536,7 @@
                                         </div>
                                     <% }) %>
                                 <% } else { %>
-                                    <div class="row">
+                                    <div class="row" id="noCommentsRow">
                                         <div class="col-12 align-content-center">
                                             <p class="text-center my-auto py-3">No comments have been made
                                                 yet.</p>
@@ -551,9 +552,9 @@
                             <div class="col-12">
                                 <div class="input-group">
                                     <input type="text" class="form-control rounded-top-0" placeholder="Comment"
-                                           aria-label="Comment" aria-describedby="addComment">
+                                           aria-label="Comment" aria-describedby="addComment" id="addCommentText">
                                     <button class="btn btn-outline-success rounded-top-0" type="button"
-                                            id="addComment">Add
+                                            id="addComment" onclick="addNewComment()">Add
                                     </button>
                                 </div>
 
