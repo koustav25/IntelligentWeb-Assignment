@@ -230,6 +230,5 @@ const getMockFeed = () => {
 
 module.exports ={
     getUserNotifications,
-    getMockFeed,
-    getMockSearch
+    getMockFeed
 }
