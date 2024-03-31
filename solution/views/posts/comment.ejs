@@ -12,7 +12,13 @@
                     </p>
                     <p class="m-0 p-0 align-content-center my-auto fs-6">
                         <%- (new Date(comment.createdAt ?? new Date())).toLocaleDateString('en-GB',
-                        {year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric'}) %>
+                                {
+                                    year: 'numeric',
+                                    month: 'numeric',
+                                    day: 'numeric',
+                                    hour: 'numeric',
+                                    minute: 'numeric'
+                                }) %>
                     </p>
                 </div>
             </div>
@@ -30,21 +36,23 @@
                                 class="fa-regular fa-heart"></i>
                         <%= comment.likes %>
                     </button>
-                    <button class="btn my-auto">Reply</button>
+                    <% if (!isReply) { %>
+                        <button class="btn my-auto" onclick="openReplyModal('<%= comment._id %>')">Reply</button>
+                    <% } %>
                 </div>
             </div>
         </div>
 
-        <% if(comment.replies && comment.replies.length > 0) { %>
+        <% if(comment.replies && comment.replies.length > 0 && !isReply) { %>
             <div class="container-fluid m-0 p-0">
                 <div style="max-height: 150px;"
                      class="overflow-y-scroll overflow-x-hidden px-2 card">
-                    <div class="card-body px-0 py-0">
+                    <div class="card-body px-0 py-0" id="reply_container-<%= comment._id %>">
 
                         <% comment.replies.forEach((reply) => { %>
                             <div class="row p-0">
                                 <div class="col-12 p-2 p-lg-1">
-                                    <%- include('comment', {comment: reply}) %>
+                                    <%- include('comment', {comment: reply, isReply : true}) %>
                                 </div>
                             </div>
                         <% }) %>

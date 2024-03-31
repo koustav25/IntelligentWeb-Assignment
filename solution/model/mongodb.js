@@ -50,7 +50,7 @@ const searchUser = async (filter) => {
 }
 
 const getPostById = async (id) => {
-    const post = await Post.findOne({_id: id});
+    const post = await Post.findOne({_id: id}).populate('comments.replies.user');
     if (post.comments?.length > 0) {
         post.comments.sort((a, b) => b.createdAt - a.createdAt);
     }
@@ -104,7 +104,7 @@ const addPostPotentialIdentification = async (postId, potential) => {
  * This function will not work for adding a reply to a comment. Use {@link addReply} instead.
  * @param postId {String} The ID of the post to add the comment to
  * @param data{{userID: String, content: String, likes: Number}} The data object containing the comment information
- * @returns {Promise<Comment>} Returns the updated post object with the new comment
+ * @returns {Promise<Comment>} Returns the new comment object
  */
 const addComment = async (postId, data) => {
     const post = await Post.findOne({_id: postId});
@@ -126,7 +126,7 @@ const addComment = async (postId, data) => {
  * @param postId {String} The ID of the post to add the reply to
  * @param commentId {String} The ID of the comment to add the reply to
  * @param data{{userID: String, content: String, likes: Number}} The data object containing the reply information
- * @returns {Promise<Post>} Returns the updated post object with the new reply
+ * @returns {Promise<Comment>} Returns the new reply object
  */
 const addReply = async (postId, commentId, data) => {
     const post = await Post.findById(postId);
@@ -142,7 +142,11 @@ const addReply = async (postId, commentId, data) => {
         }
 
         comment.replies.push(reply);
-        return post.save();
+        await post.save();
+
+        //Get the latest reply
+        const returnReply = comment.replies[comment.replies.length - 1];
+        return returnReply;
     }
 }
 

@@ -531,7 +531,7 @@
                                     <% plant.comments?.forEach((comment) => { %>
                                         <div class="row pb-1">
                                             <div class="col-12">
-                                                <%- include('comment', {comment: comment}) %>
+                                                <%- include('comment', {comment: comment, isReply: false}) %>
                                             </div>
                                         </div>
                                     <% }) %>
@@ -625,6 +625,36 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="replyToCommentModal" tabindex="-1" aria-labelledby="replyToCommentModal"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-light-subtle">
+                <div class="modal-body p-0">
+                    <div class="d-inline-flex justify-content-between align-content-center w-100">
+                        <h5 class="modal-title text-center">Reply to Comment</h5>
+                        <button type="button" class="btn-close my-auto" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                    </div>
+
+                    <hr>
+
+                    <div class="px-2 my-2">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="input-group">
+                                    <input type="text" class="form-control"
+                                           placeholder="Reply"
+                                           aria-label="Reply"
+                                           aria-describedby="replyToComment" id="replyText">
+                                    <input type="hidden" id="replyToCommentID">
+                                    <button class="btn btn-outline-success" type="button"
+                                            id="replyToComment" onclick="addNewReply()">Reply
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 </section>
 
 <%- include("../components/footer") %>
