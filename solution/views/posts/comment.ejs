@@ -32,9 +32,12 @@
         <div class="row">
             <div class="col-12">
                 <div class="d-inline-flex justify-content-start justify-content-lg-start align-content-center w-100">
-                    <button class="btn my-auto"><i
-                                class="fa-regular fa-heart"></i>
+                    <button class="btn my-auto" onclick="toggleLikeButton('<%= comment._id %>')">
+                        <!-- TODO: Change user.id to relevant field once user is implemented -->
+                        <i class="fa-<%= (comment.likers?.includes(user.id)) ? "solid" : "regular" %> fa-heart <%= (comment.likers?.includes(user.id)) ? "text-danger" : ""%>" id="comment_<%= comment._id %>_like_indicator"></i>
+                        <span id="comment_<%= comment._id %>_likes">
                         <%= comment.likes %>
+                        </span>
                     </button>
                     <% if (!isReply) { %>
                         <button class="btn my-auto" onclick="openReplyModal('<%= comment._id %>')">Reply</button>

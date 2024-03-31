@@ -191,4 +191,5 @@ module.exports = {
     addReply,
     getPostById,
     getCommentFromPost,
+    findComment
 }

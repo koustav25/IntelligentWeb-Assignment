@@ -14,6 +14,14 @@ const commentSchema = new mongoose.Schema({
             type: Number,
             required: true
         },
+        likers: [
+            {
+                type: [mongoose.Schema.Types.ObjectId],
+                ref: 'User',
+                required: false,
+                autopopulate: true
+            }
+        ]
     },
     {
         timestamps: true

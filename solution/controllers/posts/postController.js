@@ -1,4 +1,4 @@
-const {getPostById, addComment, getCommentFromPost, addReply} = require("../../model/mongodb");
+const {getPostById, addComment, getCommentFromPost, addReply, findComment} = require("../../model/mongodb");
 const postStates = require("../../model/enum/postStates");
 const leafTypes = require("../../model/enum/leafTypes");
 const exposureTypes = require("../../model/enum/exposureTypes");
@@ -127,6 +127,62 @@ async function getReplyHTML(req, res) {
     res.render('posts/comment', {comment: comment, isReply: true});
 }
 
+async function postLike(req, res) {
+    //Get the plant_id and comment_id from the URL
+    const plant_id = req.params.plant_id;
+    const comment_id = req.params.comment_id;
+
+    const userID = req.body.userID;
+
+    if (!userID) {
+        res.status(400);
+        res.send("Invalid user ID");
+        return;
+    }
+
+    //Get the comment from the post
+    const post = await getPostById(plant_id);
+    const comment = findComment(post.comments, comment_id);
+
+    //Increment the likes
+    comment.likes += 1;
+    comment.likers.push(userID);
+
+    //Save the post
+    await post.save();
+
+    res.status(200).send(comment);
+}
+
+async function postUnlike(req, res) {
+    //Get the plant_id and comment_id from the URL
+    const plant_id = req.params.plant_id;
+    const comment_id = req.params.comment_id;
+
+    const userID = req.body.userID;
+
+    if (!userID) {
+        res.status(400);
+        res.send("Invalid user ID");
+        return;
+    }
+
+    const post = await getPostById(plant_id);
+
+    //Get the comment from the post
+    const comment = findComment(post.comments, comment_id);
+
+    //Increment the likes
+    comment.likes -= 1;
+    comment.likers = comment.likers.filter(id => id.toString() !== userID.toString());
+
+    //Save the post
+    await post.save();
+
+    res.status(200).send(comment);
+
+}
+
 function upvotesDownvotesAsAPercentage(upvotes, downvotes) {
     const total = upvotes + downvotes;
     if (total === 0) {
@@ -145,5 +201,7 @@ module.exports = {
     postComment,
     getCommentHTML,
     postReply,
-    getReplyHTML
+    getReplyHTML,
+    postLike,
+    postUnlike
 }

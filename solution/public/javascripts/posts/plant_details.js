@@ -41,7 +41,9 @@ function registerSocketListeners() {
     });
 
     socket.on('like_count', (data) => {
-
+        console.log('like_count')
+        const likesCount = $(`#comment_${data.commentID}_likes`);
+        likesCount.text(data.likes);
     });
 
     socket.on('connect', () => {
@@ -175,10 +177,66 @@ async function addReplyToPage(commentID, replyID) {
 
         //Append the new div to the start of the comments container
         newComment.appendChild(newCommentCol);
-        commentsContainer.prepend(newComment);
+        commentsContainer.appendChild(newComment);
     } catch (err) {
         console.log(err)
     }
+}
+
+async function toggleLikeButton(commentID) {
+    const likeIndicator = $(`#comment_${commentID}_like_indicator`);
+    const likesCount = $(`#comment_${commentID}_likes`);
+
+    const hasLiked = likeIndicator.hasClass('text-danger');
+    const likes = parseInt(likesCount.text());
+
+    const data = {
+        userID: userID
+    }
+
+    let success = false;
+
+    if (hasLiked) {
+        likeIndicator.removeClass('text-danger');
+        likeIndicator.removeClass('fa-solid');
+        likeIndicator.addClass('fa-regular');
+        likesCount.text(likes - 1);
+    } else {
+        likeIndicator.addClass('text-danger');
+        likeIndicator.removeClass('fa-regular');
+        likeIndicator.addClass('fa-solid');
+        likesCount.text(likes + 1);
+    }
+
+    try {
+        if (hasLiked) {
+            await axios.post(`/plant/${plantID}/comment/${commentID}/unlike`, data);
+        } else {
+            await axios.post(`/plant/${plantID}/comment/${commentID}/like`, data);
+        }
+
+        socket.emit('like_count', plantID, {commentID: commentID, likes: data.likes});
+
+        success = true;
+    } catch (err) {
+        success = false;
+        console.log(err)
+    } finally {
+        if (!success) {
+            if (hasLiked) {
+                likeIndicator.addClass('text-danger');
+                likeIndicator.removeClass('fa-regular');
+                likeIndicator.addClass('fa-solid');
+                likesCount.text(likes + 1);
+            } else {
+                likeIndicator.removeClass('text-danger');
+                likeIndicator.removeClass('fa-solid');
+                likeIndicator.addClass('fa-regular');
+                likesCount.text(likes - 1);
+            }
+        }
+    }
+
 }
 
 function openReplyModal(commentID) {
