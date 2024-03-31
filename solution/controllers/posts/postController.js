@@ -1,8 +1,6 @@
 function getPost(req, res) {
     //TODO: Render the post view
-    //res.render('post', { title: 'Post' })
-
-    res.send('Post')
+    res.render('posts/create_post', { title: 'Post', isLoggedIn:true })
 }
 
 function getPlant(req, res) {
