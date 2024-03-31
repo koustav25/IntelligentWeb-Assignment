@@ -48,6 +48,9 @@ app.use("/stylesheets", express.static(path.join(__dirname, "node_modules/bootst
 app.use("/javascripts", express.static(path.join(__dirname, "node_modules/bootstrap/dist/js")))
 app.use("/javascripts", express.static(path.join(__dirname, "node_modules/jquery/dist")))
 
+app.use("/stylesheets", express.static(path.join(__dirname, "node_modules/leaflet/dist")))
+app.use("/javascripts", express.static(path.join(__dirname, "node_modules/leaflet/dist")))
+
 app.use('/', indexRouter);
 app.use('/', userRouter);
 app.use('/admin', adminRouter);
