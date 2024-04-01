@@ -2,7 +2,8 @@ const express = require("express");
 const router = express.Router();
 
 const {getPost, getPlant, postComment, getCommentHTML, postReply, getReplyHTML, postLike, postUnlike, postSuggestion,
-    getSuggestionHTML, postUpvote, postUnupvote, postDownvote, postUndownvote
+    getSuggestionHTML, postUpvote, postUnupvote, postDownvote, postUndownvote, postUnacceptSuggestion,
+    postAcceptSuggestion
 } = require("../controllers/posts/postController");
 const {getFeed} = require("../controllers/posts/feedController");
 const {getSearch} = require("../controllers/posts/searchController");
@@ -26,6 +27,8 @@ router.post("/plant/:plant_id/suggestion/:suggestion_id/upvote", postUpvote);
 router.post("/plant/:plant_id/suggestion/:suggestion_id/unupvote", postUnupvote);
 router.post("/plant/:plant_id/suggestion/:suggestion_id/downvote", postDownvote);
 router.post("/plant/:plant_id/suggestion/:suggestion_id/undownvote", postUndownvote);
+router.post("/plant/:plant_id/suggestion/:suggestion_id/accept", postAcceptSuggestion);
+router.post("/plant/:plant_id/suggestion/:suggestion_id/unaccept", postUnacceptSuggestion);
 
 router.get("/post", getPost);
 

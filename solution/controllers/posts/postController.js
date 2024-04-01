@@ -224,7 +224,8 @@ async function getSuggestionHTML(req, res) {
     const suggestion = await getSuggestionFromPost(plant_id, suggestion_id);
 
     //Render the suggestion HTML from the EJS template
-    res.render('posts/suggestion', {suggestion: suggestion, user: {id: "6605a97814ddcdf43b5697d4"}, upvotesDownvotesAsAPercentage});
+    //TODO: Add the correct auth info once available
+    res.render('posts/suggestion', {suggestion: suggestion, user: {id: "6605a97814ddcdf43b5697d4"}, upvotesDownvotesAsAPercentage, isPoster: (suggestion.suggesting_user.toString() === "6605a97814ddcdf43b5697d4")} );
 
 }
 
@@ -341,6 +342,46 @@ async function postUndownvote(req, res) {
     res.status(200).send(suggestion);
 }
 
+async function postAcceptSuggestion(req, res) {
+    //Get the plant_id and suggestion_id from the URL
+    const plant_id = req.params.plant_id;
+    const suggestion_id = req.params.suggestion_id;
+
+    const post = await getPostById(plant_id);
+
+    //Get the index of the suggestion in the potentials array
+    const index = post.identification.potentials.findIndex(suggestion => suggestion._id.toString() === suggestion_id);
+
+    //Set is_accepted to true
+    post.identification.is_accepted = true;
+    post.identification.date_accepted = new Date();
+    post.identification.accepted_potential = index;
+
+    //TODO: Add the dbpedia URL once available
+
+    //Save the post
+    await post.save();
+
+    res.status(200).send(post);
+}
+
+async function postUnacceptSuggestion(req, res) {
+    //Get the plant_id and suggestion_id from the URL
+    const plant_id = req.params.plant_id;
+    const suggestion_id = req.params.suggestion_id;
+
+    const post = await getPostById(plant_id);
+
+    //Set is_accepted to false
+    post.identification.is_accepted = false;
+    post.identification.date_accepted = null;
+    post.identification.accepted_potential = null;
+
+    await post.save();
+
+    res.status(200).send(post);
+}
+
 function upvotesDownvotesAsAPercentage(upvotes, downvotes) {
     const total = upvotes + downvotes;
     if (total === 0) {
@@ -367,5 +408,7 @@ module.exports = {
     postUpvote,
     postUnupvote,
     postDownvote,
-    postUndownvote
+    postUndownvote,
+    postAcceptSuggestion,
+    postUnacceptSuggestion
 }

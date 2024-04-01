@@ -573,7 +573,7 @@
     <div class="modal fade" id="suggestIdentificationModal" tabindex="-1"
          aria-labelledby="suggestIdentificationModal"
          aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content  bg-light-subtle">
                 <div class="modal-body">
                     <div class="d-inline-flex justify-content-between align-content-center w-100">
@@ -590,7 +590,7 @@
                         <div id="suggestionsContainer">
                             <% if (plant.identification.potentials?.length > 0) { %>
                                 <% plant.identification.potentials?.forEach((suggestion) => { %>
-                                    <%- include('suggestion', {suggestion: suggestion}) %>
+                                    <%- include('suggestion', {suggestion: suggestion, isPoster: (plant.posting_user._id.toString() === user.id)}) %>
                                 <% }) %>
                             <% } else { %>
                                 <div class="row" id="no-suggestions-row">

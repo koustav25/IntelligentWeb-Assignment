@@ -1,13 +1,14 @@
-<div class="row pt-2" id="<%= suggestion._id %>">
+<div class="row py-1 border-1 border border-secondary rounded-4 my-2 align-content-center" id="<%= suggestion._id %>">
 
     <div class="col-lg-6 pb-2 pb-lg-0">
-        <div class="d-flex align-content-center my-auto w-100 overflow-x-scroll">
+        <div class="d-flex align-content-center my-auto w-100 overflow-x-hidden">
             <p class="fw-semibold my-auto py-auto  text-nowrap py-1 w-100">
-                <%= suggestion.name %></p>
+                <%= suggestion.name %>
+            </p>
         </div>
     </div>
 
-    <div class="col-lg-6">
+    <div class="col-lg-5">
         <div class="d-inline-flex justify-content-center align-content-center w-100">
             <i class="fa-solid fa-arrow-up fa-2x my-auto upvote-arrow <%= suggestion.upvoters?.includes(user.id) ? 'text-success' : 'text-muted' %>"
                onclick="upvoteSuggestion('<%= suggestion._id %>')" id="suggestion_upvote_icon_<%= suggestion._id %>">
@@ -17,23 +18,38 @@
                 <div class="progress upvote-bar" role="progressbar"
                      aria-valuenow="<%= upvotesDownvotesAsAPercentage(suggestion.upvotes, suggestion.downvotes).upvote %>"
                      aria-valuemin="0" aria-valuemax="100"
-                     style="width: <%= upvotesDownvotesAsAPercentage(suggestion.upvotes, suggestion.downvotes).upvote %>%" id="suggestion_upvote_progress_<%= suggestion._id %>">
-                    <div class="progress-bar bg-success-subtle text-success-emphasis upvote-count" id="suggestion_upvote_count_<%= suggestion._id %>">
+                     style="width: <%= upvotesDownvotesAsAPercentage(suggestion.upvotes, suggestion.downvotes).upvote %>%"
+                     id="suggestion_upvote_progress_<%= suggestion._id %>">
+                    <div class="progress-bar bg-success-subtle text-success-emphasis upvote-count"
+                         id="suggestion_upvote_count_<%= suggestion._id %>">
                         <%= suggestion.upvotes %>
                     </div>
                 </div>
                 <div class="progress downvote-bar" role="progressbar"
                      aria-valuenow="<%= upvotesDownvotesAsAPercentage(suggestion.upvotes, suggestion.downvotes).downvote %>"
                      aria-valuemin="0" aria-valuemax="100"
-                     style="width: <%= upvotesDownvotesAsAPercentage(suggestion.upvotes, suggestion.downvotes).downvote %>%" id="suggestion_downvote_progress_<%= suggestion._id %>">
-                    <div class="progress-bar bg-danger-subtle text-danger-emphasis downvote-count" id="suggestion_downvote_count_<%= suggestion._id %>">
+                     style="width: <%= upvotesDownvotesAsAPercentage(suggestion.upvotes, suggestion.downvotes).downvote %>%"
+                     id="suggestion_downvote_progress_<%= suggestion._id %>">
+                    <div class="progress-bar bg-danger-subtle text-danger-emphasis downvote-count"
+                         id="suggestion_downvote_count_<%= suggestion._id %>">
                         <%= suggestion.downvotes %>
                     </div>
                 </div>
             </div>
             <i class="fa-solid fa-arrow-down downvote-arrow fa-2x my-auto <%= suggestion.downvoters?.includes(user.id) ? 'text-danger' : 'text-muted' %>"
-               onclick="downvoteSuggestion('<%= suggestion._id %>')" id="suggestion_downvote_icon_<%= suggestion._id %>">
+               onclick="downvoteSuggestion('<%= suggestion._id %>')"
+               id="suggestion_downvote_icon_<%= suggestion._id %>">
             </i>
         </div>
     </div>
+
+    <% if (isPoster) { %>
+        <div class="col-lg-1 accept-col" id="accept-col-<%= suggestion._id %>">
+            <div class="d-flex justify-content-center align-content-center w-100">
+                <p class="my-auto mx-2 d-lg-none">Accept Suggestion</p>
+                <i class="fa-regular fa-circle-check fa-2x my-auto text-success"
+                   onclick="acceptSuggestion('<%= suggestion._id %>')"></i>
+            </div>
+        </div>
+    <% } %>
 </div>

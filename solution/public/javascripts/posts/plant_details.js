@@ -516,6 +516,85 @@ function updateUpvoteUI(suggestionID, upvotes, downvotes) {
     downvoteCount.text(downvotes);
 }
 
+async function acceptSuggestion(suggestionID) {
+    if (actionInProgress) {
+        return;
+    }
+
+    actionInProgress = true;
+
+    const suggestionAcceptCol = $(`#accept-col-${suggestionID}`);
+
+    const suggestionAcceptIcon = suggestionAcceptCol.find('i');
+
+    const allAcceptCols = $('.accept-col');
+
+    const isAccepted = suggestionAcceptIcon.hasClass('fa-solid');
+
+    let success = false;
+    try {
+        if (isAccepted) {
+            //If the suggestion is already accepted, remove the accepted icon and send a request to the server to unaccept the suggestion
+            suggestionAcceptIcon.removeClass('fa-solid');
+            suggestionAcceptIcon.addClass('fa-regular');
+
+            //Show the accept buttons for all suggestions again
+            allAcceptCols.each((col) => {
+                $(col).removeClass('d-none');
+            });
+
+            //Make a request to the /plant/:plant_id/suggestion/:suggestion_id/unaccept route
+            const response = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/unaccept`, {userID: userID});
+
+            //Emit the suggestion_unaccepted event to the server
+            socket.emit('suggestion_unaccepted', plantID, {suggestionID: suggestionID});
+
+            success = true;
+        } else {
+            //If the suggestion is not accepted, add the accepted icon and send a request to the server to accept the suggestion
+            suggestionAcceptIcon.addClass('fa-solid');
+            suggestionAcceptIcon.removeClass('fa-regular');
+
+            //Hide the accept buttons for all suggestions apart from the one that was accepted
+            allAcceptCols.each((col) => {
+                if ($(col).attr('id') !== `accept-col-${suggestionID}`) {
+                    $(col).addClass('d-none');
+                }
+            });
+
+            //Make a request to the /plant/:plant_id/suggestion/:suggestion_id/accept route
+            const response = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/accept`, {userID: userID});
+
+            //Emit the suggestion_accepted event to the server
+            socket.emit('suggestion_accepted', plantID, {suggestionID: suggestionID});
+
+            success = true;
+        }
+
+    } catch (err) {
+        console.log(err);
+    } finally {
+        if (!success) {
+            if (isAccepted) {
+                suggestionAcceptIcon.addClass('fa-solid');
+                suggestionAcceptIcon.removeClass('fa-regular');
+
+                allAcceptCols.each((col) => {
+                    col.addClass('d-none');
+                });
+            } else {
+                suggestionAcceptIcon.removeClass('fa-solid');
+                suggestionAcceptIcon.addClass('fa-regular');
+
+                allAcceptCols.each((col) => {
+                    $(col).removeClass('d-none');
+                });
+            }
+        }
+        actionInProgress = false;
+    }
+}
+
 function upvotesDownvotesAsAPercentage(upvotes, downvotes) {
     const total = upvotes + downvotes;
     if (total === 0) {
