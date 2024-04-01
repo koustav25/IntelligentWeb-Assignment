@@ -54,6 +54,25 @@ const getPostById = async (id) => {
     if (post.comments?.length > 0) {
         post.comments.sort((a, b) => b.createdAt - a.createdAt);
     }
+
+    if (post.identification?.potentials?.length > 0) {
+        // Sort by upvotes and then by ascending downvotes. So highest upvotes at the top, 0 in the middle highest downvotes at the bottom
+        post.identification.potentials.sort((a, b) => {
+            if (a.upvotes > b.upvotes) {
+                return -1;
+            } else if (a.upvotes < b.upvotes) {
+                return 1;
+            } else {
+                if (a.downvotes < b.downvotes) {
+                    return -1;
+                } else if (a.downvotes > b.downvotes) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            }
+        });
+    }
     return post;
 }
 
@@ -183,6 +202,53 @@ const findComment = (comments, id) => {
     }
 }
 
+/**
+ * Add a suggestion to post identifications
+ * @param postId {String} The ID of the post to add the suggestion to
+ * @param data {{userID: String, name: String}} The data object containing the suggestion information
+ * @returns {Promise<{name: String, suggesting_user: User, upvotes: Number, downvotes: Number, upvoters: Array<User>, downvoters: Array<User>}>} Returns the new suggestion object
+ * @author Benjamin Lister
+ */
+const addSuggestion = async (postId, data) => {
+    const post = await getPostById(postId);
+    const suggestion = {
+        suggesting_user: data.userID,
+        name: data.name,
+    }
+
+    post.identification.potentials.push(suggestion);
+
+    await post.save();
+
+    return post.identification.potentials[post.identification.potentials.length - 1];
+}
+
+/**
+ * Get a suggestion from a post
+ * @param postId The ID of the post
+ * @param suggestionId The ID of the suggestion
+ * @returns {Promise<*>} The suggestion object if found, otherwise null
+ */
+const getSuggestionFromPost = async (postId, suggestionId) => {
+    const post = await getPostById(postId);
+    const suggestion = post.identification.potentials.id(suggestionId);
+    return suggestion;
+}
+
+/**
+ * Find a suggestion in the suggestions array of a post
+ * @param suggestions The array of suggestions to search
+ * @param id The ID of the suggestion to find
+ * @returns {*} The suggestion object if found, otherwise null
+ */
+const findSuggestion = (suggestions, id) => {
+    for (const suggestion of suggestions) {
+        if (suggestion._id.toString() === id) {
+            return suggestion;
+        }
+    }
+}
+
 module.exports = {
     searchUser,
     addPost,
@@ -191,5 +257,8 @@ module.exports = {
     addReply,
     getPostById,
     getCommentFromPost,
-    findComment
+    findComment,
+    addSuggestion,
+    getSuggestionFromPost,
+    findSuggestion,
 }

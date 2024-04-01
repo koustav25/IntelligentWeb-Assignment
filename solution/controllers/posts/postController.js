@@ -1,4 +1,6 @@
-const {getPostById, addComment, getCommentFromPost, addReply, findComment} = require("../../model/mongodb");
+const {getPostById, addComment, getCommentFromPost, addReply, findComment, addSuggestion, getSuggestionFromPost,
+    findSuggestion
+} = require("../../model/mongodb");
 const postStates = require("../../model/enum/postStates");
 const leafTypes = require("../../model/enum/leafTypes");
 const exposureTypes = require("../../model/enum/exposureTypes");
@@ -183,10 +185,166 @@ async function postUnlike(req, res) {
 
 }
 
+async function postSuggestion(req, res) {
+    //Get the plant_id from the URL
+    const plant_id = req.params.plant_id;
+
+    //Get the text and user ID from the request
+    const text = req.body.text;
+    const user_id = req.body.userID;
+
+    //Check if the ID is valid
+    if (!plant_id) {
+        res.status(400);
+        res.send("Invalid ID");
+        return;
+    }
+
+    if (!text || !user_id) {
+        res.status(400);
+        res.send("Invalid body");
+        return;
+    }
+
+    try {
+        const post = await addSuggestion(plant_id, {userID: user_id, name: text})
+        res.status(200).send(post);
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({error: err});
+    }
+}
+
+async function getSuggestionHTML(req, res) {
+    //Get the plant_id and suggestion_id from the URL
+    const plant_id = req.params.plant_id;
+    const suggestion_id = req.params.suggestion_id;
+
+    //Get the suggestion from the post
+    const suggestion = await getSuggestionFromPost(plant_id, suggestion_id);
+
+    //Render the suggestion HTML from the EJS template
+    res.render('posts/suggestion', {suggestion: suggestion, user: {id: "6605a97814ddcdf43b5697d4"}, upvotesDownvotesAsAPercentage});
+
+}
+
+async function postUpvote(req, res) {
+    //Get the plant_id and suggestion_id from the URL
+    const plant_id = req.params.plant_id;
+    const suggestion_id = req.params.suggestion_id;
+
+    const userID = req.body.userID;
+
+    if (!userID) {
+        res.status(400);
+        res.send("Invalid user ID");
+        return;
+    }
+
+    //Get the suggestion from the post
+    const post = await getPostById(plant_id);
+    const suggestion = findSuggestion(post.identification.potentials, suggestion_id);
+
+    //Increment the likes
+    suggestion.upvotes += 1;
+    suggestion.upvoters.push(userID);
+
+    //Save the post
+    await post.save();
+
+    res.status(200).send(suggestion);
+
+}
+
+async function postUnupvote(req, res) {
+    //Get the plant_id and suggestion_id from the URL
+    const plant_id = req.params.plant_id;
+    const suggestion_id = req.params.suggestion_id;
+
+    const userID = req.body.userID;
+
+    if (!userID) {
+        res.status(400);
+        res.send("Invalid user ID");
+        return;
+    }
+
+    const post = await getPostById(plant_id);
+
+    //Get the suggestion from the post
+    const suggestion = findSuggestion(post.identification.potentials, suggestion_id);
+
+    //Increment the likes
+    suggestion.upvotes -= 1;
+    suggestion.upvoters = suggestion.upvoters.filter(id => id.toString() !== userID.toString());
+
+    //Save the post
+    await post.save();
+
+    res.status(200).json(suggestion);
+}
+
+async function postDownvote(req, res) {
+    //Get the plant_id and suggestion_id from the URL
+    const plant_id = req.params.plant_id;
+    const suggestion_id = req.params.suggestion_id;
+
+    const userID = req.body.userID;
+
+    if (!userID) {
+        res.status(400);
+        res.send("Invalid user ID");
+        return;
+    }
+
+    //Get the suggestion from the post
+    const post = await getPostById(plant_id);
+    const suggestion = findSuggestion(post.identification.potentials, suggestion_id);
+
+    //Increment the likes
+    suggestion.downvotes += 1;
+    suggestion.downvoters.push(userID);
+
+    //Save the post
+    await post.save();
+
+    res.status(200).send(suggestion);
+
+
+}
+
+async function postUndownvote(req, res) {
+    //Get the plant_id and suggestion_id from the URL
+    const plant_id = req.params.plant_id;
+    const suggestion_id = req.params.suggestion_id;
+
+    const userID = req.body.userID;
+
+    if (!userID) {
+        res.status(400);
+        res.send("Invalid user ID");
+        return;
+    }
+
+    const post = await getPostById(plant_id);
+
+    //Get the suggestion from the post
+    const suggestion = findSuggestion(post.identification.potentials, suggestion_id);
+
+    //Increment the likes
+    suggestion.downvotes -= 1;
+    suggestion.downvoters = suggestion.downvoters.filter(id => id.toString() !== userID.toString());
+
+    //Save the post
+    await post.save();
+
+    res.status(200).send(suggestion);
+}
+
 function upvotesDownvotesAsAPercentage(upvotes, downvotes) {
     const total = upvotes + downvotes;
     if (total === 0) {
-        return 0;
+        return {upvote: 50, downvote: 50};
     }
 
     const upvotePercentage = Math.floor((upvotes / total) * 100);
@@ -203,5 +361,11 @@ module.exports = {
     postReply,
     getReplyHTML,
     postLike,
-    postUnlike
+    postUnlike,
+    postSuggestion,
+    getSuggestionHTML,
+    postUpvote,
+    postUnupvote,
+    postDownvote,
+    postUndownvote
 }

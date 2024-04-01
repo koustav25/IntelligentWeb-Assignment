@@ -29,6 +29,43 @@ const commentSchema = new mongoose.Schema({
 );
 commentSchema.add({replies: [commentSchema, {required: false}]})
 
+const identificationSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: true
+    },
+    suggesting_user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+        autopopulate: true
+    },
+    upvotes: {
+        type: Number,
+        required: true,
+        default: 0
+    },
+    downvotes: {
+        type: Number,
+        required: true,
+        default: 0
+    },
+    upvoters: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: false,
+        }
+    ],
+    downvoters: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: false,
+        }
+    ]
+});
+
 const postSchema = new mongoose.Schema({
         posting_user: {
             type: mongoose.Schema.Types.ObjectId,
@@ -110,45 +147,7 @@ const postSchema = new mongoose.Schema({
         },
         identification: {
             potentials: [
-                {
-                    id: {
-                        type: mongoose.Schema.ObjectId,
-                        required: true,
-                        default: new mongoose.Types.ObjectId()
-                    },
-                    name: {
-                        type: String,
-                        required: true
-                    },
-                    suggesting_user: {
-                        type: mongoose.Schema.Types.ObjectId,
-                        ref: 'User',
-                        required: true,
-                        autopopulate: true
-                    },
-                    upvotes: {
-                        type: Number,
-                        required: true
-                    },
-                    downvotes: {
-                        type: Number,
-                        required: true
-                    },
-                    upvoters: [
-                        {
-                            type: mongoose.Schema.Types.ObjectId,
-                            ref: 'User',
-                            required: false,
-                        }
-                    ],
-                    downvoters: [
-                        {
-                            type: mongoose.Schema.Types.ObjectId,
-                            ref: 'User',
-                            required: false,
-                        }
-                    ]
-                }
+                identificationSchema
             ],
             is_accepted: {
                 type: Boolean,

@@ -13,12 +13,8 @@ function registerPlantDetailsSockets(io, socket) {
         socket.broadcast.to(room).emit('new_suggestion', data);
     });
 
-    socket.on('upvote_count', (room, data) => {
-        socket.broadcast.to(room).emit('upvote_count', data);
-    });
-
-    socket.on('downvote_count', (room, data) => {
-        socket.broadcast.to(room).emit('downvote_count', data);
+    socket.on('suggestion_rating', (room, data) => {
+        socket.broadcast.to(room).emit('suggestion_rating', data);
     });
 
     socket.on('new_comment', (room, data) => {

@@ -3,6 +3,8 @@ let postMarker;
 
 let socket = io();
 
+let actionInProgress = false;
+
 document.addEventListener('DOMContentLoaded', function () {
     //TODO: Initialise Socket.io
     registerSocketListeners();
@@ -18,16 +20,14 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function registerSocketListeners() {
-    socket.on('new_suggestion', (data) => {
-
+    socket.on('new_suggestion', async (data) => {
+        console.log('new_suggestion')
+        await addSuggestionToPage(data._id);
     });
 
-    socket.on('upvote_count', (data) => {
-
-    });
-
-    socket.on('downvote_count', (data) => {
-
+    socket.on('suggestion_rating', (data) => {
+        console.log('suggestion_rating')
+        updateUpvoteUI(data.suggestionID, data.upvotes, data.downvotes)
     });
 
     socket.on('new_comment', async (data) => {
@@ -237,6 +237,295 @@ async function toggleLikeButton(commentID) {
         }
     }
 
+}
+
+async function submitSuggestion() {
+    if (actionInProgress) {
+        return;
+    }
+
+    actionInProgress = true;
+
+    const suggestionText = document.getElementById('suggestionText').value;
+
+    if (suggestionText === '') {
+        return;
+    }
+
+    const newSuggestion = {
+        text: suggestionText,
+        userID: userID,
+    }
+
+    try {
+        const response = await axios.post(`/plant/${plantID}/suggestion`, newSuggestion);
+
+        socket.emit('new_suggestion', plantID, response.data);
+
+        await addSuggestionToPage(response.data._id);
+
+    } catch (err) {
+        console.error(err);
+    } finally {
+        actionInProgress = false;
+    }
+}
+
+async function addSuggestionToPage(suggestionID) {
+    const suggestionsContainer = document.getElementById('suggestionsContainer');
+
+    const noSuggestionsRow = $('#noSuggestionsRow');
+    if (noSuggestionsRow.is(':visible')) {
+        noSuggestionsRow.hide();
+    }
+
+    try {
+        const response = await axios.get(`/plant/${plantID}/suggestion/${suggestionID}/render`);
+
+        const newSuggestion = document.createElement('div');
+
+        newSuggestion.innerHTML = response.data;
+
+        suggestionsContainer.appendChild(newSuggestion);
+    } catch (err) {
+        console.log(err)
+    }
+}
+
+async function upvoteSuggestion(suggestionID) {
+    if (actionInProgress) {
+        return;
+    }
+
+    actionInProgress = true;
+
+    //This function is fired when the upvote button is pressed
+    const upvoteIcon = $(`#suggestion_upvote_icon_${suggestionID}`);
+    const downvoteIcon = $(`#suggestion_downvote_icon_${suggestionID}`);
+    const upvoteCount = $(`#suggestion_upvote_count_${suggestionID}`);
+    const downvoteCount = $(`#suggestion_downvote_count_${suggestionID}`);
+
+    const hasUpvoted = upvoteIcon.hasClass('text-success');
+    const hasDownvoted = downvoteIcon.hasClass('text-danger');
+
+    const upvotes = parseInt(upvoteCount.text());
+    const downvotes = parseInt(downvoteCount.text());
+
+    let success = false;
+
+    try {
+        //If the user has upvoted, remove the upvote
+        if (hasUpvoted) {
+            updateUpvoteUI(suggestionID, upvotes - 1, downvotes);
+            upvoteIcon.removeClass('text-success');
+            upvoteIcon.addClass('text-muted');
+
+            //Make a request to the /plant/:plant_id/suggestion/:suggestion_id/unupvote route
+            const response = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/unupvote`, {userID: userID});
+
+            //Emit the upvote count to the server
+            socket.emit('suggestion_rating', plantID, {
+                suggestionID: suggestionID,
+                upvotes: response.data.upvotes,
+                downvotes: downvotes
+            });
+
+            success = true;
+        } else {
+            //If the user has not upvoted, first check if they have downvoted
+            if (hasDownvoted) {
+                //If they have downvoted, remove the downvote
+                updateUpvoteUI(suggestionID, upvotes + 1, downvotes - 1)
+                downvoteIcon.removeClass('text-danger');
+                downvoteIcon.addClass('text-muted');
+                upvoteIcon.addClass('text-success');
+                upvoteIcon.removeClass('text-muted');
+
+                //Make a request to the /plant/:plant_id/suggestion/:suggestion_id/undownvote route
+                const response = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/undownvote`, {userID: userID});
+
+                //Make a request to the /plant/:plant_id/suggestion/:suggestion_id/upvote route
+                const response2 = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/upvote`, {userID: userID});
+
+                //Emit the upvote count to the server
+                socket.emit('suggestion_rating', plantID, {
+                    suggestionID: suggestionID,
+                    upvotes: response2.data.upvotes,
+                    downvotes: response2.data.downvotes
+                });
+
+                success = true;
+            } else {
+                //If they have not downvoted, just add the upvote
+                updateUpvoteUI(suggestionID, upvotes + 1, downvotes)
+                upvoteIcon.removeClass('text-muted');
+                upvoteIcon.addClass('text-success');
+
+                //Make a request to the /plant/:plant_id/suggestion/:suggestion_id/upvote route
+                const response = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/upvote`, {userID: userID});
+
+                //Emit the upvote count to the server
+                socket.emit('suggestion_rating', plantID, {
+                    suggestionID: suggestionID,
+                    upvotes: response.data.upvotes,
+                    downvotes: downvotes
+                });
+
+                success = true;
+            }
+        }
+    } catch (err) {
+        success = false;
+        console.log(err);
+    } finally {
+        if (!success) {
+            if (hasUpvoted) {
+                upvoteIcon.addClass('text-success');
+                upvoteIcon.removeClass('text-muted');
+                updateUpvoteUI(suggestionID, upvotes, downvotes)
+            } else {
+                if (hasDownvoted) {
+                    downvoteIcon.addClass('text-danger');
+                    downvoteIcon.removeClass('text-muted');
+                }
+                updateUpvoteUI(suggestionID, upvotes, downvotes)
+                upvoteIcon.removeClass('text-success');
+                upvoteIcon.addClass('text-muted');
+            }
+        }
+        actionInProgress = false;
+    }
+}
+
+async function downvoteSuggestion(suggestionID) {
+    if (actionInProgress) {
+        return;
+    }
+
+    actionInProgress = true;
+
+    //This function is fired when the downvote button is pressed
+    const upvoteIcon = $(`#suggestion_upvote_icon_${suggestionID}`);
+    const downvoteIcon = $(`#suggestion_downvote_icon_${suggestionID}`);
+    const upvoteCount = $(`#suggestion_upvote_count_${suggestionID}`);
+    const downvoteCount = $(`#suggestion_downvote_count_${suggestionID}`);
+
+    const hasUpvoted = upvoteIcon.hasClass('text-success');
+    const hasDownvoted = downvoteIcon.hasClass('text-danger');
+
+    const upvotes = parseInt(upvoteCount.text());
+    const downvotes = parseInt(downvoteCount.text());
+
+    let success = false;
+
+    try {
+        //If the user has downvoted, remove the downvote
+        if (hasDownvoted) {
+            updateUpvoteUI(suggestionID, upvotes, downvotes - 1);
+            downvoteIcon.removeClass('text-danger');
+            downvoteIcon.addClass('text-muted');
+
+            //Make a request to the /plant/:plant_id/suggestion/:suggestion_id/undownvote route
+            const response = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/undownvote`, {userID: userID});
+
+            //Emit the upvote count to the server
+            socket.emit('suggestion_rating', plantID, {
+                suggestionID: suggestionID,
+                upvotes: upvotes,
+                downvotes: response.data.downvotes
+            });
+
+            success = true;
+        } else {
+            //If the user has not downvoted, first check if they have upvoted
+            if (hasUpvoted) {
+                //If they have upvoted, remove the upvote
+                updateUpvoteUI(suggestionID, upvotes - 1, downvotes + 1)
+                upvoteIcon.removeClass('text-success');
+                upvoteIcon.addClass('text-muted');
+                downvoteIcon.addClass('text-danger');
+                downvoteIcon.removeClass('text-muted');
+
+                //Make a request to the /plant/:plant_id/suggestion/:suggestion_id/unupvote route
+                const response = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/unupvote`, {userID: userID});
+
+                //Make a request to the /plant/:plant_id/suggestion/:suggestion_id/downvote route
+                const response2 = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/downvote`, {userID: userID});
+
+                //Emit the upvote count to the server
+                socket.emit('suggestion_rating', plantID, {
+                    suggestionID: suggestionID,
+                    upvotes: response.data.upvotes,
+                    downvotes: response2.data.downvotes
+                });
+
+                success = true;
+
+            } else {
+                //If they have not upvoted, just add the downvote
+                updateUpvoteUI(suggestionID, upvotes, downvotes + 1)
+                downvoteIcon.addClass('text-danger');
+                downvoteIcon.removeClass('text-muted');
+
+                //Make a request to the /plant/:plant_id/suggestion/:suggestion_id/downvote route
+                const response = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/downvote`, {userID: userID});
+
+                //Emit the upvote count to the server
+                socket.emit('suggestion_rating', plantID, {
+                    suggestionID: suggestionID,
+                    upvotes: upvotes,
+                    downvotes: response.data.downvotes
+                });
+
+                success = true;
+            }
+        }
+    } catch (err) {
+        success = false;
+        console.log(err);
+    } finally {
+        if (!success) {
+            if (hasDownvoted) {
+                downvoteIcon.addClass('text-danger');
+                downvoteIcon.removeClass('text-muted');
+                updateUpvoteUI(suggestionID, upvotes, downvotes)
+            } else {
+                if (hasUpvoted) {
+                    upvoteIcon.addClass('text-success');
+                    upvoteIcon.removeClass('text-muted');
+                }
+                updateUpvoteUI(suggestionID, upvotes, downvotes)
+                downvoteIcon.removeClass('text-danger');
+                downvoteIcon.addClass('text-muted');
+            }
+        }
+        actionInProgress = false;
+    }
+}
+
+function updateUpvoteUI(suggestionID, upvotes, downvotes) {
+    const upvoteProgress = $(`#suggestion_upvote_progress_${suggestionID}`);
+    const downvoteProgress = $(`#suggestion_downvote_progress_${suggestionID}`);
+    const upvoteCount = $(`#suggestion_upvote_count_${suggestionID}`);
+    const downvoteCount = $(`#suggestion_downvote_count_${suggestionID}`);
+
+    const newWidths = upvotesDownvotesAsAPercentage(upvotes, downvotes);
+    upvoteProgress.css('width', `${newWidths.upvote}%`);
+    downvoteProgress.css('width', `${newWidths.downvote}%`);
+    upvoteCount.text(upvotes);
+    downvoteCount.text(downvotes);
+}
+
+function upvotesDownvotesAsAPercentage(upvotes, downvotes) {
+    const total = upvotes + downvotes;
+    if (total === 0) {
+        return {upvote: 50, downvote: 50};
+    }
+
+    const upvotePercentage = Math.floor((upvotes / total) * 100);
+    const downvotePercentage = 100 - upvotePercentage;
+
+    return {upvote: upvotePercentage, downvote: downvotePercentage};
 }
 
 function openReplyModal(commentID) {
