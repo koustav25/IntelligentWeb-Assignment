@@ -220,12 +220,13 @@ async function getSuggestionHTML(req, res) {
     const plant_id = req.params.plant_id;
     const suggestion_id = req.params.suggestion_id;
 
+    const post = await getPostById(plant_id);
     //Get the suggestion from the post
-    const suggestion = await getSuggestionFromPost(plant_id, suggestion_id);
+    const suggestion = findSuggestion(post.identification.potentials, suggestion_id);
 
     //Render the suggestion HTML from the EJS template
     //TODO: Add the correct auth info once available
-    res.render('posts/suggestion', {suggestion: suggestion, user: {id: "6605a97814ddcdf43b5697d4"}, upvotesDownvotesAsAPercentage, isPoster: (suggestion.suggesting_user.toString() === "6605a97814ddcdf43b5697d4")} );
+    res.render('posts/suggestion', {suggestion: suggestion, identification: post.identification, user: {id: "6605a97814ddcdf43b5697d4"}, upvotesDownvotesAsAPercentage, isPoster: (suggestion.suggesting_user.toString() === "6605a97814ddcdf43b5697d4")} );
 
 }
 
@@ -356,6 +357,7 @@ async function postAcceptSuggestion(req, res) {
     post.identification.is_accepted = true;
     post.identification.date_accepted = new Date();
     post.identification.accepted_potential = index;
+    post.identification.accepted_potential_id = post.identification.potentials[index]._id;
 
     //TODO: Add the dbpedia URL once available
 
@@ -376,6 +378,7 @@ async function postUnacceptSuggestion(req, res) {
     post.identification.is_accepted = false;
     post.identification.date_accepted = null;
     post.identification.accepted_potential = null;
+    post.identification.accepted_potential_id = null;
 
     await post.save();
 

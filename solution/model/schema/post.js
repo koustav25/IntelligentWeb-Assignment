@@ -157,6 +157,12 @@ const postSchema = new mongoose.Schema({
                 type: Date,
                 required: false
             },
+            accepted_potential_id: {
+                // This is the ObjectId of the accepted potential
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User',
+                required: false
+            },
             accepted_potential: {
                 // This is the index of the accepted potential in the potentials array
                 type: Number,

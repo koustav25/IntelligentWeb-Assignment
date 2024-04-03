@@ -4,6 +4,7 @@ let postMarker;
 let socket = io();
 
 let actionInProgress = false;
+let identificationHasChanged = false;
 
 document.addEventListener('DOMContentLoaded', function () {
     //TODO: Initialise Socket.io
@@ -17,7 +18,17 @@ document.addEventListener('DOMContentLoaded', function () {
     }).addTo(map);
 
     postMarker = L.marker([postCoords.latitude, postCoords.longitude]).addTo(map);
+
+
+//On suggestion modal closed,
+    $('#suggestIdentificationModal').on('hidden.bs.modal', function () {
+        //If identification has changed, refresh the page
+        if (identificationHasChanged) {
+            location.reload();
+        }
+    });
 });
+
 
 function registerSocketListeners() {
     socket.on('new_suggestion', async (data) => {
@@ -523,6 +534,8 @@ async function acceptSuggestion(suggestionID) {
 
     actionInProgress = true;
 
+    const suggestionRow = $(`#${suggestionID}`);
+
     const suggestionAcceptCol = $(`#accept-col-${suggestionID}`);
 
     const suggestionAcceptIcon = suggestionAcceptCol.find('i');
@@ -538,8 +551,10 @@ async function acceptSuggestion(suggestionID) {
             suggestionAcceptIcon.removeClass('fa-solid');
             suggestionAcceptIcon.addClass('fa-regular');
 
+            suggestionRow.removeClass('bg-success-subtle');
+
             //Show the accept buttons for all suggestions again
-            allAcceptCols.each((col) => {
+            allAcceptCols.each((i, col) => {
                 $(col).removeClass('d-none');
             });
 
@@ -555,8 +570,10 @@ async function acceptSuggestion(suggestionID) {
             suggestionAcceptIcon.addClass('fa-solid');
             suggestionAcceptIcon.removeClass('fa-regular');
 
+            suggestionRow.addClass('bg-success-subtle');
+
             //Hide the accept buttons for all suggestions apart from the one that was accepted
-            allAcceptCols.each((col) => {
+            allAcceptCols.each((i, col) => {
                 if ($(col).attr('id') !== `accept-col-${suggestionID}`) {
                     $(col).addClass('d-none');
                 }
@@ -579,18 +596,25 @@ async function acceptSuggestion(suggestionID) {
                 suggestionAcceptIcon.addClass('fa-solid');
                 suggestionAcceptIcon.removeClass('fa-regular');
 
-                allAcceptCols.each((col) => {
+                suggestionRow.addClass('bg-success-subtle');
+
+                allAcceptCols.each((i, col) => {
                     col.addClass('d-none');
                 });
             } else {
                 suggestionAcceptIcon.removeClass('fa-solid');
                 suggestionAcceptIcon.addClass('fa-regular');
 
-                allAcceptCols.each((col) => {
+                suggestionRow.removeClass('bg-success-subtle');
+
+                allAcceptCols.each((i, col) => {
                     $(col).removeClass('d-none');
                 });
             }
+        } else {
+            identificationHasChanged = true;
         }
+
         actionInProgress = false;
     }
 }
