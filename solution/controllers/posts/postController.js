@@ -10,9 +10,7 @@ const mongoose = require("mongoose");
 
 function getPost(req, res) {
     //TODO: Render the post view
-    //res.render('post', { title: 'Post' })
-
-    res.send('Post')
+    res.render('posts/create_post', { title: 'Post', isLoggedIn:true })
 }
 
 async function getPlant(req, res, next) {

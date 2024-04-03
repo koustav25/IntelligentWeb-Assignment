@@ -1,4 +1,4 @@
-const {getUsers} = require("../../util/mock/mockData");
+const {getUsers, getMockFeed, getMockPlants} = require("../../util/mock/mockData");
 
 function getAdminDashboard(req, res) {
     //TODO: Add admin dashboard rendering logic here
@@ -23,9 +23,8 @@ function getAdminUserDetails(req, res) {
 
 function getAdminPlants(req, res) {
     //TODO: Add admin plants rendering logic here
-    //res.render('admin/plants', { title: 'Admin Plants' });
-
-    res.send('Admin Plants');
+    const plants = getMockPlants()
+    res.render('admin/plants', { plants, isLoggedIn: true });
 }
 
 function getAdminPlantDetails(req, res) {
