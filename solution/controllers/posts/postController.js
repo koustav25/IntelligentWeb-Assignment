@@ -207,8 +207,13 @@ async function postSuggestion(req, res) {
     }
 
     try {
-        const post = await addSuggestion(plant_id, {userID: user_id, name: text})
-        res.status(200).send(post);
+        const suggestion = await addSuggestion(plant_id, {userID: user_id, name: text})
+
+        const post = await getPostById(plant_id);
+        post.state = postStates.IN_PROGRESS;
+        await post.save();
+
+        res.status(200).send(suggestion);
     } catch (err) {
         console.log(err)
         res.status(500).json({error: err});
@@ -359,6 +364,8 @@ async function postAcceptSuggestion(req, res) {
     post.identification.accepted_potential = index;
     post.identification.accepted_potential_id = post.identification.potentials[index]._id;
 
+    post.state = postStates.IDENTIFIED;
+
     //TODO: Add the dbpedia URL once available
 
     //Save the post
@@ -379,6 +386,8 @@ async function postUnacceptSuggestion(req, res) {
     post.identification.date_accepted = null;
     post.identification.accepted_potential = null;
     post.identification.accepted_potential_id = null;
+
+    post.state = postStates.IN_PROGRESS;
 
     await post.save();
 
