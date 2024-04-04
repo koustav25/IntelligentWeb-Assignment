@@ -1,8 +1,6 @@
 function getSearch(req, res) {
-    //TODO: Render the search view
-    //res.render('search', { title: 'Search' });
-
-    res.send('Search');
+    const getData = {};
+    res.render('posts/search',{isLoggedIn: true, getData });
 }
 
 module.exports = {
