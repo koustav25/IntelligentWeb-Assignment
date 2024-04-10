@@ -50,7 +50,7 @@ async function postComment(req, res, next) {
         return;
     }
 
-    if (!text || !user_id) {
+    if (!text) {
         res.status(400);
         res.send("Invalid body");
         return;
@@ -99,7 +99,7 @@ async function postReply(req, res) {
         return;
     }
 
-    if (!text || !user_id) {
+    if (!text) {
         res.status(400);
         res.send("Invalid body");
         return;
@@ -134,12 +134,6 @@ async function postLike(req, res) {
 
     const userID = req.body.userID;
 
-    if (!userID) {
-        res.status(400);
-        res.send("Invalid user ID");
-        return;
-    }
-
     //Get the comment from the post
     const post = await getPostById(plant_id);
     const comment = findComment(post.comments, comment_id);
@@ -160,12 +154,6 @@ async function postUnlike(req, res) {
     const comment_id = req.params.comment_id;
 
     const userID = req.body.userID;
-
-    if (!userID) {
-        res.status(400);
-        res.send("Invalid user ID");
-        return;
-    }
 
     const post = await getPostById(plant_id);
 
@@ -198,7 +186,7 @@ async function postSuggestion(req, res) {
         return;
     }
 
-    if (!text || !user_id) {
+    if (!text) {
         res.status(400);
         res.send("Invalid body");
         return;
@@ -240,12 +228,6 @@ async function postUpvote(req, res) {
 
     const userID = req.body.userID;
 
-    if (!userID) {
-        res.status(400);
-        res.send("Invalid user ID");
-        return;
-    }
-
     //Get the suggestion from the post
     const post = await getPostById(plant_id);
     const suggestion = findSuggestion(post.identification.potentials, suggestion_id);
@@ -267,12 +249,6 @@ async function postUnupvote(req, res) {
     const suggestion_id = req.params.suggestion_id;
 
     const userID = req.body.userID;
-
-    if (!userID) {
-        res.status(400);
-        res.send("Invalid user ID");
-        return;
-    }
 
     const post = await getPostById(plant_id);
 
@@ -296,12 +272,6 @@ async function postDownvote(req, res) {
 
     const userID = req.body.userID;
 
-    if (!userID) {
-        res.status(400);
-        res.send("Invalid user ID");
-        return;
-    }
-
     //Get the suggestion from the post
     const post = await getPostById(plant_id);
     const suggestion = findSuggestion(post.identification.potentials, suggestion_id);
@@ -324,12 +294,6 @@ async function postUndownvote(req, res) {
     const suggestion_id = req.params.suggestion_id;
 
     const userID = req.body.userID;
-
-    if (!userID) {
-        res.status(400);
-        res.send("Invalid user ID");
-        return;
-    }
 
     const post = await getPostById(plant_id);
 
