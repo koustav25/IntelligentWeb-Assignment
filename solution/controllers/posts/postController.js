@@ -1,5 +1,5 @@
 const {getPostById, addComment, getCommentFromPost, addReply, findComment, addSuggestion, getSuggestionFromPost,
-    findSuggestion
+    findSuggestion, getUserById
 } = require("../../model/mongodb");
 const postStates = require("../../model/enum/postStates");
 const leafTypes = require("../../model/enum/leafTypes");
@@ -8,9 +8,13 @@ const seedTypes = require("../../model/enum/seedTypes");
 const {mongo} = require("mongoose");
 const mongoose = require("mongoose");
 
-function getPost(req, res) {
-    //TODO: Render the post view
-    res.render('posts/create_post', { title: 'Post', isLoggedIn:true })
+async function getPost(req, res) {
+    //TODO: Change this to the user ID once available
+    const userId = "6605a97814ddcdf43b5697d4"; //req.user.id;
+
+    const user = await getUserById(userId);
+
+    res.render('posts/create_post', {title: 'Post', isLoggedIn: true, user: user, leafTypes, exposureTypes, seedTypes});
 }
 
 async function getPlant(req, res, next) {
