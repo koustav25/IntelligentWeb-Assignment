@@ -253,6 +253,10 @@ const findSuggestion = (suggestions, id) => {
     }
 }
 
+const createPost = async (postData) => {
+    return Post.create(postData);
+}
+
 module.exports = {
     searchUser,
     getUserById,
@@ -266,4 +270,5 @@ module.exports = {
     addSuggestion,
     getSuggestionFromPost,
     findSuggestion,
+    createPost,
 }

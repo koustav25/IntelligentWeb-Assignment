@@ -1,7 +1,5 @@
 <%- include("../components/navbar.ejs") %>
 
-<script src="/javascripts/posts/create_post.js"></script>
-
 <div class="container-fluid mt-3">
     <div class="row my-2">
         <div class="col-12">
@@ -14,7 +12,7 @@
             <div class="card">
                 <div class="card-body">
 
-                    <form action="/post" method="POST" enctype="multipart/form-data">
+                    <form id="postForm" novalidate>
 
                         <div class="row mt-2">
                             <div class="col-12">
@@ -42,7 +40,7 @@
                                         </div>
 
                                         <div class="mb-3 form-floating">
-                                            <input type="text" class="form-control" id="name" name="name" required>
+                                            <input type="text" class="form-control" id="title" name="title" required>
                                             <label for="name">Title:</label>
                                         </div>
 
@@ -54,9 +52,10 @@
 
 
                                         <div class="form-floating">
-                                            <input type="datetime-local" class="form-control" id="seenAt" name="seenAt"
+                                            <input type="datetime-local" class="form-control" id="seen_at"
+                                                   name="seen_at"
                                                    required>
-                                            <label for="seenAt">Seen At:</label>
+                                            <label for="seen_at">Seen At:</label>
                                         </div>
                                     </div>
                                 </div>
@@ -102,9 +101,9 @@
                                                     <div class="row">
 
                                                         <div class="col-4">
-                                                            <input class="btn-check" type="radio" name="sunExposure"
-                                                                   id="fullSun"
-                                                                   value="Full Sun"
+                                                            <input class="btn-check" type="radio" name="sun_exposure"
+                                                                   id="full_sun"
+                                                                   value="<%= exposureTypes.FULL_SUN %>"
                                                                    required checked>
                                                             <label class="btn btn-outline-secondary w-100"
                                                                    for="fullSun"><i
@@ -112,18 +111,18 @@
                                                         </div>
 
                                                         <div class="col-4">
-                                                            <input class="btn-check" type="radio" name="sunExposure"
+                                                            <input class="btn-check" type="radio" name="sun_exposure"
                                                                    id="partialSun"
-                                                                   value="Partial Sun">
+                                                                   value="<%= exposureTypes.PARTIAL_SUN %>">
                                                             <label class="btn btn-outline-secondary w-100"
                                                                    for="partialSun"><i
                                                                         class="fa-solid fa-cloud-sun fa-2x"></i></label>
                                                         </div>
 
                                                         <div class="col-4">
-                                                            <input class="btn-check" type="radio" name="sunExposure"
+                                                            <input class="btn-check" type="radio" name="sun_exposure"
                                                                    id="fullShade"
-                                                                   value="Full Shade">
+                                                                   value="<%= exposureTypes.FULL_SHADE %>">
                                                             <label class="btn btn-outline-secondary w-100"
                                                                    for="fullShade"><i
                                                                         class="fa-solid fa-cloud fa-2x"></i></label>
@@ -137,20 +136,20 @@
                                         <div class="mt-2">
                                             <div class="row">
                                                 <div class="col-md-3">
-                                                    <p class="my-auto mx-2 text-center text-sm-start">Does this plant
-                                                        have
-                                                        flowers?</p>
+                                                    <p class="my-auto mx-2 text-center text-sm-start">
+                                                        Does this plant have flowers?
+                                                    </p>
                                                 </div>
 
                                                 <div class="col-md-9 px-4">
                                                     <div class="d-flex d-md-block justify-content-center">
                                                         <div class="form-check form-switch">
                                                             <label class="form-check-label px-2"
-                                                                   for="hasFlowers">Yes</label>
+                                                                   for="has_flowers">Yes</label>
                                                             <input class="form-check-input" type="checkbox"
                                                                    role="switch"
-                                                                   id="hasFlowers"
-                                                                   name="hasFlowers" style="transform: scale(1.5)">
+                                                                   id="has_flowers"
+                                                                   name="has_flowers" style="transform: scale(1.5)">
                                                         </div>
                                                     </div>
                                                 </div>
@@ -160,14 +159,14 @@
                                         <div class="form-group mt-2">
                                             <div class="row">
                                                 <div class="col-md-3">
-                                                    <label for="flowerColor" class="visually-hidden">Flower
+                                                    <label for="flower_colour" class="visually-hidden">Flower
                                                         Color:</label>
                                                     <p class="my-auto mx-2 text-center text-sm-start">Flower Color:</p>
                                                 </div>
 
                                                 <div class="col-md-9">
-                                                    <input type="color" class="form-control" id="flowerColor"
-                                                           name="flowerColor"
+                                                    <input type="color" class="form-control" id="flower_colour"
+                                                           name="flower_colour"
                                                            value="#2A970C">
                                                 </div>
                                             </div>
@@ -186,32 +185,32 @@
                                                             <div class="col-3">
                                                                 <div class="form-check mx-2">
                                                                     <input class="form-check-input" type="radio"
-                                                                           name="leafType"
-                                                                           id="leafy"
-                                                                           value="Leafy"
+                                                                           name="leaf_type"
+                                                                           id="simple_leaf"
+                                                                           value="<%= leafTypes.SIMPLE_LEAF %>"
                                                                            required>
                                                                     <label class="form-check-label"
-                                                                           for="leafy">Leafy</label>
+                                                                           for="simple_leaf">Simple</label>
                                                                 </div>
                                                             </div>
 
                                                             <div class="col-3">
                                                                 <div class="form-check mx-2">
                                                                     <input class="form-check-input" type="radio"
-                                                                           name="leafType"
-                                                                           id="needles"
-                                                                           value="Needles">
+                                                                           name="leaf_type"
+                                                                           id="complex_leaf"
+                                                                           value="<%= leafTypes.COMPLEX_LEAF %>">
                                                                     <label class="form-check-label"
-                                                                           for="needles">Needles</label>
+                                                                           for="complex_leaf">Complex</label>
                                                                 </div>
                                                             </div>
 
                                                             <div class="col-3">
                                                                 <div class="form-check mx-2">
                                                                     <input class="form-check-input" type="radio"
-                                                                           name="leafType"
+                                                                           name="leaf_type"
                                                                            id="none"
-                                                                           value="None" checked>
+                                                                           value="<%= leafTypes.NO_LEAF %>" checked>
                                                                     <label class="form-check-label"
                                                                            for="none">None</label>
                                                                 </div>
@@ -234,9 +233,9 @@
                                                         <div class="col-3">
                                                             <div class="form-check mx-2">
                                                                 <input class="form-check-input" type="radio"
-                                                                       name="fruitSeed"
+                                                                       name="seed_type"
                                                                        id="fruit"
-                                                                       value="Fruit"
+                                                                       value="<%= seedTypes.FRUIT %>"
                                                                        required>
                                                                 <label class="form-check-label"
                                                                        for="fruit">Fruit</label>
@@ -246,9 +245,9 @@
                                                         <div class="col-3">
                                                             <div class="form-check mx-2">
                                                                 <input class="form-check-input" type="radio"
-                                                                       name="fruitSeed"
+                                                                       name="seed_type"
                                                                        id="seed"
-                                                                       value="Seed">
+                                                                       value="<%= seedTypes.SEED %>">
                                                                 <label class="form-check-label" for="seed">Seed</label>
                                                             </div>
                                                         </div>
@@ -256,9 +255,9 @@
                                                         <div class="col-3">
                                                             <div class="form-check mx-2">
                                                                 <input class="form-check-input" type="radio"
-                                                                       name="fruitSeed"
+                                                                       name="seed_type"
                                                                        id="none"
-                                                                       value="None" checked>
+                                                                       value="<%= seedTypes.NO_SEED %>" checked>
                                                                 <label class="form-check-label" for="none">None</label>
                                                             </div>
                                                         </div>
@@ -266,9 +265,9 @@
                                                         <div class="col-3">
                                                             <div class="form-check mx-2">
                                                                 <input class="form-check-input" type="radio"
-                                                                       name="fruitSeed"
+                                                                       name="seed_type"
                                                                        id="unknown"
-                                                                       value="Unknown/Other">
+                                                                       value="<%= seedTypes.UNKNOWN %>" checked>
                                                                 <label class="form-check-label"
                                                                        for="unknown">Unknown/Other</label>
                                                             </div>
@@ -308,12 +307,24 @@
                                                     <p class="text-center">Where was this plant seen?</p>
                                                 </div>
                                             </div>
-                                            <input type="hidden" id="location" name="location" required>
-                                            <label for="location" class="visually-hidden">Location:</label>
+
+                                            <input type="hidden" id="latitude" name="latitude" required>
+                                            <input type="hidden" id="longitude" name="longitude" required>
+
+                                            <div class="form-floating my-2">
+                                                <input type="text" class="form-control" id="location_name"
+                                                       name="location_name" required
+                                                       placeholder="Location Nickname">
+                                                <label for="location_name">Location Nickname:</label>
+                                                <small class="form-text text-muted">This is a nickname for the location
+                                                    where the plant was seen. It can be anything you like. This will be
+                                                    visible to other users.
+                                                </small>
+                                            </div>
+
                                             <button type="button" class="btn btn-primary my-1 w-100"
-                                                    id="useCurrentLocation">Use
-                                                Current
-                                                Location
+                                                    id="useCurrentLocation">
+                                                Use Current Location
                                             </button>
                                             <div id="map" style="height: 400px;"></div>
                                         </div>
@@ -345,7 +356,12 @@
                         </div>
 
                         <div class="form-group mt-2">
-                            <button type="submit" class="btn btn-primary w-100">Submit</button>
+                            <button type="submit" class="btn btn-success btn-lg w-100" id="postButton">
+                                Post
+                                <div class="spinner-grow spinner-grow-sm d-none" role="status" id="postSpinner">
+                                    <span class="visually-hidden">Posting...</span>
+                                </div>
+                            </button>
                         </div>
 
                     </form>
@@ -353,6 +369,8 @@
             </div>
         </div>
     </div>
+
+    <script src="/javascripts/posts/create_post.js"></script>
 </div>
 
 <%- include("../components/footer.ejs") %>

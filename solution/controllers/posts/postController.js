@@ -1,5 +1,13 @@
-const {getPostById, addComment, getCommentFromPost, addReply, findComment, addSuggestion, getSuggestionFromPost,
-    findSuggestion, getUserById
+const {
+    getPostById,
+    addComment,
+    getCommentFromPost,
+    addReply,
+    findComment,
+    addSuggestion,
+    getSuggestionFromPost,
+    findSuggestion,
+    getUserById, createPost
 } = require("../../model/mongodb");
 const postStates = require("../../model/enum/postStates");
 const leafTypes = require("../../model/enum/leafTypes");
@@ -17,6 +25,115 @@ async function getPost(req, res) {
     res.render('posts/create_post', {title: 'Post', isLoggedIn: true, user: user, leafTypes, exposureTypes, seedTypes});
 }
 
+async function postNewPost(req, res, next) {
+    try {
+        const title = req.body.title;
+        const description = req.body.description;
+        const seen_at = req.body.seen_at;
+
+        const location_name = req.body.location_name;
+        const latitude = req.body.latitude;
+        const longitude = req.body.longitude;
+
+        const height = req.body.height;
+        const spread = req.body.spread;
+        const sun_exposure = req.body.sun_exposure;
+        const has_flowers = req.body.has_flowers;
+        const colour = req.body.flower_colour;
+        const leaf_type = req.body.leaf_type;
+        const seed_type = req.body.seed_type;
+
+        const images = req.files;
+
+        const identifiedAs = req.body.identifiedAs;
+
+        //Check fields exist and are not empty
+        if (!title || !description || !seen_at || !height || !spread || !sun_exposure || !has_flowers || !colour || !leaf_type || !seed_type || !location_name || !latitude || !longitude) {
+            res.status(400);
+            res.send("Missing fields");
+            return;
+        }
+
+        //Flower colour should arrive as a hex code encoded as a string, so we need to convert it to a number
+
+        const flower_colour = parseInt(colour.replace("#", ""), 16);
+
+        //If an identification has been made, set the state to IN_PROGRESS
+        const state = (!identifiedAs) ? postStates.NEW_POST : postStates.IN_PROGRESS;
+
+        //TODO: Change this to the user ID once available
+        const userId = "6605a97814ddcdf43b5697d4";//req.user.id;
+
+        let imgData = [];
+        if (images) {
+            imgData = images.map(image => {
+                return {
+                    image_type: image.mimetype,
+                    image_data: image.buffer
+                }
+            });
+        }
+
+        const locationData = {
+            location_name: location_name,
+            latitude: latitude,
+            longitude: longitude
+        };
+
+        const potentials = [];
+        if (identifiedAs) {
+            const potentialData =
+                {
+                    name: identifiedAs,
+                    suggesting_user: userId,
+                    upvotes: 1,
+                    downvotes: 0,
+                    upvoters: [userId],
+                    downvoters: []
+                }
+            potentials.push(potentialData);
+        }
+
+
+        const identificationData = {
+            potentials: potentials,
+            is_accepted: false,
+            date_accepted: null,
+            accepted_potential: null,
+            dbpedia_url: ""
+        }
+
+        const postObject = {
+            posting_user: userId,
+            title: title,
+            state: state,
+            seen_at: seen_at,
+            images: imgData,
+            description: description,
+            location: locationData,
+            details: {
+                height: height,
+                spread: spread,
+                exposure: sun_exposure,
+                has_flowers: has_flowers,
+                colour: flower_colour,
+                leaf_type: leaf_type,
+                seed_type: seed_type
+            },
+            identification: identificationData,
+            comments: [],
+        }
+
+        const post = await createPost(postObject);
+
+        res.status(200).send(post);
+    } catch (err) {
+        console.log(err);
+        res.status(500);
+        next(err);
+    }
+}
+
 async function getPlant(req, res, next) {
     //Get the post ID from the URL
     const id = req.params.id
@@ -31,7 +148,17 @@ async function getPlant(req, res, next) {
     try {
         const post = await getPostById(id)
         //TODO: Add the correct auth info once available
-        res.render('posts/plant_details', {title: 'Plant', plant: post, postStates, exposureTypes, leafTypes, seedTypes, upvotesDownvotesAsAPercentage, user: {id: "6605a97814ddcdf43b5697d4"}, isLoggedIn: true})
+        res.render('posts/plant_details', {
+            title: 'Plant',
+            plant: post,
+            postStates,
+            exposureTypes,
+            leafTypes,
+            seedTypes,
+            upvotesDownvotesAsAPercentage,
+            user: {id: "6605a97814ddcdf43b5697d4"},
+            isLoggedIn: true
+        })
     } catch (err) {
         console.log(err)
         res.status(500);
@@ -221,7 +348,13 @@ async function getSuggestionHTML(req, res) {
 
     //Render the suggestion HTML from the EJS template
     //TODO: Add the correct auth info once available
-    res.render('posts/suggestion', {suggestion: suggestion, identification: post.identification, user: {id: "6605a97814ddcdf43b5697d4"}, upvotesDownvotesAsAPercentage, isPoster: (suggestion.suggesting_user.toString() === "6605a97814ddcdf43b5697d4")} );
+    res.render('posts/suggestion', {
+        suggestion: suggestion,
+        identification: post.identification,
+        user: {id: "6605a97814ddcdf43b5697d4"},
+        upvotesDownvotesAsAPercentage,
+        isPoster: (suggestion.suggesting_user.toString() === "6605a97814ddcdf43b5697d4")
+    });
 
 }
 
@@ -374,6 +507,7 @@ function upvotesDownvotesAsAPercentage(upvotes, downvotes) {
 
 module.exports = {
     getPost,
+    postNewPost,
     getPlant,
     postComment,
     getCommentHTML,
