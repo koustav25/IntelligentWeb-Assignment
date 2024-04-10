@@ -5,14 +5,20 @@
                 <div class="d-inline-flex justify-content-between align-content-center w-100">
                     <p class="m-0 p-0 align-content-center d-flex">
                         <img class="rounded-5 my-auto mx-1"
-                             src="https://ui-avatars.com/api/?name=John+Doe"
+                             src="https://ui-avatars.com/api/?name=<%= `${comment.user.first_name}+${comment.user.last_name}` %>"
                              width="20">
-                        <a class="link-hover
-                                                                    text-decoration-none fw-medium my-auto px-2"><span
-                                    class="fs-6"><%= comment.username %></span></a>
+                        <a class="link-hover text-decoration-none fw-medium my-auto px-2"><span
+                                    class="fs-6"><%= `${comment.user.first_name} ${comment.user.last_name}` %></span></a>
                     </p>
                     <p class="m-0 p-0 align-content-center my-auto fs-6">
-                        <%- comment.date %>
+                        <%- (new Date(comment.createdAt ?? new Date())).toLocaleDateString('en-GB',
+                                {
+                                    year: 'numeric',
+                                    month: 'numeric',
+                                    day: 'numeric',
+                                    hour: 'numeric',
+                                    minute: 'numeric'
+                                }) %>
                     </p>
                 </div>
             </div>
@@ -26,25 +32,30 @@
         <div class="row">
             <div class="col-12">
                 <div class="d-inline-flex justify-content-start justify-content-lg-start align-content-center w-100">
-                    <button class="btn my-auto"><i
-                                class="fa-regular fa-heart"></i>
+                    <button class="btn my-auto" onclick="toggleLikeButton('<%= comment._id %>')">
+                        <!-- TODO: Change user.id to relevant field once user is implemented -->
+                        <i class="fa-<%= (comment.likers?.includes(user.id)) ? "solid" : "regular" %> fa-heart <%= (comment.likers?.includes(user.id)) ? "text-danger" : ""%>" id="comment_<%= comment._id %>_like_indicator"></i>
+                        <span id="comment_<%= comment._id %>_likes">
                         <%= comment.likes %>
+                        </span>
                     </button>
-                    <button class="btn my-auto">Reply</button>
+                    <% if (!isReply) { %>
+                        <button class="btn my-auto" onclick="openReplyModal('<%= comment._id %>')">Reply</button>
+                    <% } %>
                 </div>
             </div>
         </div>
 
-        <% if(comment.replies && comment.replies.length > 0) { %>
+        <% if(comment.replies && comment.replies.length > 0 && !isReply) { %>
             <div class="container-fluid m-0 p-0">
                 <div style="max-height: 150px;"
                      class="overflow-y-scroll overflow-x-hidden px-2 card">
-                    <div class="card-body px-0 py-0">
+                    <div class="card-body px-0 py-0" id="reply_container-<%= comment._id %>">
 
                         <% comment.replies.forEach((reply) => { %>
                             <div class="row p-0">
                                 <div class="col-12 p-2 p-lg-1">
-                                    <%- include('comment', {comment: reply}) %>
+                                    <%- include('comment', {comment: reply, isReply : true}) %>
                                 </div>
                             </div>
                         <% }) %>

@@ -1,6 +1,7 @@
 const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const passport = require("passport")
@@ -44,9 +45,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 //passport.deserializeUser(deserializeUser)
 
 //Serve stylesheets and Javascript for libraries in node_modules
-app.use("/stylesheets", express.static(path.join(__dirname, "node_modules/bootstrap/dist/css")))
-app.use("/javascripts", express.static(path.join(__dirname, "node_modules/bootstrap/dist/js")))
-app.use("/javascripts", express.static(path.join(__dirname, "node_modules/jquery/dist")))
+app.use("/stylesheets", express.static(path.join(__dirname, "node_modules/bootstrap/dist/css")));
+app.use("/javascripts", express.static(path.join(__dirname, "node_modules/bootstrap/dist/js")));
+
+app.use("/javascripts", express.static(path.join(__dirname, "node_modules/jquery/dist")));
+app.use("/javascripts", express.static(path.join(__dirname, "node_modules/socket.io/client-dist")));
+
+app.use("/stylesheets", express.static(path.join(__dirname, "node_modules/leaflet/dist")));
+app.use("/javascripts", express.static(path.join(__dirname, "node_modules/leaflet/dist")));
 
 app.use("/stylesheets", express.static(path.join(__dirname, "node_modules/leaflet/dist")))
 app.use("/javascripts", express.static(path.join(__dirname, "node_modules/leaflet/dist")))
@@ -76,7 +82,14 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+
+  //Check if the error page exists in 'views/error' and render it, otherwise render the default error page
+  //Check if file exists
+  if (fs.existsSync(path.join(__dirname, 'views', 'error', `${err.status || 500}.ejs`)) === true) {
+    res.render(`error/${err.status || 500}`, {isLoggedIn: req?.isLoggedIn || false, user: req?.user || false, message: err?.message});
+  } else {
+    res.render('error', {isLoggedIn: req?.isLoggedIn || false, user: req?.user || {}, message: err?.message});
+  }
 });
 
 module.exports = app;

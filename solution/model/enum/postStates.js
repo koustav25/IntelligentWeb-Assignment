@@ -18,7 +18,23 @@ const postStates = {
             default:
                 return 'Unknown';
         }
-    }
+    },
+
+    postStateToColor: (postState, prefix = "") => {
+        switch (postState) {
+            case NEW_POST:
+                return prefix + 'info';
+            case IN_PROGRESS:
+                return prefix + 'warning';
+            case IDENTIFIED:
+                return prefix + 'success';
+            default:
+                return prefix + 'secondary';
+        }
+    },
+
+    //Return a list of the possible post state integers
+    getList: () => Array.from(Object.values(postStates)).filter(value => typeof value === 'number')
 };
 
 module.exports = postStates;

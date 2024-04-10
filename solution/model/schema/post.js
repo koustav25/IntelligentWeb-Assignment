@@ -1,21 +1,71 @@
 const mongoose = require('mongoose');
 const commentSchema = new mongoose.Schema({
-    user: {
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: true,
+            autopopulate: true
+        },
+        content: {
+            type: String,
+            required: true
+        },
+        likes: {
+            type: Number,
+            required: true,
+            default: 0
+        },
+        likers: [
+            {
+                type: [mongoose.Schema.Types.ObjectId],
+                ref: 'User',
+                required: false,
+                autopopulate: true
+            }
+        ]
+    },
+    {
+        timestamps: true
+    }
+);
+commentSchema.add({replies: [commentSchema, {required: false}]})
+
+const identificationSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: true
+    },
+    suggesting_user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
         autopopulate: true
     },
-    content: {
-        type: String,
-        required: true
-    },
-    likes: {
+    upvotes: {
         type: Number,
-        required: true
-    }
+        required: true,
+        default: 0
+    },
+    downvotes: {
+        type: Number,
+        required: true,
+        default: 0
+    },
+    upvoters: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: false,
+        }
+    ],
+    downvoters: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: false,
+        }
+    ]
 });
-commentSchema.add({replies: [commentSchema, {required: false}]})
 
 const postSchema = new mongoose.Schema({
         posting_user: {
@@ -98,26 +148,7 @@ const postSchema = new mongoose.Schema({
         },
         identification: {
             potentials: [
-                {
-                    name: {
-                        type: String,
-                        required: true
-                    },
-                    suggesting_user: {
-                        type: mongoose.Schema.Types.ObjectId,
-                        ref: 'User',
-                        required: true,
-                        autopopulate: true
-                    },
-                    upvotes: {
-                        type: Number,
-                        required: true
-                    },
-                    downvotes: {
-                        type: Number,
-                        required: true
-                    }
-                }
+                identificationSchema
             ],
             is_accepted: {
                 type: Boolean,
@@ -125,6 +156,12 @@ const postSchema = new mongoose.Schema({
             },
             date_accepted: {
                 type: Date,
+                required: false
+            },
+            accepted_potential_id: {
+                // This is the ObjectId of the accepted potential
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User',
                 required: false
             },
             accepted_potential: {
@@ -149,5 +186,5 @@ const postSchema = new mongoose.Schema({
 postSchema.plugin(require('mongoose-autopopulate'));
 
 module.exports = {
-    Post: mongoose.model('Post', postSchema)
+    Post: mongoose.model('Post', postSchema),
 }

@@ -49,6 +49,33 @@ const searchUser = async (filter) => {
     return User.findOne(filter);
 }
 
+const getPostById = async (id) => {
+    const post = await Post.findOne({_id: id}).populate('comments.replies.user');
+    if (post.comments?.length > 0) {
+        post.comments.sort((a, b) => b.createdAt - a.createdAt);
+    }
+
+    if (post.identification?.potentials?.length > 0) {
+        // Sort by upvotes and then by ascending downvotes. So highest upvotes at the top, 0 in the middle highest downvotes at the bottom
+        post.identification.potentials.sort((a, b) => {
+            if (a.upvotes > b.upvotes) {
+                return -1;
+            } else if (a.upvotes < b.upvotes) {
+                return 1;
+            } else {
+                if (a.downvotes < b.downvotes) {
+                    return -1;
+                } else if (a.downvotes > b.downvotes) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            }
+        });
+    }
+    return post;
+}
+
 /**
  * Add a post to the database
  * @param posting_user {String} The ID of the user posting the post
@@ -96,18 +123,21 @@ const addPostPotentialIdentification = async (postId, potential) => {
  * This function will not work for adding a reply to a comment. Use {@link addReply} instead.
  * @param postId {String} The ID of the post to add the comment to
  * @param data{{userID: String, content: String, likes: Number}} The data object containing the comment information
- * @returns {Promise<Post>} Returns the updated post object with the new comment
+ * @returns {Promise<Comment>} Returns the new comment object
  */
 const addComment = async (postId, data) => {
-    const post = await Post.findById(postId);
+    const post = await Post.findOne({_id: postId});
     const comment = {
         user: data.userID,
         content: data.content,
-        likes: data.likes
+        likes: data.likes,
     }
 
-    post.comments.push(comment);
-    return post.save();
+    post.comments?.push(comment);
+    await post.save();
+
+    const returnComment = post.comments[post.comments.length - 1];
+    return returnComment;
 }
 
 /**
@@ -115,7 +145,7 @@ const addComment = async (postId, data) => {
  * @param postId {String} The ID of the post to add the reply to
  * @param commentId {String} The ID of the comment to add the reply to
  * @param data{{userID: String, content: String, likes: Number}} The data object containing the reply information
- * @returns {Promise<Post>} Returns the updated post object with the new reply
+ * @returns {Promise<Comment>} Returns the new reply object
  */
 const addReply = async (postId, commentId, data) => {
     const post = await Post.findById(postId);
@@ -131,15 +161,32 @@ const addReply = async (postId, commentId, data) => {
         }
 
         comment.replies.push(reply);
-        return post.save();
+        await post.save();
+
+        //Get the latest reply
+        const returnReply = comment.replies[comment.replies.length - 1];
+        return returnReply;
     }
+}
+
+/**
+ * Get a comment from a post
+ * @param postId The ID of the post
+ * @param commentId The ID of the comment
+* @returns {Promise<{user: String, content: String, likes: Number, replies: Array|null}>} The comment object if found, otherwise null
+ */
+const getCommentFromPost = async (postId, commentId) => {
+    const post = await getPostById(postId);
+    const comment = findComment(post.comments, commentId);
+
+    return comment;
 }
 
 /**
  * Finds a comment inside a comments array
  * @param comments {Array} The array of comments to search
  * @param id {String} The ID of the comment to find
- * @returns {{user: String, content: String, likes: Number, replies: Array|null}|null} Returns the comment object if found, otherwise null
+ * @returns {{user: String, content: String, likes: Number, date: Date, replies: Array|null}|null} Returns the comment object if found, otherwise null
  */
 const findComment = (comments, id) => {
     for (const comment of comments) {
@@ -155,10 +202,63 @@ const findComment = (comments, id) => {
     }
 }
 
+/**
+ * Add a suggestion to post identifications
+ * @param postId {String} The ID of the post to add the suggestion to
+ * @param data {{userID: String, name: String}} The data object containing the suggestion information
+ * @returns {Promise<{name: String, suggesting_user: User, upvotes: Number, downvotes: Number, upvoters: Array<User>, downvoters: Array<User>}>} Returns the new suggestion object
+ * @author Benjamin Lister
+ */
+const addSuggestion = async (postId, data) => {
+    const post = await getPostById(postId);
+    const suggestion = {
+        suggesting_user: data.userID,
+        name: data.name,
+    }
+
+    post.identification.potentials.push(suggestion);
+
+    await post.save();
+
+    return post.identification.potentials[post.identification.potentials.length - 1];
+}
+
+/**
+ * Get a suggestion from a post
+ * @param postId The ID of the post
+ * @param suggestionId The ID of the suggestion
+ * @returns {Promise<*>} The suggestion object if found, otherwise null
+ */
+const getSuggestionFromPost = async (postId, suggestionId) => {
+    const post = await getPostById(postId);
+    const suggestion = post.identification.potentials.id(suggestionId);
+    return suggestion;
+}
+
+/**
+ * Find a suggestion in the suggestions array of a post
+ * @param suggestions The array of suggestions to search
+ * @param id The ID of the suggestion to find
+ * @returns {*} The suggestion object if found, otherwise null
+ */
+const findSuggestion = (suggestions, id) => {
+    for (const suggestion of suggestions) {
+        if (suggestion._id.toString() === id) {
+            return suggestion;
+        }
+    }
+}
+
 module.exports = {
     searchUser,
     addPost,
     addPostPotentialIdentification,
     addComment,
-    addReply
+    addReply,
+    getPostById,
+    getCommentFromPost,
+    findComment,
+    addSuggestion,
+    getSuggestionFromPost,
+    findSuggestion,
 }
