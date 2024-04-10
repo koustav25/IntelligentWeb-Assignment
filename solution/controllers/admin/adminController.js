@@ -1,4 +1,6 @@
 const {getUsers, getMockFeed, getMockPlants} = require("../../util/mock/mockData");
+const {getAllUsers, getUserById, getUserByIdWithPosts} = require("../../model/mongodb");
+const roleTypes = require("../../model/enum/roleTypes");
 
 function getAdminDashboard(req, res) {
     //TODO: Add admin dashboard rendering logic here
@@ -7,18 +9,58 @@ function getAdminDashboard(req, res) {
     res.render("admin/index", {isLoggedIn: true})
 }
 
-function getAdminUsers(req, res) {
-    //TODO: Add admin users rendering logic here
-    //res.render('admin/users', { title: 'Admin Users' });
-    const users = getUsers()
-    res.render("admin/users", {isLoggedIn: true, searchQuery:"lorem ipsum", users})
+async function getAdminUsers(req, res) {
+    const users = await getAllUsers()
+    res.render("admin/users", {isLoggedIn: true, users, roleTypes})
 }
 
-function getAdminUserDetails(req, res) {
-    //TODO: Add admin user details rendering logic here
-    //res.render('admin/user-details', { title: 'Admin User Details' });
+async function getAdminUserDetails(req, res) {
+    const {id} = req.params;
 
-    res.send('Admin User Details');
+    const user = (await getUserByIdWithPosts(id));
+
+    res.render("admin/user_details", {isLoggedIn: true, userDetails: user, roleTypes})
+}
+
+async function postUserUpdate(req, res) {
+    try {
+        const {id} = req.params;
+
+        const first_name = req.body.first_name;
+        const last_name = req.body.last_name;
+        const email = req.body.email;
+        const username = req.body.username;
+        const role = req.body.role;
+
+        if (!first_name || !last_name || !email || !username || !role) {
+            return res.status(400).send({message: "Please fill in all fields"});
+        }
+
+        const user = await getUserById(id);
+
+        if (!user) {
+            return res.status(404).send({message: "User not found"});
+        }
+
+        //Check if the role of the user being changed is <= the role of the user making the change
+        //TODO: Remove true once authentication is implemented
+        if (false && (req.user.role <= user.role && req.user.role >= roleTypes.ADMIN)) {
+            return res.status(403).send({message: "You do not have permission to change this user's role"});
+        }
+
+        user.first_name = first_name;
+        user.last_name = last_name;
+        user.email = email;
+        user.username = username;
+        user.role = role;
+
+        await user.save();
+
+        res.status(200).send("User updated successfully");
+    } catch (error) {
+        console.log(error)
+        res.status(500).send({message: "An error occurred"});
+    }
 }
 
 function getAdminPlants(req, res) {
@@ -43,8 +85,11 @@ function getAdminSettings(req, res) {
 
 module.exports = {
     getAdminDashboard,
+
     getAdminUsers,
     getAdminUserDetails,
+    postUserUpdate,
+
     getAdminPlants,
     getAdminPlantDetails,
     getAdminSettings

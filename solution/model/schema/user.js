@@ -16,17 +16,18 @@ const userSchema = new mongoose.Schema({
         type: Number, required: true, default: 0, min: 0, max: 1
     },
     password: {
-        type: Buffer, required: true
+        type: Buffer, required: false
     },
     salt: {
-        type: Buffer, required: true,
+        type: Buffer, required: false,
     },
     avatar_url: {
-        type: String, required: true
+        type: String, required: false
     },
     posts: [
         {
-            type: mongoose.Schema.Types.ObjectId, ref: 'Post',
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Post',
         }
     ],
 

@@ -27,44 +27,60 @@
                         <div class="col-12">
                             <div class="card bg-light shadow-sm">
                                 <div class="card-body p-0 px-4 my-4 d-flex flex-column justify-content-center">
-                                    <div class="row justify-content-center">
-                                        <div class="col-md-12">
-                                            <input type="hidden" value="<%= userDetails._id %>" id="user_id">
-                                            <div class="form-floating mt-2">
-                                                <input id="first_name" type="text" class="form-control"
-                                                       value="<%= userDetails.first_name %>">
-                                                <label class="form-label" for="first_name">First Name</label>
-                                            </div>
+                                    <form id="userDetailsForm" novalidate>
+                                        <div class="row justify-content-center">
+                                            <div class="col-md-12">
+                                                <input type="hidden" value="<%= userDetails._id %>" id="user_id">
 
-                                            <div class="form-floating mt-2">
-                                                <input id="last_name" type="text" class="form-control"
-                                                       value="<%= userDetails.last_name %>">
-                                                <label class="form-label" for="last_name">Last Name</label>
-                                            </div>
+                                                <div class="alert alert-danger mt-2 d-none" id="update_error">
+                                                    <p class="text-center p-0 m-0" id="update_error_message"></p>
+                                                </div>
 
-                                            <div class="form-floating mt-2">
-                                                <input id="username" type="text" class="form-control"
-                                                       value="<%= userDetails.username %>">
-                                                <label class="form-label text-muted" for="username">Username</label>
-                                            </div>
+                                                <div class="form-floating mt-2">
+                                                    <input id="first_name" type="text" class="form-control"
+                                                           value="<%= userDetails.first_name %>" required>
+                                                    <label class="form-label" for="first_name">First Name</label>
+                                                </div>
 
-                                            <div class="d-inline-flex justify-content-center align-content-center mt-2 w-100">
-                                                <label class="form-label text-muted my-auto px-2" for="email">Email</label>
-                                                <input id="email" type="email" class="form-control-plaintext" readonly
-                                                       value="<%= userDetails.email %>">
+                                                <div class="form-floating mt-2">
+                                                    <input id="last_name" type="text" class="form-control"
+                                                           value="<%= userDetails.last_name %>" required>
+                                                    <label class="form-label" for="last_name">Last Name</label>
+                                                </div>
+
+                                                <div class="form-floating mt-2">
+                                                    <input id="username" type="text" class="form-control"
+                                                           value="<%= userDetails.username %>" required>
+                                                    <label class="form-label text-muted" for="username">Username</label>
+                                                </div>
+
+                                                <div class="form-floating mt-2">
+                                                    <input id="email" type="email" class="form-control"
+                                                           value="<%= userDetails.email %>" required>
+                                                    <label class="form-label text-muted" for="email">Email</label>
+                                                </div>
+
+                                                <div class="form-floating mt-2">
+                                                    <select id="role" class="form-select" required>
+                                                        <% roleTypes.getList().forEach(role => { %>
+                                                            <option value="<%= role %>" <%= role === userDetails.role ? 'selected' : '' %>><%= roleTypes.roleTypeToString(role) %></option>
+                                                        <% }) %>
+                                                    </select>
+                                                    <label for="role">Role</label>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <div class="row justify-content-center">
-                                        <div class="col-md-12 mb-3">
-                                            <div class="form-floating mt-2">
-                                                <button class="btn btn-outline-secondary w-100"
-                                                        id="updateProfileButton">Update Profile
-                                                </button>
+                                        <div class="row justify-content-center">
+                                            <div class="col-md-12 mb-3">
+                                                <div class="form-floating mt-2">
+                                                    <button class="btn btn-outline-secondary w-100"
+                                                            id="updateProfileButton">Update Profile
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -90,7 +106,8 @@
                                                 </div>
 
                                                 <div class="form-floating mt-2">
-                                                    <input id="newPassword" type="password" class="form-control" required>
+                                                    <input id="newPassword" type="password" class="form-control"
+                                                           required>
                                                     <label class="form-label" for="newPassword">New Password</label>
                                                     <div class="invalid-feedback">
                                                         Passwords do not match
@@ -153,7 +170,7 @@
         </div>
     </div>
 
-    <script src="/javascripts/user/profile.js"></script>
+    <script src="/javascripts/admin/user_details.js"></script>
 </main>
 
 <%- include("../components/footer") %>
