@@ -1,4 +1,5 @@
-const { getMockFeed } = require("../../util/mock/mockData")
+const {getMockFeed} = require("../../util/mock/mockData")
+
 
 function getFeed(req, res) {
     //TODO: Render the feed view

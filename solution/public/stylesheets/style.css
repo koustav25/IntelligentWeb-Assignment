@@ -121,6 +121,10 @@ body {
     max-height: 200px;
 }
 
+.text-shadow {
+    text-shadow: 1px 1px 1px #c4c4c4;
+}
+
 @keyframes ding {
     0% {
         transform: rotate(0deg);
