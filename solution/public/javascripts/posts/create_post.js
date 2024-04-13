@@ -122,8 +122,6 @@ async function handleFormSubmit(event) {
             }
         });
 
-        console.log(response.data);
-
         $postButton.removeClass('disabled');
         $postSpinner.addClass('d-none');
 
