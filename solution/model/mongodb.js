@@ -49,6 +49,10 @@ const searchUser = async (filter) => {
     return User.findOne(filter);
 }
 
+const updateUser = async (id, data) => {
+    return User.findByIdAndUpdate(id, data)
+}
+
 const getAllUsers = async () => {
     return User.find();
 }
@@ -264,6 +268,7 @@ const findSuggestion = (suggestions, id) => {
 module.exports = {
     searchUser,
     getAllUsers,
+    updateUser,
     getUserById,
     getUserByIdWithPosts,
     addPost,

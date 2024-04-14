@@ -1,5 +1,5 @@
 const {getUsers, getMockFeed, getMockPlants} = require("../../util/mock/mockData");
-const {getAllUsers, getUserById, getUserByIdWithPosts} = require("../../model/mongodb");
+const {getAllUsers, getUserById, getUserByIdWithPosts, updateUser} = require("../../model/mongodb");
 const roleTypes = require("../../model/enum/roleTypes");
 
 function getAdminDashboard(req, res) {
@@ -48,13 +48,7 @@ async function postUserUpdate(req, res) {
             return res.status(403).send({message: "You do not have permission to change this user's role"});
         }
 
-        user.first_name = first_name;
-        user.last_name = last_name;
-        user.email = email;
-        user.username = username;
-        user.role = role;
-
-        await user.save();
+        await updateUser(id, {first_name, last_name, email, username, role})
 
         res.status(200).send("User updated successfully");
     } catch (error) {
