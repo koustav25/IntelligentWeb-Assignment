@@ -49,16 +49,16 @@ const searchUser = async (filter) => {
     return User.findOne(filter);
 }
 
+const getUserById = async (id) => {
+    return User.findOne({_id: id});
+}
+
 const updateUser = async (id, data) => {
     return User.findByIdAndUpdate(id, data)
 }
 
 const getAllUsers = async () => {
     return User.find();
-}
-
-const getUserById = async (id) => {
-    return User.findOne({_id: id});
 }
 
 const getUserByIdWithPosts = async (id) => {
@@ -265,6 +265,10 @@ const findSuggestion = (suggestions, id) => {
     }
 }
 
+const createPost = async (postData) => {
+    return Post.create(postData);
+}
+
 module.exports = {
     searchUser,
     getAllUsers,
@@ -281,4 +285,5 @@ module.exports = {
     addSuggestion,
     getSuggestionFromPost,
     findSuggestion,
+    createPost,
 }

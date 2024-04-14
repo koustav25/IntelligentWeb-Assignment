@@ -1,13 +1,15 @@
 const express = require("express");
 const router = express.Router();
+const multer = require("multer");
 
 const {getPost, getPlant, postComment, getCommentHTML, postReply, getReplyHTML, postLike, postUnlike, postSuggestion,
     getSuggestionHTML, postUpvote, postUnupvote, postDownvote, postUndownvote, postUnacceptSuggestion,
-    postAcceptSuggestion
+    postAcceptSuggestion, postNewPost
 } = require("../controllers/posts/postController");
 const {getFeed} = require("../controllers/posts/feedController");
 const {getSearch} = require("../controllers/posts/searchController");
 const {userInBody} = require("../middlewares/posts");
+
 
 router.get("/feed", getFeed);
 
@@ -32,6 +34,13 @@ router.post("/plant/:plant_id/suggestion/:suggestion_id/accept", postAcceptSugge
 router.post("/plant/:plant_id/suggestion/:suggestion_id/unaccept", postUnacceptSuggestion);
 
 router.get("/post", getPost);
+
+const imageUpload = multer({
+    limits: {
+        fileSize: 10 * 1024 * 1024 // 10 MB per file
+    },
+});
+router.post("/post", imageUpload.array('images', 10), postNewPost);
 
 router.get("/search", getSearch);
 
