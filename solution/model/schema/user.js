@@ -21,17 +21,24 @@ const userSchema = new mongoose.Schema({
     salt: {
         type: Buffer, required: true,
     },
-    avatar_url: {
-        type: String, required: true
-    },
     posts: [
         {
-            type: mongoose.Schema.Types.ObjectId, ref: 'Post',
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Post',
         }
     ],
 
 }, {
     timestamps: true
+});
+
+// Define a pre-save hook to generate the avatar URL based on first name and last name
+userSchema.virtual('avatar_url').get(function() {
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(this.first_name)}+${encodeURIComponent(this.last_name)}&background=random&rounded=true&color=fff`;
+});
+
+userSchema.set('toJSON', {
+    virtuals: true
 });
 
 module.exports = {

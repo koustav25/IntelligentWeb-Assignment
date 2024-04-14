@@ -53,6 +53,18 @@ const getUserById = async (id) => {
     return User.findOne({_id: id});
 }
 
+const updateUser = async (id, data) => {
+    return User.findByIdAndUpdate(id, data)
+}
+
+const getAllUsers = async () => {
+    return User.find();
+}
+
+const getUserByIdWithPosts = async (id) => {
+    return User.findOne({_id: id}).populate('posts');
+}
+
 const getPostById = async (id) => {
     const post = await Post.findOne({_id: id}).populate('comments.replies.user');
     if (post.comments?.length > 0) {
@@ -259,7 +271,10 @@ const createPost = async (postData) => {
 
 module.exports = {
     searchUser,
+    getAllUsers,
+    updateUser,
     getUserById,
+    getUserByIdWithPosts,
     addPost,
     addPostPotentialIdentification,
     addComment,
