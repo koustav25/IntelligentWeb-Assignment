@@ -10,7 +10,7 @@
                             <div class="card">
                                 <div class="card-body p-2 p-lg-3">
                                     <img class="rounded-circle mb-3 img-fluid shadow"
-                                         src="https://ui-avatars.com/api/?name=<%= `${userDetails.first_name} ${userDetails.last_name}` %>&background=random&color=fff"
+                                         src="<%= userDetails.avatar_url %>"
                                          width="100" alt="User Profile Picture">
                                     <div class="mb-1">
                                         <p class="text-center lead m-0"><%= `${userDetails.first_name} ${userDetails.last_name}` %></p>
