@@ -101,7 +101,7 @@
                                         <% if(plant.images?.length > 0) { %>
                                             <% plant.images.forEach((image, index) => { %>
                                                 <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
-                                                    <img src="data:<%= image.image_type %>;base64,<%= image.image_data %>"
+                                                    <img src="data:<%= image.image_type %>;base64,<%= image.image_data.toString('base64') %>"
                                                          height="400"
                                                          alt="Post Image">
                                                 </div>
