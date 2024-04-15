@@ -80,6 +80,45 @@ const getPostById = async (id) => {
     return post;
 }
 
+const getPostsBySearchTerms = async (search_text, search_order, limit) => {
+    //If search_text is empty, return an empty array
+    if (!search_text) {
+        return [];
+    }
+
+    //Convert search_order to a search order query
+    let sort = {}
+    switch (search_order) {
+        case 'recent':
+            sort = { createdAt: -1 };
+            break;
+        case 'oldest':
+            sort = { createdAt: 1 };
+            break;
+        case 'user':
+            sort = { "posting_user.first_name": 1, "posting_user.last_name": 1 };
+            break;
+        default:
+            sort = { createdAt: -1 };
+    }
+
+    //Perform a text search
+    const posts = Post.find({
+        $or: [
+            {title: {$regex: search_text, $options: 'i'}},
+            {description: {$regex: search_text, $options: 'i'}},
+            {"identification.potentials.name": {$regex: search_text, $options: 'i'}},
+            {"posting_user.first_name": {$regex: search_text, $options: 'i'}},
+            {"posting_user.last_name": {$regex: search_text, $options: 'i'}}
+        ]
+    })
+        .populate('posting_user')
+        .sort(sort)
+        .limit(limit || 10);
+
+    return posts;
+}
+
 /**
  * Add a post to the database
  * @param posting_user {String} The ID of the user posting the post
@@ -177,7 +216,7 @@ const addReply = async (postId, commentId, data) => {
  * Get a comment from a post
  * @param postId The ID of the post
  * @param commentId The ID of the comment
-* @returns {Promise<{user: String, content: String, likes: Number, replies: Array|null}>} The comment object if found, otherwise null
+ * @returns {Promise<{user: String, content: String, likes: Number, replies: Array|null}>} The comment object if found, otherwise null
  */
 const getCommentFromPost = async (postId, commentId) => {
     const post = await getPostById(postId);
@@ -260,6 +299,7 @@ const createPost = async (postData) => {
 module.exports = {
     searchUser,
     getUserById,
+    getPostsBySearchTerms,
     addPost,
     addPostPotentialIdentification,
     addComment,
