@@ -1,45 +1,52 @@
 <%- include("../components/navbar.ejs") %>
 
-<main class="container mt-5">
-    <h1>Manage Users</h1>
-
-    <form action="/admin/users" method="GET" class="mb-4">
-        <div class="input-group">
-            <input type="text" name="q" class="form-control" placeholder="Search users..." value="<%= searchQuery %>">
-            <button type="submit" class="btn btn-primary">Search</button>
+<main class="container-fluid mt-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="text-center">Manage Users</h1>
         </div>
-    </form>
-
-    <div class="table-responsive">
-        <table class="table table-striped table-hover">
-            <thead>
-            <tr>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            <% users.forEach(function(user) { %>
-                <tr>
-                    <td><%= user.username %></td>
-                    <td><%= user.email %></td>
-                    <td class="actions">
-                        <div class="btn-group">
-                            <form action="/admin/users/<%= user._id %>/reset-password" method="POST">
-                                <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-sync-alt"></i> Reset Password</button>
-                            </form>
-                            <form action="/admin/users/<%= user._id %>/delete" method="POST">
-                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                            </form>
-                            <a href="/admin/users/<%= user._id %>" class="btn btn-primary btn-sm">View Details</a>
-                        </div>
-                    </td>
-                </tr>
-            <% }); %>
-            </tbody>
-        </table>
     </div>
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10">
+
+            <div class="table-responsive">
+                <table class="table table-striped table-hover" id="user_table">
+                    <thead>
+                    <tr class="text-center">
+                        <th>Name</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <% users.forEach(function(user) { %>
+                        <tr class="text-center align-content-center">
+                            <td class="text-center align-content-center"><%= `${user.first_name} ${user.last_name}` %></td>
+                            <td class="align-content-center"><%= user.username %></td>
+                            <td class="align-content-center"><%= user.email %></td>
+                            <td class="align-content-center">
+                                <div class="alert <%= roleTypes.roleTypeToColour(user.role, 'alert-') %> my-auto"
+                                     role="alert">
+                                    <i class="fas fa-user<%= user.role === roleTypes.ADMIN ? '-shield' : '' %>"></i>
+                                    <%= roleTypes.roleTypeToString(user.role) %>
+                                </div>
+                            </td>
+                            <td class="actions align-content-center">
+                                <a href="/admin/users/<%= user._id %>" class="btn btn-primary btn-sm w-100 py-2">View
+                                    Details</a>
+                            </td>
+                        </tr>
+                    <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="/javascripts/admin/users.js"></script>
 </main>
 
-<%- include("../components/footer.ejs")%>
+<%- include("../components/footer.ejs") %>

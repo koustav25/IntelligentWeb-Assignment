@@ -1,0 +1,124 @@
+<%- include("../components/navbar") %>
+
+<main class="container-fluid mt-5">
+    <div class="row justify-content-center my-3">
+        <div class="col-12 col-lg-8">
+            <div class="card bg-light shadow-sm mb-2">
+                <div class="card-body p-0 px-4 my-4">
+                    <div class="row justify-content-center">
+                        <div class="col-12 text-center">
+                            <div class="card">
+                                <div class="card-body p-2 p-lg-3">
+                                    <img class="rounded-circle mb-3 img-fluid shadow"
+                                         src="<%= userDetails.avatar_url %>"
+                                         width="100" alt="User Profile Picture">
+                                    <div class="mb-1">
+                                        <p class="text-center lead m-0"><%= `${userDetails.first_name} ${userDetails.last_name}` %></p>
+                                    </div>
+                                    <div class="mb-1">
+                                        <p class="text-center fst-italic m-0"><%= userDetails.email %></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row justify-content-center mt-3">
+                        <div class="col-12">
+                            <div class="card bg-light shadow-sm">
+                                <div class="card-body p-0 px-4 my-4 d-flex flex-column justify-content-center">
+                                    <form id="userDetailsForm" novalidate>
+                                        <div class="row justify-content-center">
+                                            <div class="col-md-12">
+                                                <input type="hidden" value="<%= userDetails._id %>" id="user_id">
+
+                                                <div class="alert alert-danger mt-2 d-none" id="update_error">
+                                                    <p class="text-center p-0 m-0" id="update_error_message"></p>
+                                                </div>
+
+                                                <div class="form-floating mt-2">
+                                                    <input id="first_name" type="text" class="form-control"
+                                                           value="<%= userDetails.first_name %>" required>
+                                                    <label class="form-label" for="first_name">First Name</label>
+                                                </div>
+
+                                                <div class="form-floating mt-2">
+                                                    <input id="last_name" type="text" class="form-control"
+                                                           value="<%= userDetails.last_name %>" required>
+                                                    <label class="form-label" for="last_name">Last Name</label>
+                                                </div>
+
+                                                <div class="form-floating mt-2">
+                                                    <input id="username" type="text" class="form-control"
+                                                           value="<%= userDetails.username %>" required>
+                                                    <label class="form-label text-muted" for="username">Username</label>
+                                                </div>
+
+                                                <div class="form-floating mt-2">
+                                                    <input id="email" type="email" class="form-control"
+                                                           value="<%= userDetails.email %>" required>
+                                                    <label class="form-label text-muted" for="email">Email</label>
+                                                </div>
+
+                                                <div class="form-floating mt-2">
+                                                    <select id="role" class="form-select" required>
+                                                        <% roleTypes.getList().forEach(role => { %>
+                                                            <option value="<%= role %>" <%= role === userDetails.role ? 'selected' : '' %>><%= roleTypes.roleTypeToString(role) %></option>
+                                                        <% }) %>
+                                                    </select>
+                                                    <label for="role">Role</label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row justify-content-center">
+                                            <div class="col-md-12 mb-3">
+                                                <div class="form-floating mt-2">
+                                                    <button class="btn btn-outline-secondary w-100"
+                                                            id="updateProfileButton">Update Profile
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <hr class="">
+                            <h2 class="fs-3 text-center">Posts</h2>
+                        </div>
+                    </div>
+
+                    <div class="row px-1">
+                        <div class="col-12 overflow-auto" style="max-height: 400px">
+                            <% if (userDetails.posts?.length > 0) { %>
+                                <% userDetails.posts?.forEach(post => { %>
+                                    <%- include("../posts/post", { post: post, adminView: true }) %>
+                                <% }) %>
+
+                            <% } else { %>
+                                <div class="row justify-content-center">
+                                    <div class="col-12 text-center">
+                                        <div class="card">
+                                            <div class="card-body p-2 p-lg-3">
+                                                <p class="fst-italic m-0">No posts yet...</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/javascripts/admin/user_details.js"></script>
+</main>
+
+<%- include("../components/footer") %>

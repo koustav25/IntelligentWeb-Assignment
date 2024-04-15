@@ -1,11 +1,38 @@
 <%- include("../components/navbar.ejs") %>
-<div class="container">
-    <h1>Admin Dashboard</h1>
-    <p>Welcome to the admin dashboard!</p>
-    <ul>
-        <li><a href="/admin/users">Manage Users</a></li>
 
-    </ul>
+<div class="container-fluid w-100 h-100">
+    <div class="row h-100">
+        <div class="col-md-12 col-lg-12 px-md-4 h-100">
+            <div class="row mt-2">
+                <div class="col-12">
+                    <h1 class="text-center">Admin Dashboard</h1>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-6 px-1">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h3>Users</h3>
+                            <p>View and manage users</p>
+                            <a href="/admin/users" class="btn btn-primary w-100">View Users</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-1">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h3>Posts</h3>
+                            <p>View and manage posts</p>
+                            <a href="/admin/posts" class="btn btn-primary w-100">View Posts</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <%- include("../components/footer.ejs") %>

@@ -1,58 +1,159 @@
-<%- include("../components/header") %>
+<%- include("../components/navbar") %>
 
-<div class="container-fluid vh-100">
+<main class="container-fluid mt-5">
     <div class="row justify-content-center my-3">
         <div class="col-12 col-lg-8">
             <div class="card bg-light shadow-sm mb-2">
                 <div class="card-body p-0 px-4 my-4">
                     <div class="row justify-content-center">
                         <div class="col-12 text-center">
-                            <div class="card-body p-2 p-lg-3">
-                                <img class="rounded-circle mb-3" src="https://ui-avatars.com/api/?name=Adrian+Bond"
-                                     width="100" alt="John Doe Avatar">
-                                <div class="mb-1">
-                                    <label class="form-label">Adrian Bond</label>
-                                </div>
-                                <div class="mb-1">
-                                    <label class="form-label">km@gmail.com</label>
+                            <div class="card">
+                                <div class="card-body p-2 p-lg-3">
+                                    <img class="rounded-circle mb-3 img-fluid shadow"
+                                         src="<%= userDetails.avatar_url %>"
+                                         width="100" alt="User Profile Picture">
+                                    <div class="mb-1">
+                                        <p class="text-center lead m-0"><%= `${userDetails.first_name} ${userDetails.last_name}` %></p>
+                                    </div>
+                                    <div class="mb-1">
+                                        <p class="text-center fst-italic m-0"><%= userDetails.email %></p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
                     <div class="row justify-content-center mt-3">
-                        <div class="col-12 col-lg-8">
+                        <div class="col-12">
                             <div class="card bg-light shadow-sm">
                                 <div class="card-body p-0 px-4 my-4 d-flex flex-column justify-content-center">
                                     <div class="row justify-content-center">
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">Current Password</label>
-                                            <input type="password" class="form-control">
+                                        <div class="col-md-12">
+                                            <input type="hidden" value="<%= userDetails._id %>" id="user_id">
+                                            <div class="form-floating mt-2">
+                                                <input id="first_name" type="text" class="form-control"
+                                                       value="<%= userDetails.first_name %>">
+                                                <label class="form-label" for="first_name">First Name</label>
+                                            </div>
 
-                                            <label class="form-label">New Password</label>
-                                            <input type="password" class="form-control">
+                                            <div class="form-floating mt-2">
+                                                <input id="last_name" type="text" class="form-control"
+                                                       value="<%= userDetails.last_name %>">
+                                                <label class="form-label" for="last_name">Last Name</label>
+                                            </div>
 
-                                            <label class="form-label">Confirm Password</label>
-                                            <input type="password" class="form-control mb-3g">
-                                            <input type="button" value="Change Password" class="form-control">
+                                            <div class="form-floating mt-2">
+                                                <input id="username" type="text" class="form-control"
+                                                       value="<%= userDetails.username %>">
+                                                <label class="form-label text-muted" for="username">Username</label>
+                                            </div>
+
+                                            <div class="d-inline-flex justify-content-center align-content-center mt-2 w-100">
+                                                <label class="form-label text-muted my-auto px-2" for="email">Email</label>
+                                                <input id="email" type="email" class="form-control-plaintext" readonly
+                                                       value="<%= userDetails.email %>">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row justify-content-center">
+                                        <div class="col-md-12 mb-3">
+                                            <div class="form-floating mt-2">
+                                                <button class="btn btn-outline-secondary w-100"
+                                                        id="updateProfileButton">Update Profile
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="row justify-content-center mt-3">
+                        <div class="col-12">
+                            <div class="card bg-light shadow-sm border-secondary bg-secondary-subtle">
+                                <div class="card-body p-0 px-4 my-4 d-flex flex-column justify-content-center">
+                                    <form class="needs-validation" id="changePasswordForm" novalidate>
+                                        <div class="row justify-content-center">
+                                            <div class="col-md-12 mb-3">
+                                                <h2 class="fs-5 text-light-emphasis text-center">Change Password</h2>
+
+                                                <div class="alert alert-danger mt-2 d-none" id="password_error">
+                                                    <p class="text-center p-0 m-0" id="password_error_message"></p>
+                                                </div>
+
+
+                                                <div class="form-floating mt-2">
+                                                    <input id="password" type="password" class="form-control" required>
+                                                    <label class="form-label" for="password">Current Password</label>
+                                                </div>
+
+                                                <div class="form-floating mt-2">
+                                                    <input id="newPassword" type="password" class="form-control" required>
+                                                    <label class="form-label" for="newPassword">New Password</label>
+                                                    <div class="invalid-feedback">
+                                                        Passwords do not match
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-floating mt-2">
+                                                    <input id="confirmPassword" type="password"
+                                                           class="form-control mb-3g" required>
+                                                    <label class="form-label" for="confirmPassword">Confirm
+                                                        Password</label>
+                                                    <div class="invalid-feedback">
+                                                        Passwords do not match
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-floating mt-2">
+                                                    <button type="submit" class="btn btn-outline-secondary w-100"
+                                                            id="changePasswordButton">Change Password
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
 
                     </div>
 
-                    <div class="row mt-1">
-                        <h2 class="fs-3 text-center">Posts</h2>
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <hr class="">
+                            <h2 class="fs-3 text-center">Posts</h2>
+                        </div>
                     </div>
 
-                    <%- include("../posts/post", {}) %>
+                    <div class="row px-1">
+                        <div class="col-12 overflow-auto" style="max-height: 400px">
+                            <% if (userDetails.posts?.length > 0) { %>
+                                <% userDetails.posts?.forEach(post => { %>
+                                    <%- include("../posts/post", { post: post, adminView: true }) %>
+                                <% }) %>
 
+                            <% } else { %>
+                                <div class="row justify-content-center">
+                                    <div class="col-12 text-center">
+                                        <div class="card">
+                                            <div class="card-body p-2 p-lg-3">
+                                                <p class="fst-italic m-0">No posts yet...</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
+    <script src="/javascripts/user/profile.js"></script>
+</main>
 
-
+<%- include("../components/footer") %>
