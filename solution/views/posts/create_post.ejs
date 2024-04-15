@@ -17,15 +17,7 @@
                         <div class="row mt-2">
                             <div class="col-12">
                                 <p class="small m-0 fst-italic mx-2 mb-1">Posting as...</p>
-                                <div class="border p-3">
-                                    <p class="p-0 m-0 align-content-center d-flex overflow-x-hidden text-nowrap">
-                                        <img class="rounded-5 my-auto mx-1"
-                                             src="https://ui-avatars.com/api/?name=<%= `${user?.first_name}+${user?.last_name}` %>&background=random&color=fff"
-                                             width="50">
-                                        <a class="link-hover text-decoration-none fw-medium my-auto px-2"><span
-                                                    class="fs-5"><%= `${user?.first_name} ${user?.last_name}` %></span></a>
-                                    </p>
-                                </div>
+                                <%- include("../components/user_pill", {user: user}) %>
                             </div>
                         </div>
 
