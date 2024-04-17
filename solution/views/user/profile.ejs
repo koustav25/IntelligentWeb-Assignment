@@ -27,9 +27,16 @@
                         <div class="col-12">
                             <div class="card bg-light shadow-sm">
                                 <div class="card-body p-0 px-4 my-4 d-flex flex-column justify-content-center">
-                                    <div class="row justify-content-center">
+                                    <form method="POST" id="updateProfileForm" action="/updateProfile">
+                                     <div class="row justify-content-center">
                                         <div class="col-md-12">
                                             <input type="hidden" value="<%= userDetails._id %>" id="user_id">
+                                            <div class="alert alert-success mt-2 d-none" id="success_message">
+                                                <p class="text-center p-0 m-0" id="success_message_content">Profile Information changed successfully</p>
+                                            </div>
+                                            <div class="alert alert-danger mt-2 d-none" id="error_message">
+                                                <p class="text-center p-0 m-0" id="error_message_content">Error occurred please try again</p>
+                                            </div>
                                             <div class="form-floating mt-2">
                                                 <input id="first_name" type="text" class="form-control"
                                                        value="<%= userDetails.first_name %>">
@@ -60,11 +67,12 @@
                                         <div class="col-md-12 mb-3">
                                             <div class="form-floating mt-2">
                                                 <button class="btn btn-outline-secondary w-100"
-                                                        id="updateProfileButton">Update Profile
+                                                        id="updateProfileButton" type="submit">Update Profile
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -132,7 +140,7 @@
                         <div class="col-12 overflow-auto" style="max-height: 400px">
                             <% if (userDetails.posts?.length > 0) { %>
                                 <% userDetails.posts?.forEach(post => { %>
-                                    <%- include("../posts/post", { post: post, adminView: true }) %>
+                                    <%- include("../posts/post", { post: post }) %>
                                 <% }) %>
 
                             <% } else { %>

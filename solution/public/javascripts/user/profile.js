@@ -61,3 +61,38 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    const email = document.getElementById('email');
+    const username = document.getElementById('username');
+    const last_name = document.getElementById('last_name');
+    const first_name = document.getElementById('first_name');
+    const user_id = document.getElementById('user_id');
+    const success_message = document.getElementById('success_message');
+    const error_message = document.getElementById('error_message');
+    const updateProfileButton = document.getElementById('updateProfileButton');
+
+    // Function to handle user action
+    updateProfileButton.addEventListener("click", async () => {
+        console.log('Button clicked'); // Check if the button click event is captured
+        console.log(success_message); // Check if the success message element is selected
+        success_message.classList.remove('d-none');
+        try {
+            const response = await axios.post("/updateProfile", {
+                email: email.value,
+                username: username.value,
+                last_name:last_name.value,
+                first_name:first_name.value,
+                user_id :user_id.value
+            });
+
+            //If successfull
+            location.reload();
+        } catch (error) {
+            //Error 400-500+
+            error_message.classList.remove('d-none');
+        }
+
+    })
+    })
