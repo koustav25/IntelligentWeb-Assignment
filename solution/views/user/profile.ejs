@@ -140,7 +140,7 @@
                         <div class="col-12 overflow-auto" style="max-height: 400px">
                             <% if (userDetails.posts?.length > 0) { %>
                                 <% userDetails.posts?.forEach(post => { %>
-                                    <%- include("../posts/post", { post: post }) %>
+                                    <%- include("../posts/post", { post: post, adminView: true }) %>
                                 <% }) %>
 
                             <% } else { %>
