@@ -70,14 +70,25 @@ document.addEventListener('DOMContentLoaded', function () {
     const first_name = document.getElementById('first_name');
     const user_id = document.getElementById('user_id');
     const success_message = document.getElementById('success_message');
+    const success_message_content = document.getElementById('success_message_content')
     const error_message = document.getElementById('error_message');
+    const error_message_content = document.getElementById('error_message_content')
+
     const updateProfileButton = document.getElementById('updateProfileButton');
 
+
     // Function to handle user action
-    updateProfileButton.addEventListener("click", async () => {
-        console.log('Button clicked'); // Check if the button click event is captured
-        console.log(success_message); // Check if the success message element is selected
-        success_message.classList.remove('d-none');
+    $('#updateProfileForm').submit(async function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        //Check form validation (.checkValidity())
+        if (!this.checkValidity()) {
+            $(this).addClass('was-validated');
+            event.stopPropagation();
+            return;
+        }
+
         try {
             const response = await axios.post("/updateProfile", {
                 email: email.value,
@@ -88,9 +99,15 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             //If successfull
-            location.reload();
+
+            success_message_content.innerHTML = (response.data);
+            success_message.classList.remove('d-none');
+            setTimeout(() => location.reload(), 2000);
+
         } catch (error) {
             //Error 400-500+
+            console.log(error)
+            error_message_content.innerHTML = (error.data);
             error_message.classList.remove('d-none');
         }
 

@@ -68,9 +68,22 @@ async function updateProfile(req,res){
         const email = req.body.email;
         const username = req.body.username;
 
+        if(!id){
+            return res.status(400).send({message: "ID cannot be null"})
+        }
+
+        if (!first_name || !last_name || !username || !email ) {
+            return res.status(400).send({message: "Please fill in all fields"});
+        }
+
+
+
         await updateUser(id, {first_name, last_name, email, username})
+
+        res.status(200).send("Profile Updated Successfully");
     } catch (error) {
         console.log(error)
+        res.status(500).send("Internal Server Error")
     }
 }
 
