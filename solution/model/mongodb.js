@@ -49,6 +49,22 @@ const searchUser = async (filter) => {
     return User.findOne(filter);
 }
 
+const getUserById = async (id) => {
+    return User.findOne({_id: id});
+}
+
+const updateUser = async (id, data) => {
+    return User.findByIdAndUpdate(id, data)
+}
+
+const getAllUsers = async () => {
+    return User.find();
+}
+
+const getUserByIdWithPosts = async (id) => {
+    return User.findOne({_id: id}).populate('posts');
+}
+
 const getPostById = async (id) => {
     const post = await Post.findOne({_id: id}).populate('comments.replies.user');
     if (post.comments?.length > 0) {
@@ -74,6 +90,45 @@ const getPostById = async (id) => {
         });
     }
     return post;
+}
+
+const getPostsBySearchTerms = async (search_text, search_order, limit) => {
+    //If search_text is empty, return an empty array
+    if (!search_text) {
+        return [];
+    }
+
+    //Convert search_order to a search order query
+    let sort = {}
+    switch (search_order) {
+        case 'recent':
+            sort = { createdAt: -1 };
+            break;
+        case 'oldest':
+            sort = { createdAt: 1 };
+            break;
+        case 'user':
+            sort = { "posting_user.first_name": 1, "posting_user.last_name": 1 };
+            break;
+        default:
+            sort = { createdAt: -1 };
+    }
+
+    //Perform a text search
+    const posts = Post.find({
+        $or: [
+            {title: {$regex: search_text, $options: 'i'}},
+            {description: {$regex: search_text, $options: 'i'}},
+            {"identification.potentials.name": {$regex: search_text, $options: 'i'}},
+            {"posting_user.first_name": {$regex: search_text, $options: 'i'}},
+            {"posting_user.last_name": {$regex: search_text, $options: 'i'}}
+        ]
+    })
+        .populate('posting_user')
+        .sort(sort)
+        .limit(limit || 10);
+
+    return posts;
 }
 
 /**
@@ -173,7 +228,7 @@ const addReply = async (postId, commentId, data) => {
  * Get a comment from a post
  * @param postId The ID of the post
  * @param commentId The ID of the comment
-* @returns {Promise<{user: String, content: String, likes: Number, replies: Array|null}>} The comment object if found, otherwise null
+ * @returns {Promise<{user: String, content: String, likes: Number, replies: Array|null}>} The comment object if found, otherwise null
  */
 const getCommentFromPost = async (postId, commentId) => {
     const post = await getPostById(postId);
@@ -249,8 +304,17 @@ const findSuggestion = (suggestions, id) => {
     }
 }
 
+const createPost = async (postData) => {
+    return Post.create(postData);
+}
+
 module.exports = {
     searchUser,
+    getAllUsers,
+    updateUser,
+    getUserById,
+    getUserByIdWithPosts,
+    getPostsBySearchTerms,
     addPost,
     addPostPotentialIdentification,
     addComment,
@@ -261,4 +325,5 @@ module.exports = {
     addSuggestion,
     getSuggestionFromPost,
     findSuggestion,
+    createPost,
 }

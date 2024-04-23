@@ -1,150 +1,369 @@
 <%- include("../components/navbar.ejs") %>
 
-<script src="/javascripts/posts/create_post.js"></script>
-
-<div class="container mt-5">
-    <h2 class="mb-4">Create Post</h2>
-    <form action="/post" method="POST" enctype="multipart/form-data">
-
-        <div class="mb-3 form-floating">
-            <input type="text" class="form-control" id="name" name="name" required>
-            <label for="name">Plant Name:</label>
+<div class="container-fluid mt-3">
+    <div class="row my-2">
+        <div class="col-12">
+            <h2 class="text-center">Create Post</h2>
         </div>
+    </div>
 
-        <div class="mb-3 form-floating">
-            <textarea class="form-control" id="description" name="description" required
-                      style="height: 100px"></textarea>
-            <label for="description">Description:</label>
-        </div>
-
-
-        <div class="form-floating">
-            <input type="date" class="form-control" id="seenAt" name="seenAt" required>
-            <label for="seenAt">Seen At:</label>
-        </div>
-
-        <div class="form-group mt-2">
-            <p>Location:</p>
+    <div class="row justify-content-center">
+        <div class="col-md-10">
             <div class="card">
                 <div class="card-body">
-                    <input type="hidden" id="location" name="location" required>
-                    <label for="location" class="visually-hidden">Location:</label>
-                    <button type="button" class="btn btn-primary my-1 w-100" id="useCurrentLocation">Use Current
-                        Location
-                    </button>
-                    <div id="map" style="height: 400px;"></div>
+
+                    <form id="postForm" novalidate>
+
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <p class="small m-0 fst-italic mx-2 mb-1">Posting as...</p>
+                                <%- include("../components/user_pill", {user: user}) %>
+                            </div>
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <p class="text-center">Post Details:</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3 form-floating">
+                                            <input type="text" class="form-control" id="title" name="title" required>
+                                            <label for="name">Title:</label>
+                                        </div>
+
+                                        <div class="mb-3 form-floating">
+                                            <textarea class="form-control" id="description" name="description" required
+                                                      style="height: 100px; max-height: 250px;"></textarea>
+                                            <label for="description">Description:</label>
+                                        </div>
+
+
+                                        <div class="form-floating">
+                                            <input type="datetime-local" class="form-control" id="seen_at"
+                                                   name="seen_at"
+                                                   required>
+                                            <label for="seen_at">Seen At:</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <p class="text-center">Plant Information:</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-floating mt-2">
+                                                    <input type="number" class="form-control" id="height" name="height"
+                                                           required>
+                                                    <label for="height">Height (cm):</label>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <div class="form-floating mt-2">
+                                                    <input type="number" class="form-control" id="spread" name="spread"
+                                                           required>
+                                                    <label for="spread">Spread (cm):</label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <hr class="mx-5">
+
+                                        <div class="form-group mt-2">
+                                            <div class="row align-content-center">
+                                                <div class="col-md-3 my-auto">
+                                                    <p class="my-auto mx-2 w-100 text-center text-md-start">Sun
+                                                        Exposure:</p>
+                                                </div>
+                                                <div class="col-md-9">
+                                                    <div class="row">
+
+                                                        <div class="col-4">
+                                                            <input class="btn-check" type="radio" name="sun_exposure"
+                                                                   id="full_sun"
+                                                                   value="<%= exposureTypes.FULL_SUN %>"
+                                                                   required checked>
+                                                            <label class="btn btn-outline-secondary w-100"
+                                                                   for="fullSun"><i
+                                                                        class="fa-solid fa-sun fa-2x"></i></label>
+                                                        </div>
+
+                                                        <div class="col-4">
+                                                            <input class="btn-check" type="radio" name="sun_exposure"
+                                                                   id="partialSun"
+                                                                   value="<%= exposureTypes.PARTIAL_SUN %>">
+                                                            <label class="btn btn-outline-secondary w-100"
+                                                                   for="partialSun"><i
+                                                                        class="fa-solid fa-cloud-sun fa-2x"></i></label>
+                                                        </div>
+
+                                                        <div class="col-4">
+                                                            <input class="btn-check" type="radio" name="sun_exposure"
+                                                                   id="fullShade"
+                                                                   value="<%= exposureTypes.FULL_SHADE %>">
+                                                            <label class="btn btn-outline-secondary w-100"
+                                                                   for="fullShade"><i
+                                                                        class="fa-solid fa-cloud fa-2x"></i></label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                        <hr class="mx-5">
+
+                                        <div class="mt-2">
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <p class="my-auto mx-2 text-center text-sm-start">
+                                                        Does this plant have flowers?
+                                                    </p>
+                                                </div>
+
+                                                <div class="col-md-9 px-4">
+                                                    <div class="d-flex d-md-block justify-content-center">
+                                                        <div class="form-check form-switch">
+                                                            <label class="form-check-label px-2"
+                                                                   for="has_flowers">Yes</label>
+                                                            <input class="form-check-input" type="checkbox"
+                                                                   role="switch"
+                                                                   id="has_flowers"
+                                                                   name="has_flowers" style="transform: scale(1.5)">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group mt-2">
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <label for="flower_colour" class="visually-hidden">Flower
+                                                        Color:</label>
+                                                    <p class="my-auto mx-2 text-center text-sm-start">Flower Color:</p>
+                                                </div>
+
+                                                <div class="col-md-9">
+                                                    <input type="color" class="form-control" id="flower_colour"
+                                                           name="flower_colour"
+                                                           value="#2A970C">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <hr class="mx-5">
+
+                                        <div class="form-floating mt-2">
+                                            <div class="form-group mt-2">
+                                                <div class="row align-content-center">
+                                                    <div class="col-md-3 my-auto">
+                                                        <p class="my-auto mx-2 w-100 text-center text-md-start">Leaf
+                                                            Type:</p>
+                                                    </div>
+
+                                                    <div class="col-md-9">
+                                                        <div class="row justify-content-center">
+                                                            <div class="col-4">
+                                                                <input class="btn-check" type="radio"
+                                                                       name="leaf_type"
+                                                                       id="simple_leaf"
+                                                                       value="<%= leafTypes.SIMPLE_LEAF %>"
+                                                                       required>
+                                                                <label class="btn btn-outline-secondary w-100"
+                                                                       for="simple_leaf">Simple</label>
+
+                                                            </div>
+
+                                                            <div class="col-4">
+                                                                <input class="btn-check" type="radio"
+                                                                       name="leaf_type"
+                                                                       id="complex_leaf"
+                                                                       value="<%= leafTypes.COMPLEX_LEAF %>">
+                                                                <label class="btn btn-outline-secondary w-100"
+                                                                       for="complex_leaf">Complex</label>
+                                                            </div>
+
+                                                            <div class="col-4">
+                                                                <input class="btn-check" type="radio"
+                                                                       name="leaf_type"
+                                                                       id="none"
+                                                                       value="<%= leafTypes.NO_LEAF %>" checked>
+                                                                <label class="btn btn-outline-secondary w-100"
+                                                                       for="none">None</label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group mt-2">
+                                            <div class="row align-content-center">
+                                                <div class="col-md-3 my-auto">
+                                                    <p class="my-auto mx-2 w-100 text-center text-md-start">Plant
+                                                        Fruit/Seed:</p>
+                                                </div>
+
+                                                <div class="col-md-9">
+                                                    <div class="row">
+                                                        <div class="col-3">
+                                                            <input class="btn-check" type="radio"
+                                                                   name="seed_type"
+                                                                   id="fruit"
+                                                                   value="<%= seedTypes.FRUIT %>"
+                                                                   required>
+                                                            <label class="btn btn-outline-secondary w-100"
+                                                                   for="fruit">Fruit</label>
+
+                                                        </div>
+
+                                                        <div class="col-3">
+
+                                                            <input class="btn-check" type="radio"
+                                                                   name="seed_type"
+                                                                   id="seed"
+                                                                   value="<%= seedTypes.SEED %>">
+                                                            <label class="btn btn-outline-secondary w-100" for="seed">Seed</label>
+
+                                                        </div>
+
+                                                        <div class="col-3">
+                                                            <input class="btn-check" type="radio"
+                                                                   name="seed_type"
+                                                                   id="none"
+                                                                   value="<%= seedTypes.NO_SEED %>" checked>
+                                                            <label class="btn btn-outline-secondary w-100" for="none">None</label>
+
+                                                        </div>
+
+                                                        <div class="col-3">
+                                                            <input class="btn-check" type="radio"
+                                                                   name="seed_type"
+                                                                   id="unknown"
+                                                                   value="<%= seedTypes.UNKNOWN %>" checked>
+                                                            <label class="btn btn-outline-secondary w-100"
+                                                                   for="unknown">Unknown/Other</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <hr class="mx-5">
+
+                                        <div class="form-group mt-2">
+                                            <div class="form-group mt-2">
+                                                <div class="row align-content-center">
+                                                    <div class="col-md-3 my-auto">
+                                                        <p class="my-auto mx-2 w-100 text-center text-md-start">
+                                                            Images:</p>
+                                                    </div>
+
+                                                    <div class="col-md-9">
+                                                        <input type="file" class="form-control-file" id="images"
+                                                               name="images" multiple>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-12">
+                                                    <p class="text-center">Where was this plant seen?</p>
+                                                </div>
+                                            </div>
+
+                                            <input type="hidden" id="latitude" name="latitude" required>
+                                            <input type="hidden" id="longitude" name="longitude" required>
+
+                                            <div class="form-floating my-2">
+                                                <input type="text" class="form-control" id="location_name"
+                                                       name="location_name" required
+                                                       placeholder="Location Nickname">
+                                                <label for="location_name">Location Nickname:</label>
+                                                <small class="form-text text-muted">This is a nickname for the location
+                                                    where the plant was seen. It can be anything you like. This will be
+                                                    visible to other users.
+                                                </small>
+                                            </div>
+
+                                            <hr class="mx-5">
+
+                                            <button type="button" class="btn btn-primary my-1 w-100"
+                                                    id="useCurrentLocation">
+                                                Use Current Location
+                                            </button>
+                                            <div id="map" style="height: 400px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <div class="card bg-success-subtle">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-12 justify-content-center">
+                                                <p class="text-center m-0">Identification:</p>
+                                                <p class="text-center small">(This section is optional)</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="identifiedAs">If you know what this plant is, please enter the
+                                                name here:</label>
+                                            <input type="text" class="form-control" id="identifiedAs"
+                                                   name="identifiedAs">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mt-2">
+                            <button type="submit" class="btn btn-success btn-lg w-100" id="postButton">
+                                Post
+                                <div class="spinner-grow spinner-grow-sm d-none" role="status" id="postSpinner">
+                                    <span class="visually-hidden">Posting...</span>
+                                </div>
+                            </button>
+                        </div>
+
+                    </form>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="form-floating mt-2">
-            <input type="number" class="form-control" id="height" name="height" required>
-            <label for="height">Height (cm):</label>
-        </div>
-
-        <div class="form-floating mt-2">
-            <input type="number" class="form-control" id="spread" name="spread" required>
-            <label for="spread">Spread (cm):</label>
-        </div>
-
-        <div class="form-group mt-2">
-
-
-            <div class="mt-2 d-inline-flex">
-                <p class="my-auto mx-2">Sun Exposure:</p>
-                <div>
-
-                    <input class="btn-check" type="radio" name="sunExposure" id="fullSun" value="Full Sun"
-                           required>
-                    <label class="btn btn-outline-secondary" for="fullSun"><i class="fa-solid fa-sun fa-2x"></i></label>
-
-                    <input class="btn-check" type="radio" name="sunExposure" id="partialSun" value="Partial Sun">
-                    <label class="btn btn-outline-secondary" for="partialSun"><i
-                                class="fa-solid fa-cloud-sun fa-2x"></i></label>
-
-                    <input class="btn-check" type="radio" name="sunExposure" id="fullShade" value="Full Shade">
-                    <label class="btn btn-outline-secondary" for="fullShade"><i
-                                class="fa-solid fa-cloud fa-2x"></i></label>
-
-                </div>
-            </div>
-        </div>
-
-        <div class="form-group d-inline-flex mt-2">
-            <p class="my-auto mx-2">Does this plant have flowers?</p>
-
-            <div class="form-check form-switch">
-                <label class="form-check-label" for="hasFlowers">Yes</label>
-                <input class="form-check-input" type="checkbox" role="switch" id="hasFlowers" name="hasFlowers">
-            </div>
-
-        </div>
-
-        <div class="form-group mt-2">
-
-            <label for="flowerColor">Flower Color:</label>
-            <input type="color" class="form-control" id="flowerColor" name="flowerColor">
-        </div>
-
-        <div class="form-floating mt-2">
-            <select class="form-control" id="leafType" name="leafType" required>
-                <option value="" disabled selected>Choose...</option>
-                <option value="Leafy">Leafy</option>
-                <option value="Needles">Needles</option>
-                <option value="None">None</option>
-            </select>
-            <label for="leafType">Leaf Type:</label>
-        </div>
-
-        <div class="form-group mt-2">
-            <p class="my-auto">Fruit/Seed:</p>
-            <div class="d-inline-flex mt-2">
-                <div class="form-check mx-2">
-                    <input class="form-check-input" type="radio" name="fruitSeed" id="fruit" value="Fruit" required>
-                    <label class="form-check-label" for="fruit">Fruit</label>
-                </div>
-                <div class="form-check mx-2">
-                    <input class="form-check-input" type="radio" name="fruitSeed" id="seed" value="Seed">
-                    <label class="form-check-label" for="seed">Seed</label>
-                </div>
-                <div class="form-check mx-2">
-                    <input class="form-check-input" type="radio" name="fruitSeed" id="none" value="None">
-                    <label class="form-check-label" for="none">None</label>
-                </div>
-                <div class="form-check mx-2">
-                    <input class="form-check-input" type="radio" name="fruitSeed" id="unknown" value="Unknown/Other">
-                    <label class="form-check-label" for="unknown">Unknown/Other</label>
-                </div>
-            </div>
-        </div>
-
-        <div class="card rounded-2 border-secondary-subtle mt-2 bg-light">
-            <div class="card-body">
-                <div class="form-group">
-                    <div class="form-check form-switch">
-                        <label for="hasIdentification">Do you have an identification for this plant?</label>
-                        <input class="form-check-input" type="checkbox" role="switch" id="hasIdentification"
-                               name="hasIdentification">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="identifiedAs">What have you identified this plant as?</label>
-                    <input type="text" class="form-control" id="identifiedAs" name="identifiedAs">
-                </div>
-            </div>
-        </div>
-
-        <div class="form-group mt-2">
-            <label for="images">Images:</label>
-            <input type="file" class="form-control-file" id="images" name="images" multiple>
-        </div>
-
-        <div class="form-group mt-2">
-            <button type="submit" class="btn btn-primary w-100">Submit</button>
-        </div>
-
-    </form>
+    <script src="/javascripts/posts/create_post.js"></script>
 </div>
 
 <%- include("../components/footer.ejs") %>

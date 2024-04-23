@@ -1,26 +1,73 @@
 <div class="row justify-content-center mt-1">
-    <div class="col-12 col-lg-8">
+    <div class="col-12">
         <div class="card bg-light shadow-sm">
             <div class="card-body p-0 px-4 my-4">
-                <div class="row justify-content-end">
+                <div class="row justify-content-between">
+                    <div class="col-md-6">
+                        <%- include('../components/user_pill', {user: post?.posting_user}) %>
+                    </div>
                     <div class="col-md-4">
-                        <p class="text-end"><strong>Date: 22-03-2024</strong></p>
+                        <p class="text-end">
+                            <strong>
+                                <%= post?.createdAt?.toLocaleDateString('en-GB', {
+                                    day: "numeric",
+                                    month: "short",
+                                    year: "numeric",
+                                    hour: "numeric",
+                                    minute: "numeric"
+                                }) ?? "No Date" %>
+                            </strong>
+                        </p>
                     </div>
                 </div>
-                <div class="row">
+                <div class="row mb-3">
                     <div class="col-md-8 text-start">
-                        <div class="card-body p-2 p-lg-3">
-                            <p><strong>Poster Name:</strong> Adrian Bond</p>
-                            <p><strong>Post Title:</strong> Your Post Title Here</p>
-                            <p><strong>Post Description:</strong> Your post description here.</p>
+                        <div class="p-3 overflow-hidden">
+                            <p class="overflow-hidden" style="text-overflow: ellipsis; white-space: nowrap"><strong>
+                                    <%= post?.title %>
+                                </strong></p>
+                            <p class="overflow-ellipsis">
+                                <%= post?.description %>
+                            </p>
                         </div>
                     </div>
 
                     <div class="col-md-4 text-end">
-                        <div class="card-body p-2 p-lg-3">
-                            <img class="mb-3 img-fluid w-100" src="https://placehold.co/600x400?text=Plant+Image"
-                                 width="100" alt="John Doe Avatar">
+                        <% if (post?.images?.length > 0) { %>
+                            <img class="img-fluid"
+                                 src="data:<%= post?.images?.at(0)?.image_type %>;base64,<%= post?.images?.at(0)?.image_data?.toString('base64') %>"
+                                 style="height: 200px;" alt="Image of the Plant">
+                        <% } else { %>
+                            <img class="img-fluid w-100" src="https://placehold.co/600x400?text=No Images" height="100"
+                                 alt="No Image">
+                        <% } %>
+                    </div>
+                </div>
+                <div class="row px-1">
+                    <div class="col-md-8">
+                        <p class="text-start">
+                            <%= post?.location?.location_name %>
+                            <small>(<%= `${post?.location?.latitude}, ${post?.location?.longitude}` %>)</small>
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="text-end fst-italic"><strong><span
+                                        id="commentCount"><%= post?.comments?.length ?? 0 %></span></strong> Comments
+                        </p>
+                    </div>
+                </div>
+                <div class="row justify-content-end">
+                    <div class="col-md-8">
+                        <div class="alert <%= postStates.postStateToColor(post?.state, "alert-") %> m-0 p-0 h-100 justify-content-center align-content-center"
+                             role="alert">
+                            <p class="my-auto mx-2 w-100 text-center">
+                                <i class="<%= postStates.postStateToIcon(post?.state) %>"></i> <%= postStates.postStateToString(post?.state) %>
+                            </p>
                         </div>
+                    </div>
+                    <div class="col-md-4">
+                        <a class="btn btn-primary w-100" href="/plant/<%= post?._id %>">View</a>
+
                     </div>
                 </div>
             </div>

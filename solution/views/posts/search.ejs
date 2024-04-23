@@ -3,46 +3,70 @@
     <div class="row justify-content-center mt-3">
         <div class="col-12 col-lg-10">
             <div class="card bg-light p-3">
-                <div class="row my-3 justify-content-center">
-                    <div class="col-md-6">
-                        <input type="text" class="form-control" placeholder="Search">
-                    </div>
-                </div>
-                <div class="row my-4">
-                    <div class="col-md-2 text-center">
-                        <h5>Order</h5>
-                    </div>
-                    <div class="col-md-10">
-                        <select class="form-select">
-                            <option value="recent">Most Recent</option>
-                            <option value="least-recent">Least Recent</option>
-                            <option value="oldest-first">By User</option>
-                        </select>
-                    </div>
-                </div>
-
-                <hr>
-
-                <h4 class="text-center">Posts</h4>
-                <hr>
-                <%- include("../posts/post") %>
-                <div class="container">
-                    <div class="row justify-content-end">
-                        <div class="col-12">
-                            <nav aria-label="Page navigation">
-                                <ul class="pagination">
-                                    <li class="page-item"><a class="page-link" href="#">Previous</a></li>
-                                    <li class="page-item"><a class="page-link" href="#">1</a></li>
-                                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                    <li class="page-item"><a class="page-link" href="#">Next</a></li>
-                                </ul>
-                            </nav>
+                <form id="searchForm">
+                    <div class="row mb-3 justify-content-center">
+                        <div class="col-md-10">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" placeholder="Search" id="searchPrompt"
+                                       value="<%= search_text %>">
+                                <label for="searchPrompt" class="form-label">Search</label>
+                            </div>
                         </div>
+                    </div>
+
+                    <div class="row mb-3 justify-content-center">
+                        <div class="col-md-10">
+                            <div class="form-floating">
+                                <select class="form-select" id="sortOrder">
+                                    <option value="recent" <%= (search_order === "recent" ? "selected" : "") %>>Most
+                                        Recent
+                                    </option>
+                                    <option value="oldest" <%= (search_order === "oldest" ? "selected" : "") %>>Least
+                                        Recent
+                                    </option>
+                                    <option value="user" <%= (search_order === "user" ? "selected" : "") %>>By User
+                                    </option>
+                                </select>
+                                <label for="sortOrder" class="form-label">Sort By</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3 justify-content-center">
+                        <div class="col-md-10">
+                            <button type="submit" class="btn btn-outline-success w-100">Search</button>
+                        </div>
+                </form>
+
+                <div class="row">
+                    <div class="col-12">
+                        <hr>
+                        <h4 class="text-center">Posts</h4>
+                        <hr>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <% if (searchResults?.length > 0 && !empty_query) { %>
+                            <% searchResults?.forEach((result) => { %>
+                                <%- include("../posts/post", {post: result}) %>
+                            <% }) %>
+                        <% } else if (empty_query) { %>
+                            <div class="alert alert-info text-center" role="alert">
+                                Please enter a search term to see results.
+                            </div>
+                        <% } else { %>
+                            <div class="alert alert-secondary text-center" role="alert">
+                                No results found.
+                            </div>
+                        <% } %>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script src="/javascripts/posts/search.js"></script>
 </div>
-<%- include("../components/footer")%>
+<%- include("../components/footer") %>

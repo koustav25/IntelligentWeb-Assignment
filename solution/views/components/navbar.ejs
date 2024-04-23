@@ -32,7 +32,7 @@
                             <label for="searchBox" class="visually-hidden">Search</label>
                             <input id="searchBox" name="text" class="text-center w-100 border-0 bg-transparent py-2"
                                    href=""
-                                   placeholder="Search"/>
+                                   placeholder="Search" value="<%= locals?.search_text ? locals.search_text : "" %>"/>
                             <button class="btn p-0 m-0" type="submit">
                                 <i class="fa-solid fa-magnifying-glass fa-2x text-white my-auto px-2 py-1"></i>
                             </button>
