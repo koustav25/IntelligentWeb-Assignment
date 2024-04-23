@@ -34,14 +34,55 @@ const createPostDiv = post => {
 }
 
 const feedWrapper = $("#feed-wrapper")
-
+const loadingSpinner = $("#loading-spinner")
+const updateSpinner = $("#update-spinner")
+loadingSpinner.hide()
+updateSpinner.hide()
 $(document).ready(function() {
-    let loading = false;
-
-    $(window).scroll(function() {
-        if ($(window).scrollTop() + $(window).height() >= $(document).height() && !loading) {
-            var $newPost = $(createPostDiv(mockPost))
-            feedWrapper.append($newPost)
+    $(window).scroll(async function() {
+        if ($(window).scrollTop() + $(window).height() >= $(document).height()) {
+            loadingSpinner.show()
+            await setTimeout(() => {
+                for(let i = 0; i < 10; i++){
+                    const $newPost = $(createPostDiv(mockPost))
+                    feedWrapper.append($newPost)
+                }
+                loadingSpinner.hide()
+            }, 3000)
+        }
+        if ($(window).scrollTop() <= 0) {
+            updateSpinner.show()
         }
     });
 });
+
+$(window).ready(() => {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/javascripts/service_worker/sw.js', {scope: '/javascripts/service_worker/sw.js'})
+            .then(function (reg) {
+                console.log('Service Worker Registered!', reg);
+            })
+            .catch(function (err) {
+                console.log('Service Worker registration failed: ', err);
+            });
+    }
+
+    if ("Notification" in window) {
+        if (Notification.permission === "granted") {
+        } else if (Notification.permission !== "denied") {
+            Notification.requestPermission().then(p => {
+                if (p === " granted") {
+                    navigator.serviceWorker.ready.then(swr => {
+                        swr.showNotification("Plants App", {body: "Notifications are enabled!"}).then(r => console.log(r))
+                    })
+                }
+            })
+        }
+    }
+
+    if(navigator.onLine){
+        console.log("Online")
+    } else {
+        console.log("Offline")
+    }
+})
