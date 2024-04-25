@@ -61,3 +61,55 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    const email = document.getElementById('email');
+    const username = document.getElementById('username');
+    const last_name = document.getElementById('last_name');
+    const first_name = document.getElementById('first_name');
+    const user_id = document.getElementById('user_id');
+    const success_message = document.getElementById('success_message');
+    const success_message_content = document.getElementById('success_message_content')
+    const error_message = document.getElementById('error_message');
+    const error_message_content = document.getElementById('error_message_content')
+
+    const updateProfileButton = document.getElementById('updateProfileButton');
+
+
+    // Function to handle user action
+    $('#updateProfileForm').submit(async function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        //Check form validation (.checkValidity())
+        if (!this.checkValidity()) {
+            $(this).addClass('was-validated');
+            event.stopPropagation();
+            return;
+        }
+
+        try {
+            const response = await axios.post("/updateProfile", {
+                email: email.value,
+                username: username.value,
+                last_name:last_name.value,
+                first_name:first_name.value,
+                user_id :user_id.value
+            });
+
+            //If successfull
+
+            success_message_content.innerHTML = (response.data);
+            success_message.classList.remove('d-none');
+            setTimeout(() => location.reload(), 2000);
+
+        } catch (error) {
+            //Error 400-500+
+            console.log(error)
+            error_message_content.innerHTML = (error.data);
+            error_message.classList.remove('d-none');
+        }
+
+    })
+    })

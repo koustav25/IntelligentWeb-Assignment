@@ -1,8 +1,9 @@
 const { getUserNotifications } = require("../../util/mock/mockData")
-const {getUserById} = require("../../model/mongodb");
+const {getUserById, updateUser} = require("../../model/mongodb");
 
 const {promisify} = require('node:util');
 const {randomBytes, pbkdf2} = require('node:crypto');
+const roleTypes = require("../../model/enum/roleTypes");
 const pbkdf2Promise = promisify(pbkdf2);
 
 async function getProfile(req, res) {
@@ -59,6 +60,33 @@ async function postNewUserPassword(req, res) {
     }
 }
 
+async function updateProfile(req,res){
+    try {
+        const id = req.body.user_id;
+        const first_name = req.body.first_name;
+        const last_name = req.body.last_name;
+        const email = req.body.email;
+        const username = req.body.username;
+
+        if(!id){
+            return res.status(400).send({message: "ID cannot be null"})
+        }
+
+        if (!first_name || !last_name || !username || !email ) {
+            return res.status(400).send({message: "Please fill in all fields"});
+        }
+
+
+
+        await updateUser(id, {first_name, last_name, email, username})
+
+        res.status(200).send("Profile Updated Successfully");
+    } catch (error) {
+        console.log(error)
+        res.status(500).send("Internal Server Error")
+    }
+}
+
 function getNotifications(req, res) {
     const notifications = getUserNotifications()
 
@@ -68,6 +96,6 @@ function getNotifications(req, res) {
 module.exports = {
     getProfile,
     postNewUserPassword,
-
+    updateProfile,
     getNotifications
 }
