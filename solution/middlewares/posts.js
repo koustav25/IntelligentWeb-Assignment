@@ -1,5 +1,5 @@
 exports.userInBody = (req, res, next) => {
-    const userID = req.body.userID;
+    const userID = req.body.user_id;
 
     if (!userID) {
         res.status(400);

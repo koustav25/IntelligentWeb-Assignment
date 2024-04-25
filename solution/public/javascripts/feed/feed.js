@@ -39,8 +39,8 @@ const createPostDiv = post => {
                     Identification:
                     <span class="text-shadow ${post.identification.is_accepted ? "text-success" : "text-warning"}">${post.identification.is_accepted ? "Completed" : "In Progress"}</span>
                 </div>
-                <div class="btn btn-warning">Comments: ${post.comments.length}</div>
-                <a class="btn btn-primary" href="/plant/<%= post.plantId %>">See more</a>
+                <div class="btn btn-warning">Comments: <span id="comment-counter-${post._id}">${post.comments.length}</span></div>
+                <a class="btn btn-primary" href="/plant/${post._id}">See more</a>
             </div>
         </div>
     </div>`
@@ -58,9 +58,12 @@ $feedEnd.hide()
 let page = 1
 let currentPosts = []
 
+let socket = io()
+
 const isOnline = navigator.onLine
 const updateFeed = (posts) => {
     for (let i = 0; i < posts.length; i++) {
+        socket.emit("viewing_plant", {plant_id: posts[i]._id})
         const $newPost = $(createPostDiv(posts[i]))
         $feedWrapper.append($newPost)
     }
@@ -70,6 +73,12 @@ const updateFeed = (posts) => {
 
 $(document).ready(async function () {
     if(isOnline){
+        socket.on("new_comment", data => {
+            const $commentCounter = $(`#comment-counter-${data.post_id}`)
+            const count = parseInt($commentCounter.text()) + 1
+            $commentCounter.text(count)
+        })
+
         const firstPagePosts = await axios.get("/api/feed", {params: {page}})
         updateFeed(firstPagePosts.data)
         currentPosts = [...firstPagePosts.data]
@@ -98,7 +107,6 @@ $(document).ready(async function () {
                 $feedEnd.hide()
                 $loadingSpinner.show()
                 const newPosts = await axios.get("/api/feed", {params: {page}})
-                console.log("fetch posts")
 
                 updateFeed(newPosts.data)
                 currentPosts = [...currentPosts, ...newPosts.data]

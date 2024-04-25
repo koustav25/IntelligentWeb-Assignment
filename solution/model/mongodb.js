@@ -190,7 +190,6 @@ const addComment = async (postId, data) => {
         content: data.content,
         likes: data.likes,
     }
-
     post.comments?.push(comment);
     await post.save();
 

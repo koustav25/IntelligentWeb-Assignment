@@ -54,7 +54,7 @@ self.addEventListener('fetch', async event => {
             console.log('Service Worker: Fetching from Cache: ', event.request.url);
             return cachedResponse;
         }
-        console.log('Service Worker: Fetching from URL: ', event.request.url);
+        // console.log('Service Worker: Fetching from URL: ', event.request.url);
         try {
             return await fetch(event.request)
         }catch(e) {

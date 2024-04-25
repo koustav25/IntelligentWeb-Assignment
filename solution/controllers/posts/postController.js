@@ -203,7 +203,6 @@ async function getCommentHTML(req, res) {
 
     //Get the comment from the post
     const comment = await getCommentFromPost(plant_id, comment_id);
-
     //Render the comment HTML from the EJS template
     res.render('posts/comment', {comment: comment, isReply: false});
 }
