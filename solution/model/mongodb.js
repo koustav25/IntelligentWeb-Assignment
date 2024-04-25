@@ -8,6 +8,7 @@ const {User} = require("./schema/user");
 const {Post} = require("./schema/post");
 const {Notification} = require("./schema/notification");
 
+const {NEW} = require("./enum/notificationStates")
 /* Connection Properties */
 const MONGO_HOST = process.env.MONGO_HOST || "localhost";
 const MONGO_USER = process.env.MONGO_USER || "admin";
@@ -102,16 +103,16 @@ const getPostsBySearchTerms = async (search_text, search_order, limit) => {
     let sort = {}
     switch (search_order) {
         case 'recent':
-            sort = { createdAt: -1 };
+            sort = {createdAt: -1};
             break;
         case 'oldest':
-            sort = { createdAt: 1 };
+            sort = {createdAt: 1};
             break;
         case 'user':
-            sort = { "posting_user.first_name": 1, "posting_user.last_name": 1 };
+            sort = {"posting_user.first_name": 1, "posting_user.last_name": 1};
             break;
         default:
-            sort = { createdAt: -1 };
+            sort = {createdAt: -1};
     }
 
     //Perform a text search
@@ -306,6 +307,15 @@ const findSuggestion = (suggestions, id) => {
 
 const createPost = async (postData) => {
     return Post.create(postData);
+}
+
+const addNotification = async (targetPostId, targetUserId, notificationType) => {
+    const notification = {
+        target_user: userId,
+        target_post: postId,
+        notification_type: notificationType,
+        state: NEW
+    }
 }
 
 module.exports = {

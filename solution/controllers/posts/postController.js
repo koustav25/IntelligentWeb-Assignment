@@ -188,6 +188,8 @@ async function postComment(req, res, next) {
     }
 
     try {
+        console.log(plant_id)
+        console.log(user_id)
         const post = await addComment(plant_id, {userID: user_id, content: text, likes: 0})
         res.status(200).send(post);
     } catch (err) {

@@ -22,6 +22,18 @@ const notificationTypes = {
             default:
                 return 'Unknown';
         }
+    },
+
+    notificationTypeToContent: (notificationType, plantName, commentAuthorFullName, content) => {
+        switch (notificationType) {
+            case NEW_COMMENT:
+                return {
+                    title: `Your post ${plantName} has a new comment!`,
+                    body: `${commentAuthorFullName} added a comment: "${content.slice(0,30)}..."`
+                }
+            default:
+                return 'Unknown';
+        }
     }
 };
 
