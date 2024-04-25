@@ -1,0 +1,18 @@
+{
+  "lang": "en-uk",
+  "name": "Plant Book",
+  "short_name": "Social Media Application For Plants",
+  "description": "A basic application that fecthes the image of the day from an API",
+  "start_url": "/feed",
+  "background_color": "#2f3d58",
+  "theme_color": "#2f3d58",
+  "orientation": "any",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "/images/logo.png",
+      "sizes": "256x256",
+      "purpose": "any"
+    }
+  ]
+}

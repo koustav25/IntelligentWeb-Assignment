@@ -1,5 +1,5 @@
 <%- include("../components/navbar.ejs") %>
-<div class="container-fluid col-lg-7 col-md-10 mt-5">
+<div class="container-fluid col-xl-6 col-lg-10 col-md-10 col-sm-mt-5">
 
     <div class="container-fluid col-lg-10 col-md-10 mt-5">
         <form method="GET">
@@ -41,45 +41,6 @@
             </div>
         </div>
         <div id="feed-wrapper">
-            <% posts.forEach(post => { %>
-                <div class="row mb-3 border-1 border shadow-sm rounded-3 p-4">
-                    <% if(post.images.length > 0) { %>
-                        <div class="col-sm-4">
-                            <img src="data:<%= post.images[0].image_type %>;base64,<%= post.images[0].image_data.toString('base64') %>"
-                                 alt="Post Image" class="w-100 object-fit-cover mh-200">
-                        </div>
-                    <% } else { %>
-                        <div class="col-sm-4">
-                            <img src="https://placehold.co/600x400?text=No Images" class="w-100 object-fit-cover mh-200"
-                                 alt="Post Image">
-                        </div>
-                    <% } %>
-                    <div class="col-sm-8 d-flex flex-column justify-content-between align-items-start">
-                        <div class="d-flex justify-content-between w-100 mb-2">
-                            <h3 class="m-0"> <%= post.title %></h3>
-                            <span class="align-self-center"><%= post.seen_at.toLocaleDateString('en-GB', {
-                                    day: "numeric",
-                                    month: "short",
-                                    year: "numeric",
-                                    hour: "numeric",
-                                    minute: "numeric"
-                                }) %></span>
-                        </div>
-                        <div class="fst-italic">
-                            <%= post.shortDesc + "..." %>
-                        </div>
-                        <div class="d-flex justify-content-between mt-3 w-100">
-                            <div class="align-self-center">
-                                Identification:
-                                <span class="text-shadow <%= post.identification.is_accepted ? "text-success" : "text-warning" %>"><%= post.identification.is_accepted ? "Completed" : "In Progress" %></span>
-                            </div>
-                            <div class="btn btn-warning">Comments: <%= post.comments.length %></div>
-                            <a class="btn btn-primary" href="/plant/<%= post.plantId %>">See more</a>
-                        </div>
-
-                    </div>
-                </div>
-            <% }) %>
         </div>
     </div>
     <div id="loading-spinner">
@@ -100,5 +61,8 @@
         </div>
     </div>
 </div>
+<script src="/javascripts/service_worker/activate_sw.js"></script>
 <script src="/javascripts/feed/feed.js"></script>
+<script src="/javascripts/idb/idb.js"></script>
+
 <%- include("../components/footer.ejs") %>

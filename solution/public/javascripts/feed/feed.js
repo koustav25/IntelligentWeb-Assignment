@@ -1,8 +1,8 @@
 // Decode Large Base64 Buffers
 function Uint8ToString(u8a){
-    var CHUNK_SZ = 0x8000;
-    var c = [];
-    for (var i=0; i < u8a.length; i+=CHUNK_SZ) {
+    const CHUNK_SZ = 0x8000;
+    const c = [];
+    for (let i=0; i < u8a.length; i+=CHUNK_SZ) {
         c.push(String.fromCharCode.apply(null, u8a.subarray(i, i+CHUNK_SZ)));
     }
     return c.join("");
@@ -32,7 +32,7 @@ const createPostDiv = post => {
     })}</span>
             </div>
             <div class="fst-italic">
-                ${post.shortDesc + "..."}
+                ${(post.description.length > 50 ? post.description.slice(0,50) : post.description) + "..."}
             </div>
             <div class="d-flex justify-content-between mt-3 w-100">
                 <div class="align-self-center">
@@ -55,68 +55,75 @@ const $feedEnd = $("#feed-end")
 $loadingSpinner.hide()
 $updateSpinner.hide()
 $feedEnd.hide()
-let pageCounter = 2
+let page = 1
+let currentPosts = []
 
-$(document).ready(function () {
+const isOnline = navigator.onLine
+const updateFeed = (posts) => {
+    for (let i = 0; i < posts.length; i++) {
+        const $newPost = $(createPostDiv(posts[i]))
+        $feedWrapper.append($newPost)
+    }
+
+}
+
+
+$(document).ready(async function () {
+    if(isOnline){
+        const firstPagePosts = await axios.get("/api/feed", {params: {page}})
+        updateFeed(firstPagePosts.data)
+        currentPosts = [...firstPagePosts.data]
+        page += 1
+
+        openFeedIDB().then(db => {
+            clearFeedIDB(db).then(() => {
+                updateFeedIDB(db,currentPosts).then(() => console.log("Feed cached!"))
+            })
+        })
+    } else {
+        openFeedIDB().then(db => {
+            getFeedIDB(db).then(posts => {
+                for (let i = 0; i < posts.length; i++) {
+                    $feedWrapper.append($(createPostDiv(posts[i])))
+                }
+            })
+            console.log("Feed retrieved from cache!")
+        })
+    }
+
+
     $(window).scroll(async function () {
-        if ($(window).scrollTop() + $(window).height() >= $(document).height()) {
-            $feedEnd.hide()
-            $loadingSpinner.show()
-            const newPosts = await axios.get("/api/feed", {params: {page: pageCounter}})
-            for (let i = 0; i < newPosts.data.length; i++) {
-                const $newPost = $(createPostDiv(newPosts.data[i]))
-                $feedWrapper.append($newPost)
-            }
-            if (newPosts.data.length > 0) {
-                pageCounter += 1
-            } else {
-                $feedEnd.show()
+        if(isOnline){
+            if ($(window).scrollTop() + $(window).height() >= $(document).height()) {
+                $feedEnd.hide()
+                $loadingSpinner.show()
+                const newPosts = await axios.get("/api/feed", {params: {page}})
+                console.log("fetch posts")
+
+                updateFeed(newPosts.data)
+                currentPosts = [...currentPosts, ...newPosts.data]
+                if (newPosts.data.length > 0) {
+                    page += 1
+                } else {
+                    $feedEnd.show()
+                }
+                $loadingSpinner.hide()
             }
 
-            $loadingSpinner.hide()
-        }
-        if ($(window).scrollTop() <= 0) {
-            pageCounter = 1
-            $feedWrapper.empty()
-            $feedEnd.hide()
-            $updateSpinner.show()
-            const updatePosts = await axios.get("/api/feed")
-            for (let i = 0; i < updatePosts.data.length; i++) {
-                $feedWrapper.append($(createPostDiv(updatePosts.data[i])))
+            if ($(window).scrollTop() <= 0) {
+                page = 1
+                $feedWrapper.empty()
+                $feedEnd.hide()
+                $updateSpinner.show()
+                const updatePosts = await axios.get("/api/feed")
+                for (let i = 0; i < updatePosts.data.length; i++) {
+                    $feedWrapper.append($(createPostDiv(updatePosts.data[i])))
+                }
+                currentPosts = updatePosts.data
+                $updateSpinner.hide()
+                page += 1
             }
-            $updateSpinner.hide()
-            pageCounter += 1
         }
     });
 });
 
-$(window).ready(() => {
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/javascripts/service_worker/sw.js', {scope: '/javascripts/service_worker/sw.js'})
-            .then(function (reg) {
-                console.log('Service Worker Registered!', reg);
-            })
-            .catch(function (err) {
-                console.log('Service Worker registration failed: ', err);
-            });
-    }
-
-    if ("Notification" in window) {
-        if (Notification.permission === "granted") {
-        } else if (Notification.permission !== "denied") {
-            Notification.requestPermission().then(p => {
-                if (p === " granted") {
-                    navigator.serviceWorker.ready.then(swr => {
-                        swr.showNotification("Plants App", {body: "Notifications are enabled!"}).then(r => console.log(r))
-                    })
-                }
-            })
-        }
-    }
-
-    if (navigator.onLine) {
-        console.log("Online")
-    } else {
-        console.log("Offline")
-    }
-})
