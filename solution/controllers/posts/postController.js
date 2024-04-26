@@ -129,7 +129,7 @@ async function postNewPost(req, res, next) {
         const user = await getUserById(userId); // Get the user by ID
 
 // Add the ObjectId of the newly created post to the user's posts array
-        user.posts.push(postObject.posting_user);
+        user.posts.push(post._id);
 
 // Save the updated user document
         await updateUser(userId,user);
