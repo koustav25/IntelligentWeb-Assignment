@@ -30,6 +30,13 @@
         </form>
     </div>
     <div>
+        <div id="error-box">
+            <div class="bg-danger text-white p-3 rounded-3 d-flex me-auto ms-auto col-md-6 col-sm-8 col-xl-4 justify-content-around mb-3">
+                <div class="align-self-center">
+                    Sorry! There was an error while loading the feed.
+                </div>
+            </div>
+        </div>
         <div id="update-spinner">
             <div class="bg-primary text-white p-3 rounded-3 d-flex me-auto ms-auto col-md-6 col-sm-8 col-xl-4 justify-content-around mb-3">
                 <div class="align-self-center">
@@ -61,8 +68,6 @@
         </div>
     </div>
 </div>
-<script src="/javascripts/service_worker/activate_sw.js"></script>
-<script src="/javascripts/feed/feed.js"></script>
-<script src="/javascripts/idb/idb.js"></script>
+
 
 <%- include("../components/footer.ejs") %>

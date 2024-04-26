@@ -262,7 +262,7 @@ async function postLike(req, res) {
     const plant_id = req.params.plant_id;
     const comment_id = req.params.comment_id;
 
-    const userID = req.body.userID;
+    const userID = req.body.user_id;
 
     //Get the comment from the post
     const post = await getPostById(plant_id);
@@ -283,7 +283,7 @@ async function postUnlike(req, res) {
     const plant_id = req.params.plant_id;
     const comment_id = req.params.comment_id;
 
-    const userID = req.body.userID;
+    const userID = req.body.user_id;
 
     const post = await getPostById(plant_id);
 
@@ -307,7 +307,7 @@ async function postSuggestion(req, res) {
 
     //Get the text and user ID from the request
     const text = req.body.text;
-    const user_id = req.body.userID;
+    const user_id = req.body.user_id;
 
     //Check if the ID is valid
     if (!plant_id) {
@@ -362,7 +362,7 @@ async function postUpvote(req, res) {
     const plant_id = req.params.plant_id;
     const suggestion_id = req.params.suggestion_id;
 
-    const userID = req.body.userID;
+    const userID = req.body.user_id;
 
     //Get the suggestion from the post
     const post = await getPostById(plant_id);
@@ -384,7 +384,7 @@ async function postUnupvote(req, res) {
     const plant_id = req.params.plant_id;
     const suggestion_id = req.params.suggestion_id;
 
-    const userID = req.body.userID;
+    const userID = req.body.user_id;
 
     const post = await getPostById(plant_id);
 
@@ -406,7 +406,7 @@ async function postDownvote(req, res) {
     const plant_id = req.params.plant_id;
     const suggestion_id = req.params.suggestion_id;
 
-    const userID = req.body.userID;
+    const userID = req.body.user_id;
 
     //Get the suggestion from the post
     const post = await getPostById(plant_id);
@@ -429,7 +429,7 @@ async function postUndownvote(req, res) {
     const plant_id = req.params.plant_id;
     const suggestion_id = req.params.suggestion_id;
 
-    const userID = req.body.userID;
+    const userID = req.body.user_id;
 
     const post = await getPostById(plant_id);
 

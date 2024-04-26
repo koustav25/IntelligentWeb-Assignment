@@ -2,6 +2,7 @@
 
 <div class="container-fluid w-100 p-0">
     <nav class="navbar navbar-expand-lg bg-success rounded-bottom-4 shadow-sm" data-bs-theme="dark">
+
         <div class="container-fluid">
             <a class="navbar-brand text-light fw-medium fs-4 px-2" href="/">PLANTS</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
@@ -9,9 +10,12 @@
                     aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-
+            <div id="offline-mode" class="bg-danger rounded-2 text-white pe-2 ps-2 pt-1 pb-1">
+                Offline mode
+            </div>
             <div class="collapse navbar-collapse justify-content-between" id="navbarSupportedContent">
                 <ul class="navbar-nav mb-2 mb-lg-0">
+
                     <% if (isLoggedIn) { %>
                         <li class="nav-item">
                             <a class="nav-link" href="/feed">Home</a>
@@ -64,3 +68,5 @@
         </div>
     </nav>
 </div>
+
+<script src="/javascripts/navbar/navbar.js"></script>

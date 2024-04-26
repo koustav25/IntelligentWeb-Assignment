@@ -52,15 +52,19 @@ const $feedWrapper = $("#feed-wrapper")
 const $loadingSpinner = $("#loading-spinner")
 const $updateSpinner = $("#update-spinner")
 const $feedEnd = $("#feed-end")
+const $errorBox = $("#error-box")
+const updateFeedGap = 3000
+
+$errorBox.hide()
 $loadingSpinner.hide()
 $updateSpinner.hide()
 $feedEnd.hide()
+
 let page = 1
 let currentPosts = []
-
 let socket = io()
+let updateFeedTime = Date.now()
 
-const isOnline = navigator.onLine
 const updateFeed = (posts) => {
     for (let i = 0; i < posts.length; i++) {
         socket.emit("viewing_plant", {plant_id: posts[i]._id})
@@ -69,8 +73,6 @@ const updateFeed = (posts) => {
     }
 
 }
-
-
 $(document).ready(async function () {
     if(isOnline){
         socket.on("new_comment", data => {
@@ -78,23 +80,28 @@ $(document).ready(async function () {
             const count = parseInt($commentCounter.text()) + 1
             $commentCounter.text(count)
         })
+        try {
+            const firstPagePosts = await axios.get("/api/feed", {params: {page}})
+            updateFeed(firstPagePosts.data)
+            currentPosts = [...firstPagePosts.data]
+            page += 1
 
-        const firstPagePosts = await axios.get("/api/feed", {params: {page}})
-        updateFeed(firstPagePosts.data)
-        currentPosts = [...firstPagePosts.data]
-        page += 1
-
-        openFeedIDB().then(db => {
-            clearFeedIDB(db).then(() => {
-                updateFeedIDB(db,currentPosts).then(() => console.log("Feed cached!"))
+            openFeedIDB().then(db => {
+                clearFeedIDB(db).then(() => {
+                    updateFeedIDB(db,currentPosts).then(() => console.log("Feed cached!"))
+                })
             })
-        })
+        }catch (e){
+            $errorBox.show()
+        }
+
     } else {
         openFeedIDB().then(db => {
             getFeedIDB(db).then(posts => {
                 for (let i = 0; i < posts.length; i++) {
                     $feedWrapper.append($(createPostDiv(posts[i])))
                 }
+                currentPosts = posts;
             })
             console.log("Feed retrieved from cache!")
         })
@@ -103,11 +110,10 @@ $(document).ready(async function () {
 
     $(window).scroll(async function () {
         if(isOnline){
-            if ($(window).scrollTop() + $(window).height() >= $(document).height()) {
+            if (Date.now() - updateFeedTime > 3000 && $(window).scrollTop() + $(window).height() >= $(document).height()) {
                 $feedEnd.hide()
                 $loadingSpinner.show()
                 const newPosts = await axios.get("/api/feed", {params: {page}})
-
                 updateFeed(newPosts.data)
                 currentPosts = [...currentPosts, ...newPosts.data]
                 if (newPosts.data.length > 0) {
@@ -116,22 +122,32 @@ $(document).ready(async function () {
                     $feedEnd.show()
                 }
                 $loadingSpinner.hide()
+                updateFeedTime = Date.now()
             }
 
-            if ($(window).scrollTop() <= 0) {
+            if (Date.now() - updateFeedTime > 3000 && $(window).scrollTop() <= 0) {
                 page = 1
                 $feedWrapper.empty()
                 $feedEnd.hide()
                 $updateSpinner.show()
-                const updatePosts = await axios.get("/api/feed")
-                for (let i = 0; i < updatePosts.data.length; i++) {
-                    $feedWrapper.append($(createPostDiv(updatePosts.data[i])))
+                currentPosts.map(post => socket.emit("leaving_plant", {plant_id: post._id}))
+
+                try {
+                    const updatePosts = await axios.get("/api/feed")
+                    updateFeed(updatePosts.data)
+                    currentPosts = updatePosts.data
+                    $updateSpinner.hide()
+                    page += 1
+                    updateFeedTime = Date.now()
+                }catch (e){
+                    $errorBox.show();
                 }
-                currentPosts = updatePosts.data
-                $updateSpinner.hide()
-                page += 1
+
             }
         }
     });
 });
 
+window.addEventListener('beforeunload', function (event) {
+    currentPosts.map(post => socket.emit("leaving_plant", {plant_id: post._id}))
+});

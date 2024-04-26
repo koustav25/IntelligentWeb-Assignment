@@ -11,6 +11,8 @@ self.addEventListener('install', event => {
                 '/manifest.json',
                 '/javascripts/jquery.min.js',
                 '/javascripts/bootstrap.bundle.min.js',
+                '/javascripts/navbar/navbar.js',
+                '/javascripts/service_worker/activate_sw.js',
                 '/javascripts/feed/feed.js',
                 '/javascripts/idb/idb.js',
                 "/javascripts/leaflet.js",
