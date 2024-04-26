@@ -7,7 +7,7 @@ const {
     addSuggestion,
     getSuggestionFromPost,
     findSuggestion,
-    getUserById, createPost
+    getUserById, createPost, updateUser
 } = require("../../model/mongodb");
 const postStates = require("../../model/enum/postStates");
 const leafTypes = require("../../model/enum/leafTypes");
@@ -125,6 +125,14 @@ async function postNewPost(req, res, next) {
         }
 
         const post = await createPost(postObject);
+
+        const user = await getUserById(userId); // Get the user by ID
+
+// Add the ObjectId of the newly created post to the user's posts array
+        user.posts.push(postObject.posting_user);
+
+// Save the updated user document
+        await updateUser(userId,user);
 
         res.status(200).send(post);
     } catch (err) {
@@ -504,6 +512,7 @@ function upvotesDownvotesAsAPercentage(upvotes, downvotes) {
 
     return {upvote: upvotePercentage, downvote: downvotePercentage};
 }
+
 
 module.exports = {
     getPost,
