@@ -12,6 +12,7 @@ const debugRouter = require('./routes/debug');
 const indexRouter = require('./routes/index');
 const postsRouter = require('./routes/posts');
 const userRouter = require('./routes/user');
+const apiRouter = require('./routes/api');
 
 const {
   authenticationStrategy,
@@ -60,6 +61,7 @@ app.use("/javascripts", express.static(path.join(__dirname, "node_modules/leafle
 app.use('/', indexRouter);
 app.use('/', userRouter);
 app.use('/admin', adminRouter);
+app.use('/api', apiRouter)
 app.use('/', authRouter);
 app.use('/', postsRouter);
 

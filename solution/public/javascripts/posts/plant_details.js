@@ -58,12 +58,12 @@ function registerSocketListeners() {
     });
 
     socket.on('connect', () => {
-        console.log('Connected to server');
+        console.log('Connected to server (Socket.io)');
         socket.emit('viewing_plant', {plant_id: plantID});
     });
 
     socket.on('disconnect', () => {
-        console.log('Disconnected from server');
+        console.log('Disconnected from server (Socket.io)');
         socket.emit('leaving_plant', {plant_id: plantID});
     });
 
@@ -136,7 +136,6 @@ async function addCommentToPage(commentID) {
     //Make a request to the /plant/:plant_id/comment/:comment_id/render route to get the HTML for the comment
     try {
         const response = await axios.get(`/plant/${plantID}/comment/${commentID}/render`);
-
         //Get the comments container
         const commentsContainer = document.getElementById('commentsContainer');
 
