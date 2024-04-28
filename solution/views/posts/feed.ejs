@@ -1,5 +1,5 @@
 <%- include("../components/navbar.ejs") %>
-<div class="container-fluid col-lg-7 col-md-10 mt-5">
+<div class="container-fluid col-xl-6 col-lg-10 col-md-10 col-sm-mt-5">
 
     <div class="container-fluid col-lg-10 col-md-10 mt-5">
         <form method="GET">
@@ -29,30 +29,45 @@
             </div>
         </form>
     </div>
-    <% posts.forEach(post => { %>
-        <div class="row mb-3 border-1 border shadow-sm rounded-3 p-4">
-            <div class="col-sm-4">
-                <img src="<%= post.img %>" alt="" class="w-100 object-fit-cover mh-200">
-            </div>
-            <div class="col-sm-8 d-flex flex-column justify-content-between align-items-start">
-                <div class="d-flex justify-content-between w-100 mb-2">
-                    <h3 class="m-0"> <%= post.title %></h3>
-                    <span class="align-self-center"><%= post.time.toLocaleDateString() %></span>
+    <div>
+        <div id="error-box">
+            <div class="bg-danger text-white p-3 rounded-3 d-flex me-auto ms-auto col-md-6 col-sm-8 col-xl-4 justify-content-around mb-3">
+                <div class="align-self-center">
+                    Sorry! There was an error while loading the feed.
                 </div>
-                <div class="fst-italic">
-                    <%= post.shortDesc + "..." %>
-                </div>
-                <div class="d-flex justify-content-between mt-3 w-100">
-                    <div class="align-self-center">
-                        Identification:
-                        <span class="<%= post.identification === "Completed" ? "text-success" : "text-warning" %>"><%= post.identification %></span>
-                    </div>
-                    <div class="btn btn-warning">Comments: <%= post.numOfComments %></div>
-                    <a class="btn btn-primary" href="/plant/<%= post.plantId %>">See more</a>
-                </div>
-
             </div>
         </div>
-    <% }) %>
+        <div id="update-spinner">
+            <div class="bg-primary text-white p-3 rounded-3 d-flex me-auto ms-auto col-md-6 col-sm-8 col-xl-4 justify-content-around mb-3">
+                <div class="align-self-center">
+                    Loading Most Recent Posts...
+                </div>
+                <div class="spinner-border text-light" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+        <div id="feed-wrapper">
+        </div>
+    </div>
+    <div id="loading-spinner">
+        <div class="bg-success text-white p-3 rounded-3 d-flex me-auto ms-auto col-md-6 col-sm-8 col-xl-4 justify-content-around mb-3">
+            <div class="align-self-center">
+                Loading More Posts...
+            </div>
+            <div class="spinner-border text-light" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    </div>
+    <div id="feed-end">
+        <div class="bg-success text-white p-3 rounded-3 d-flex me-auto ms-auto col-md-6 col-sm-8 col-xl-4 justify-content-around mb-3">
+            <div class="align-self-center">
+                End of the feed
+            </div>
+        </div>
+    </div>
 </div>
+
+
 <%- include("../components/footer.ejs") %>

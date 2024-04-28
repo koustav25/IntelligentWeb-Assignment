@@ -18,7 +18,6 @@ const MONGO_CONNNAME = process.env.MONGO_CONNNAME || "mongodb";
 
 /* Connection String */
 const connectionString = `mongodb+srv://${MONGO_USER}:${MONGO_PASS}@${MONGO_HOST}/${MONGO_DBNAME}?retryWrites=true&w=majority`;
-
 /* Variables */
 let connected = false;
 
@@ -91,6 +90,10 @@ const getPostById = async (id) => {
         });
     }
     return post;
+}
+
+const getFeedPosts = async (page = 1, limit = 10) => {
+    return await Post.find().sort({createdAt: -1}).skip((page - 1) * limit).limit(limit)
 }
 
 const getPostsBySearchTerms = async (search_text, search_order, limit) => {
@@ -188,7 +191,6 @@ const addComment = async (postId, data) => {
         content: data.content,
         likes: data.likes,
     }
-
     post.comments?.push(comment);
     await post.save();
 
@@ -336,4 +338,5 @@ module.exports = {
     getSuggestionFromPost,
     findSuggestion,
     createPost,
+    getFeedPosts
 }

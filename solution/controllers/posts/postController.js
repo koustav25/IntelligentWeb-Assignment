@@ -7,7 +7,7 @@ const {
     addSuggestion,
     getSuggestionFromPost,
     findSuggestion,
-    getUserById, createPost
+    getUserById, createPost, updateUser
 } = require("../../model/mongodb");
 const postStates = require("../../model/enum/postStates");
 const leafTypes = require("../../model/enum/leafTypes");
@@ -126,6 +126,14 @@ async function postNewPost(req, res, next) {
 
         const post = await createPost(postObject);
 
+        const user = await getUserById(userId); // Get the user by ID
+
+// Add the ObjectId of the newly created post to the user's posts array
+        user.posts.push(post._id);
+
+// Save the updated user document
+        await updateUser(userId,user);
+
         res.status(200).send(post);
     } catch (err) {
         console.log(err);
@@ -205,7 +213,6 @@ async function getCommentHTML(req, res) {
 
     //Get the comment from the post
     const comment = await getCommentFromPost(plant_id, comment_id);
-
     //Render the comment HTML from the EJS template
     res.render('posts/comment', {comment: comment, isReply: false});
 }
@@ -265,7 +272,7 @@ async function postLike(req, res) {
     const plant_id = req.params.plant_id;
     const comment_id = req.params.comment_id;
 
-    const userID = req.body.userID;
+    const userID = req.body.user_id;
 
     //Get the comment from the post
     const post = await getPostById(plant_id);
@@ -286,7 +293,7 @@ async function postUnlike(req, res) {
     const plant_id = req.params.plant_id;
     const comment_id = req.params.comment_id;
 
-    const userID = req.body.userID;
+    const userID = req.body.user_id;
 
     const post = await getPostById(plant_id);
 
@@ -310,7 +317,7 @@ async function postSuggestion(req, res) {
 
     //Get the text and user ID from the request
     const text = req.body.text;
-    const user_id = req.body.userID;
+    const user_id = req.body.user_id;
 
     //Check if the ID is valid
     if (!plant_id) {
@@ -365,7 +372,7 @@ async function postUpvote(req, res) {
     const plant_id = req.params.plant_id;
     const suggestion_id = req.params.suggestion_id;
 
-    const userID = req.body.userID;
+    const userID = req.body.user_id;
 
     //Get the suggestion from the post
     const post = await getPostById(plant_id);
@@ -387,7 +394,7 @@ async function postUnupvote(req, res) {
     const plant_id = req.params.plant_id;
     const suggestion_id = req.params.suggestion_id;
 
-    const userID = req.body.userID;
+    const userID = req.body.user_id;
 
     const post = await getPostById(plant_id);
 
@@ -409,7 +416,7 @@ async function postDownvote(req, res) {
     const plant_id = req.params.plant_id;
     const suggestion_id = req.params.suggestion_id;
 
-    const userID = req.body.userID;
+    const userID = req.body.user_id;
 
     //Get the suggestion from the post
     const post = await getPostById(plant_id);
@@ -432,7 +439,7 @@ async function postUndownvote(req, res) {
     const plant_id = req.params.plant_id;
     const suggestion_id = req.params.suggestion_id;
 
-    const userID = req.body.userID;
+    const userID = req.body.user_id;
 
     const post = await getPostById(plant_id);
 
@@ -506,6 +513,7 @@ function upvotesDownvotesAsAPercentage(upvotes, downvotes) {
 
     return {upvote: upvotePercentage, downvote: downvotePercentage};
 }
+
 
 module.exports = {
     getPost,

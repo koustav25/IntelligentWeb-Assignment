@@ -18,6 +18,7 @@ function registerPlantDetailsSockets(io, socket) {
     });
 
     socket.on('new_comment', (room, data) => {
+        data.post_id = room
         socket.broadcast.to(room).emit('new_comment', data);
     });
 
