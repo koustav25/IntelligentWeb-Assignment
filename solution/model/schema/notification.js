@@ -20,6 +20,11 @@ const notificationSchema = new mongoose.Schema({
             type: Number,
             required: true
         },
+        seen: {
+          type: Boolean,
+          default: false,
+          required: true
+        },
         content: {
             title: {
                 type: String,

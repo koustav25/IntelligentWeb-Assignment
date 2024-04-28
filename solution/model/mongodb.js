@@ -7,8 +7,9 @@ const MongoStore = require('connect-mongo')
 const {User} = require("./schema/user");
 const {Post} = require("./schema/post");
 const {Notification} = require("./schema/notification");
-
 const {NEW} = require("./enum/notificationStates")
+const notificationTypes = require("./enum/notificationTypes")
+
 /* Connection Properties */
 const MONGO_HOST = process.env.MONGO_HOST || "localhost";
 const MONGO_USER = process.env.MONGO_USER || "admin";
@@ -193,6 +194,7 @@ const addComment = async (postId, data) => {
     }
     post.comments?.push(comment);
     await post.save();
+    await addNotification(post._id, post.posting_user._id, notificationTypes.NEW_COMMENT, post.title, post.content, data.userID)
 
     const returnComment = post.comments[post.comments.length - 1];
     return returnComment;
@@ -220,6 +222,7 @@ const addReply = async (postId, commentId, data) => {
 
         comment.replies.push(reply);
         await post.save();
+        await addNotification(postId, comment.user, notificationTypes.NEW_REPLY, post.title, reply.content, reply.user)
 
         //Get the latest reply
         const returnReply = comment.replies[comment.replies.length - 1];
@@ -311,13 +314,27 @@ const createPost = async (postData) => {
     return Post.create(postData);
 }
 
-const addNotification = async (targetPostId, targetUserId, notificationType) => {
+const addNotification = async (targetPostId, targetUserId, notificationType, notificationTitle, content = "", authorId = null) => {
+    const author = await User.findById(authorId)
     const notification = {
-        target_user: userId,
-        target_post: postId,
+        target_user: targetUserId,
+        target_post: targetPostId,
         notification_type: notificationType,
-        state: NEW
+        state: NEW,
+        content: notificationTypes.notificationTypeToContent(notificationType, notificationTitle, author.first_name + " " + author.last_name, content)
     }
+
+    const newNotification = new Notification(notification)
+    await newNotification.save()
+}
+
+const getAllNotifications = async (userId) => {
+    return await Notification.find({target_user: userId}).populate({
+        path: 'target_post',
+        populate: {
+            path: 'posting_user'
+        }
+    })
 }
 
 module.exports = {
@@ -338,5 +355,7 @@ module.exports = {
     getSuggestionFromPost,
     findSuggestion,
     createPost,
-    getFeedPosts
+    getFeedPosts,
+    addNotification,
+    getAllNotifications
 }

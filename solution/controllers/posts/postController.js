@@ -7,14 +7,18 @@ const {
     addSuggestion,
     getSuggestionFromPost,
     findSuggestion,
-    getUserById, createPost, updateUser
+    getUserById, createPost, updateUser,
+    addNotification,
 } = require("../../model/mongodb");
 const postStates = require("../../model/enum/postStates");
 const leafTypes = require("../../model/enum/leafTypes");
 const exposureTypes = require("../../model/enum/exposureTypes");
 const seedTypes = require("../../model/enum/seedTypes");
+const notificationTypes = require("../../model/enum/notificationTypes")
+
 const {mongo} = require("mongoose");
 const mongoose = require("mongoose");
+const {add} = require("nodemon/lib/rules");
 
 async function getPost(req, res) {
     //TODO: Change this to the user ID once available
@@ -284,6 +288,10 @@ async function postLike(req, res) {
 
     //Save the post
     await post.save();
+
+    console.log("list post")
+    // Send notification
+    addNotification(post._id, comment.user, notificationTypes.NEW_LIKE, post.title, comment.content, userID)
 
     res.status(200).send(comment);
 }

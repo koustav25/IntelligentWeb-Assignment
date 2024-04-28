@@ -29,7 +29,17 @@ const notificationTypes = {
             case NEW_COMMENT:
                 return {
                     title: `Your post ${plantName} has a new comment!`,
-                    body: `${commentAuthorFullName} added a comment: "${content.slice(0,30)}..."`
+                    body: `${commentAuthorFullName} added a comment: "${content.length > 30 ? content.slice(0,30): content}..."`
+                }
+            case NEW_REPLY:
+                return {
+                    title: `Your comment under ${plantName} has a new reply!`,
+                    body: `${commentAuthorFullName} replied to your comment: "${content.length > 30 ? content.slice(0,30): content}..."`
+                }
+            case NEW_LIKE:
+                return {
+                    title: `Your comment under ${plantName} was liked!`,
+                    body: `${commentAuthorFullName} liked your comment: "${content.length > 30 ? content.slice(0,30): content}..."`
                 }
             default:
                 return 'Unknown';

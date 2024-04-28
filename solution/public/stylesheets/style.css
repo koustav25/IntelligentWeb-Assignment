@@ -100,15 +100,15 @@ body {
 .notification-icon {
     transition: 0.5s;
 
-    scale: 50%;
+    scale: 75%;
 
-    opacity: 25%;
+    opacity: 75%;
 }
 
 .notification-icon:hover {
     transition: 0.2s;
 
-    scale: 75%;
+    scale: 100%;
 
     /* 'Ding' the bell by rotating it and then returning it to its original position as an animation */
     animation: ding 0.3s;
