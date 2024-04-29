@@ -17,7 +17,6 @@ const {mongo} = require("mongoose");
 const mongoose = require("mongoose");
 
 async function getPost(req, res) {
-    //TODO: Change this to the user ID once available
     const userId = req.user.id;
     const user = await getUserById(userId);
     res.render('posts/create_post', {title: 'Post', isLoggedIn: true, user: user, leafTypes, exposureTypes, seedTypes});
