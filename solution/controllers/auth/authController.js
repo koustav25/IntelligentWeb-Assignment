@@ -48,7 +48,7 @@ const logoutUser = async (req,res,next) => {
         if (err) return next(err);
         req.session.destroy(err => {
             if (err) return next(err);
-            return res.redirect("/login")
+            res.redirect("/login")
         });
     })
 }

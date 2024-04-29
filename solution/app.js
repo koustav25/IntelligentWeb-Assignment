@@ -58,14 +58,12 @@ app.use("/javascripts", express.static(path.join(__dirname, "node_modules/leafle
 app.use("/stylesheets", express.static(path.join(__dirname, "node_modules/leaflet/dist")))
 app.use("/javascripts", express.static(path.join(__dirname, "node_modules/leaflet/dist")))
 
-// res.setHeader('Cache-Control', `max-age=0, no-cache`)
-
 app.use('/', authRouter);
 app.use('/', authInfo, indexRouter);
 app.use('/', isAuthenticated, userRouter);
+app.use('/', isAuthenticated, postsRouter);
 app.use('/admin', isAuthenticated, adminRouter);
 app.use('/api', isAuthenticated, apiRouter)
-app.use('/', isAuthenticated, postsRouter);
 
 //Only add debug routes if not in production
 if (process.env.ENVIRONMENT === undefined || process.env.ENVIRONMENT !== "prod") {
