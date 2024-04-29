@@ -73,7 +73,6 @@
                     <div class="row justify-content-center">
                         <div class="col-12 text-center">
                             <div class="w-auto">
-                                <!-- TODO: Integrate actual photo carousel -->
                                 <div class="carousel slide carousel-dark" id="plantImages">
                                     <div class="carousel-indicators">
                                         <% if (plant.images?.length > 0) { %>
@@ -274,12 +273,9 @@
 
                                 <div class="col-7 justify-content-center">
                                     <div class="d-inline-flex justify-content-center w-100">
-                                        <p class="fw-bolder p-0 m-0 my-auto w-auto">
-                                            [Colour]
-                                        </p>
                                         <!-- TODO: Set the colour of the square based on the flower colour -->
                                         <span class="fa-solid fa-square fa-2x px-2"
-                                              style="color: rgb(255, 155, 20)"></span>
+                                              style="color: #<%= plant.details.colour.toString(16) %>"></span>
                                     </div>
                                 </div>
                             </div>
@@ -625,7 +621,7 @@
          aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content bg-light-subtle">
-                <div class="modal-body p-0">
+                <div class="modal-body">
                     <div class="d-inline-flex justify-content-between align-content-center w-100">
                         <h5 class="modal-title text-center">Reply to Comment</h5>
                         <button type="button" class="btn-close my-auto" data-bs-dismiss="modal"

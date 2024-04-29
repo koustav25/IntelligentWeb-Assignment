@@ -170,8 +170,10 @@ async function addReplyToPage(commentID, replyID) {
     try {
         const response = await axios.get(`/plant/${plantID}/comment/${commentID}/reply/${replyID}/render`);
 
+        const $replySection = $(`#reply_section-${commentID}`);
+
         //Get the replies container
-        const commentsContainer = document.getElementById('reply_container-' + commentID);
+        const replyContainer = document.getElementById('reply_container-' + commentID);
 
         //Create a new div element
         const newComment = document.createElement('div');
@@ -187,7 +189,9 @@ async function addReplyToPage(commentID, replyID) {
 
         //Append the new div to the start of the comments container
         newComment.appendChild(newCommentCol);
-        commentsContainer.appendChild(newComment);
+        replyContainer.appendChild(newComment);
+
+        $replySection.removeClass('d-none');
     } catch (err) {
         console.log(err)
     }
@@ -201,7 +205,7 @@ async function toggleLikeButton(commentID) {
     const likes = parseInt(likesCount.text());
 
     const data = {
-        userID: userID
+        user_id: userID
     }
 
     let success = false;
@@ -264,7 +268,7 @@ async function submitSuggestion() {
 
     const newSuggestion = {
         text: suggestionText,
-        userID: userID,
+        user_id: userID,
     }
 
     try {
@@ -331,7 +335,7 @@ async function upvoteSuggestion(suggestionID) {
             upvoteIcon.addClass('text-muted');
 
             //Make a request to the /plant/:plant_id/suggestion/:suggestion_id/unupvote route
-            const response = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/unupvote`, {userID: userID});
+            const response = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/unupvote`, {user_id: userID});
 
             //Emit the upvote count to the server
             socket.emit('suggestion_rating', plantID, {
@@ -352,10 +356,10 @@ async function upvoteSuggestion(suggestionID) {
                 upvoteIcon.removeClass('text-muted');
 
                 //Make a request to the /plant/:plant_id/suggestion/:suggestion_id/undownvote route
-                const response = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/undownvote`, {userID: userID});
+                const response = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/undownvote`, {user_id: userID});
 
                 //Make a request to the /plant/:plant_id/suggestion/:suggestion_id/upvote route
-                const response2 = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/upvote`, {userID: userID});
+                const response2 = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/upvote`, {user_id: userID});
 
                 //Emit the upvote count to the server
                 socket.emit('suggestion_rating', plantID, {
@@ -372,7 +376,7 @@ async function upvoteSuggestion(suggestionID) {
                 upvoteIcon.addClass('text-success');
 
                 //Make a request to the /plant/:plant_id/suggestion/:suggestion_id/upvote route
-                const response = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/upvote`, {userID: userID});
+                const response = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/upvote`, {user_id: userID});
 
                 //Emit the upvote count to the server
                 socket.emit('suggestion_rating', plantID, {
@@ -436,7 +440,7 @@ async function downvoteSuggestion(suggestionID) {
             downvoteIcon.addClass('text-muted');
 
             //Make a request to the /plant/:plant_id/suggestion/:suggestion_id/undownvote route
-            const response = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/undownvote`, {userID: userID});
+            const response = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/undownvote`, {user_id: userID});
 
             //Emit the upvote count to the server
             socket.emit('suggestion_rating', plantID, {
@@ -457,10 +461,10 @@ async function downvoteSuggestion(suggestionID) {
                 downvoteIcon.removeClass('text-muted');
 
                 //Make a request to the /plant/:plant_id/suggestion/:suggestion_id/unupvote route
-                const response = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/unupvote`, {userID: userID});
+                const response = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/unupvote`, {user_id: userID});
 
                 //Make a request to the /plant/:plant_id/suggestion/:suggestion_id/downvote route
-                const response2 = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/downvote`, {userID: userID});
+                const response2 = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/downvote`, {user_id: userID});
 
                 //Emit the upvote count to the server
                 socket.emit('suggestion_rating', plantID, {
@@ -478,7 +482,7 @@ async function downvoteSuggestion(suggestionID) {
                 downvoteIcon.removeClass('text-muted');
 
                 //Make a request to the /plant/:plant_id/suggestion/:suggestion_id/downvote route
-                const response = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/downvote`, {userID: userID});
+                const response = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/downvote`, {user_id: userID});
 
                 //Emit the upvote count to the server
                 socket.emit('suggestion_rating', plantID, {
@@ -558,7 +562,7 @@ async function acceptSuggestion(suggestionID) {
             });
 
             //Make a request to the /plant/:plant_id/suggestion/:suggestion_id/unaccept route
-            const response = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/unaccept`, {userID: userID});
+            const response = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/unaccept`, {user_id: userID});
 
             //Emit the suggestion_unaccepted event to the server
             socket.emit('suggestion_unaccepted', plantID, {suggestionID: suggestionID});
@@ -579,7 +583,7 @@ async function acceptSuggestion(suggestionID) {
             });
 
             //Make a request to the /plant/:plant_id/suggestion/:suggestion_id/accept route
-            const response = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/accept`, {userID: userID});
+            const response = await axios.post(`/plant/${plantID}/suggestion/${suggestionID}/accept`, {user_id: userID});
 
             //Emit the suggestion_accepted event to the server
             socket.emit('suggestion_accepted', plantID, {suggestionID: suggestionID});

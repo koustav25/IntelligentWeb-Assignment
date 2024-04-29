@@ -34,7 +34,8 @@
                 <div class="d-inline-flex justify-content-start justify-content-lg-start align-content-center w-100">
                     <button class="btn my-auto" onclick="toggleLikeButton('<%= comment._id %>')">
                         <!-- TODO: Change user.id to relevant field once user is implemented -->
-                        <i class="fa-<%= (comment.likers?.includes(user.id)) ? "solid" : "regular" %> fa-heart <%= (comment.likers?.includes(user.id)) ? "text-danger" : ""%>" id="comment_<%= comment._id %>_like_indicator"></i>
+                        <i class="fa-<%= (comment.likers?.includes(user.id)) ? "solid" : "regular" %> fa-heart <%= (comment.likers?.includes(user.id)) ? "text-danger" : "" %>"
+                           id="comment_<%= comment._id %>_like_indicator"></i>
                         <span id="comment_<%= comment._id %>_likes">
                         <%= comment.likes %>
                         </span>
@@ -46,23 +47,22 @@
             </div>
         </div>
 
-        <% if(comment.replies && comment.replies.length > 0 && !isReply) { %>
-            <div class="container-fluid m-0 p-0">
-                <div style="max-height: 150px;"
-                     class="overflow-y-scroll overflow-x-hidden px-2 card">
-                    <div class="card-body px-0 py-0" id="reply_container-<%= comment._id %>">
+        <% const hasReplies = (comment.replies && comment.replies.length > 0 && !isReply); %>
+        <div class="container-fluid m-0 p-0 <%= (hasReplies) ? "" : "d-none" %>" id="reply_section-<%= comment._id %>">
+            <div style="max-height: 150px;"
+                 class="overflow-y-scroll overflow-x-hidden px-2 card">
+                <div class="card-body px-0 py-0" id="reply_container-<%= comment._id %>">
 
-                        <% comment.replies.forEach((reply) => { %>
-                            <div class="row p-0">
-                                <div class="col-12 p-2 p-lg-1">
-                                    <%- include('comment', {comment: reply, isReply : true}) %>
-                                </div>
+                    <% comment.replies.forEach((reply) => { %>
+                        <div class="row p-0">
+                            <div class="col-12 p-2 p-lg-1">
+                                <%- include('comment', {comment: reply, isReply : true}) %>
                             </div>
-                        <% }) %>
+                        </div>
+                    <% }) %>
 
-                    </div>
                 </div>
             </div>
-        <% } %>
+        </div>
     </div>
 </div>

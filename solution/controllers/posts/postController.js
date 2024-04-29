@@ -155,6 +155,7 @@ async function getPlant(req, res, next) {
 
     try {
         const post = await getPostById(id)
+
         //TODO: Add the correct auth info once available
         res.render('posts/plant_details', {
             title: 'Plant',
@@ -205,14 +206,28 @@ async function postComment(req, res, next) {
 }
 
 async function getCommentHTML(req, res) {
-    //Get the plant_id and comment_id from the URL
-    const plant_id = req.params.plant_id;
-    const comment_id = req.params.comment_id;
+    try {
+        //Get the plant_id and comment_id from the URL
+        const plant_id = req.params.plant_id;
+        const comment_id = req.params.comment_id;
 
-    //Get the comment from the post
-    const comment = await getCommentFromPost(plant_id, comment_id);
-    //Render the comment HTML from the EJS template
-    res.render('posts/comment', {comment: comment, isReply: false});
+        //TODO: Change this to the user ID once available
+        const userId = "6605a97814ddcdf43b5697d4";//req.user.id;
+
+        //Get the comment from the post
+        const comment = await getCommentFromPost(plant_id, comment_id);
+
+        const user = await getUserById(userId); // Get the user by ID
+        //Render the comment HTML from the EJS template
+        res.render('posts/comment', {
+            comment: comment,
+            user,
+            isReply: false
+        });
+    } catch (e) {
+        console.log(e)
+        res.status(500).json({error: e});
+    }
 }
 
 async function postReply(req, res) {
@@ -253,60 +268,83 @@ async function postReply(req, res) {
 }
 
 async function getReplyHTML(req, res) {
-    //Get the plant_id, comment_id, and reply_id from the URL
-    const plant_id = req.params.plant_id;
-    const comment_id = req.params.comment_id;
-    const reply_id = req.params.reply_id;
+    try {
+        //Get the plant_id, comment_id, and reply_id from the URL
+        const plant_id = req.params.plant_id;
+        const comment_id = req.params.comment_id;
+        const reply_id = req.params.reply_id;
 
-    //Get the comment from the post
-    const comment = await getCommentFromPost(plant_id, reply_id);
+        //TODO: Change this to the user ID once available
+        const userId = "6605a97814ddcdf43b5697d4";//req.user.id;
 
-    //Render the comment HTML from the EJS template
-    res.render('posts/comment', {comment: comment, isReply: true});
+        //Get the comment from the post
+        const comment = await getCommentFromPost(plant_id, reply_id);
+
+        const user = await getUserById(userId); // Get the user by ID
+
+        //Render the comment HTML from the EJS template
+        res.render('posts/comment', {
+            comment: comment,
+            user,
+            isReply: true
+        });
+    } catch (e) {
+        console.log(e)
+        res.status(500).json({error: e});
+    }
 }
 
 async function postLike(req, res) {
-    //Get the plant_id and comment_id from the URL
-    const plant_id = req.params.plant_id;
-    const comment_id = req.params.comment_id;
+    try {
+        //Get the plant_id and comment_id from the URL
+        const plant_id = req.params.plant_id;
+        const comment_id = req.params.comment_id;
 
-    const userID = req.body.user_id;
+        const userID = req.body.user_id;
 
-    //Get the comment from the post
-    const post = await getPostById(plant_id);
-    const comment = findComment(post.comments, comment_id);
+        //Get the comment from the post
+        const post = await getPostById(plant_id);
+        const comment = findComment(post.comments, comment_id);
 
-    //Increment the likes
-    comment.likes += 1;
-    comment.likers.push(userID);
+        //Increment the likes
+        comment.likes += 1;
+        comment.likers.push(userID);
 
-    //Save the post
-    await post.save();
+        //Save the post
+        await post.save();
 
-    res.status(200).send(comment);
+        res.status(200).send(comment);
+    } catch (e) {
+        console.log(e)
+        res.status(500).json({error: e});
+    }
 }
 
 async function postUnlike(req, res) {
-    //Get the plant_id and comment_id from the URL
-    const plant_id = req.params.plant_id;
-    const comment_id = req.params.comment_id;
+    try {
+        //Get the plant_id and comment_id from the URL
+        const plant_id = req.params.plant_id;
+        const comment_id = req.params.comment_id;
 
-    const userID = req.body.user_id;
+        const userID = req.body.user_id;
 
-    const post = await getPostById(plant_id);
+        const post = await getPostById(plant_id);
 
-    //Get the comment from the post
-    const comment = findComment(post.comments, comment_id);
+        //Get the comment from the post
+        const comment = findComment(post.comments, comment_id);
 
-    //Increment the likes
-    comment.likes -= 1;
-    comment.likers = comment.likers.filter(id => id.toString() !== userID.toString());
+        //Increment the likes
+        comment.likes -= 1;
+        comment.likers = comment.likers.filter(id => id.toString() !== userID.toString());
 
-    //Save the post
-    await post.save();
+        //Save the post
+        await post.save();
 
-    res.status(200).send(comment);
-
+        res.status(200).send(comment);
+    } catch (e) {
+        console.log(e)
+        res.status(500).json({error: e});
+    }
 }
 
 async function postSuggestion(req, res) {
@@ -345,159 +383,193 @@ async function postSuggestion(req, res) {
 }
 
 async function getSuggestionHTML(req, res) {
-    //Get the plant_id and suggestion_id from the URL
-    const plant_id = req.params.plant_id;
-    const suggestion_id = req.params.suggestion_id;
+    try {
+        //Get the plant_id and suggestion_id from the URL
+        const plant_id = req.params.plant_id;
+        const suggestion_id = req.params.suggestion_id;
 
-    const post = await getPostById(plant_id);
-    //Get the suggestion from the post
-    const suggestion = findSuggestion(post.identification.potentials, suggestion_id);
+        const post = await getPostById(plant_id);
+        //Get the suggestion from the post
+        const suggestion = findSuggestion(post.identification.potentials, suggestion_id);
 
-    //Render the suggestion HTML from the EJS template
-    //TODO: Add the correct auth info once available
-    res.render('posts/suggestion', {
-        suggestion: suggestion,
-        identification: post.identification,
-        user: {id: "6605a97814ddcdf43b5697d4"},
-        upvotesDownvotesAsAPercentage,
-        isPoster: (suggestion.suggesting_user.toString() === "6605a97814ddcdf43b5697d4")
-    });
+        //Render the suggestion HTML from the EJS template
+        //TODO: Add the correct auth info once available
+        res.render('posts/suggestion', {
+            suggestion: suggestion,
+            identification: post.identification,
+            user: {id: "6605a97814ddcdf43b5697d4"},
+            upvotesDownvotesAsAPercentage,
+            isPoster: (suggestion.suggesting_user.toString() === "6605a97814ddcdf43b5697d4")
+        });
 
+    } catch (e) {
+        console.log(e)
+        res.status(500).json({error: e});
+    }
 }
 
 async function postUpvote(req, res) {
-    //Get the plant_id and suggestion_id from the URL
-    const plant_id = req.params.plant_id;
-    const suggestion_id = req.params.suggestion_id;
+    try {
+        //Get the plant_id and suggestion_id from the URL
+        const plant_id = req.params.plant_id;
+        const suggestion_id = req.params.suggestion_id;
 
-    const userID = req.body.user_id;
+        const userID = req.body.user_id;
 
-    //Get the suggestion from the post
-    const post = await getPostById(plant_id);
-    const suggestion = findSuggestion(post.identification.potentials, suggestion_id);
+        //Get the suggestion from the post
+        const post = await getPostById(plant_id);
+        const suggestion = findSuggestion(post.identification.potentials, suggestion_id);
 
-    //Increment the likes
-    suggestion.upvotes += 1;
-    suggestion.upvoters.push(userID);
+        //Increment the likes
+        suggestion.upvotes += 1;
+        suggestion.upvoters.push(userID);
 
-    //Save the post
-    await post.save();
+        //Save the post
+        await post.save();
 
-    res.status(200).send(suggestion);
+        res.status(200).send(suggestion);
+    } catch (e) {
+        console.log(e)
+        res.status(500).json({error: e});
 
+    }
 }
 
 async function postUnupvote(req, res) {
-    //Get the plant_id and suggestion_id from the URL
-    const plant_id = req.params.plant_id;
-    const suggestion_id = req.params.suggestion_id;
+    try {
+        //Get the plant_id and suggestion_id from the URL
+        const plant_id = req.params.plant_id;
+        const suggestion_id = req.params.suggestion_id;
 
-    const userID = req.body.user_id;
+        const userID = req.body.user_id;
 
-    const post = await getPostById(plant_id);
+        const post = await getPostById(plant_id);
 
-    //Get the suggestion from the post
-    const suggestion = findSuggestion(post.identification.potentials, suggestion_id);
+        //Get the suggestion from the post
+        const suggestion = findSuggestion(post.identification.potentials, suggestion_id);
 
-    //Increment the likes
-    suggestion.upvotes -= 1;
-    suggestion.upvoters = suggestion.upvoters.filter(id => id.toString() !== userID.toString());
+        //Increment the likes
+        suggestion.upvotes -= 1;
+        suggestion.upvoters = suggestion.upvoters.filter(id => id.toString() !== userID.toString());
 
-    //Save the post
-    await post.save();
+        //Save the post
+        await post.save();
 
-    res.status(200).json(suggestion);
+        res.status(200).json(suggestion);
+    } catch (e) {
+        console.log(e)
+        res.status(500).json({error: e});
+    }
 }
 
 async function postDownvote(req, res) {
-    //Get the plant_id and suggestion_id from the URL
-    const plant_id = req.params.plant_id;
-    const suggestion_id = req.params.suggestion_id;
+    try {
+        //Get the plant_id and suggestion_id from the URL
+        const plant_id = req.params.plant_id;
+        const suggestion_id = req.params.suggestion_id;
 
-    const userID = req.body.user_id;
+        const userID = req.body.user_id;
 
-    //Get the suggestion from the post
-    const post = await getPostById(plant_id);
-    const suggestion = findSuggestion(post.identification.potentials, suggestion_id);
+        //Get the suggestion from the post
+        const post = await getPostById(plant_id);
+        const suggestion = findSuggestion(post.identification.potentials, suggestion_id);
 
-    //Increment the likes
-    suggestion.downvotes += 1;
-    suggestion.downvoters.push(userID);
+        //Increment the likes
+        suggestion.downvotes += 1;
+        suggestion.downvoters.push(userID);
 
-    //Save the post
-    await post.save();
+        //Save the post
+        await post.save();
 
-    res.status(200).send(suggestion);
-
+        res.status(200).send(suggestion);
+    } catch (e) {
+        console.log(e)
+        res.status(500).json({error: e});
+    }
 
 }
 
 async function postUndownvote(req, res) {
-    //Get the plant_id and suggestion_id from the URL
-    const plant_id = req.params.plant_id;
-    const suggestion_id = req.params.suggestion_id;
+    try {
+        //Get the plant_id and suggestion_id from the URL
+        const plant_id = req.params.plant_id;
+        const suggestion_id = req.params.suggestion_id;
 
-    const userID = req.body.user_id;
+        const userID = req.body.user_id;
 
-    const post = await getPostById(plant_id);
+        const post = await getPostById(plant_id);
 
-    //Get the suggestion from the post
-    const suggestion = findSuggestion(post.identification.potentials, suggestion_id);
+        //Get the suggestion from the post
+        const suggestion = findSuggestion(post.identification.potentials, suggestion_id);
 
-    //Increment the likes
-    suggestion.downvotes -= 1;
-    suggestion.downvoters = suggestion.downvoters.filter(id => id.toString() !== userID.toString());
+        //Increment the likes
+        suggestion.downvotes -= 1;
+        suggestion.downvoters = suggestion.downvoters.filter(id => id.toString() !== userID.toString());
 
-    //Save the post
-    await post.save();
+        //Save the post
+        await post.save();
 
-    res.status(200).send(suggestion);
+        res.status(200).send(suggestion);
+    } catch (e) {
+        console.log(e)
+        res.status(500).json({error: e});
+    }
 }
 
 async function postAcceptSuggestion(req, res) {
-    //Get the plant_id and suggestion_id from the URL
-    const plant_id = req.params.plant_id;
-    const suggestion_id = req.params.suggestion_id;
+    try {
+        //Get the plant_id and suggestion_id from the URL
+        const plant_id = req.params.plant_id;
+        const suggestion_id = req.params.suggestion_id;
 
-    const post = await getPostById(plant_id);
+        const post = await getPostById(plant_id);
 
-    //Get the index of the suggestion in the potentials array
-    const index = post.identification.potentials.findIndex(suggestion => suggestion._id.toString() === suggestion_id);
+        //Get the index of the suggestion in the potentials array
+        const index = post.identification.potentials.findIndex(suggestion => suggestion._id.toString() === suggestion_id);
 
-    //Set is_accepted to true
-    post.identification.is_accepted = true;
-    post.identification.date_accepted = new Date();
-    post.identification.accepted_potential = index;
-    post.identification.accepted_potential_id = post.identification.potentials[index]._id;
+        //Set is_accepted to true
+        post.identification.is_accepted = true;
+        post.identification.date_accepted = new Date();
+        post.identification.accepted_potential = index;
+        post.identification.accepted_potential_id = post.identification.potentials[index]._id;
 
-    post.state = postStates.IDENTIFIED;
+        post.state = postStates.IDENTIFIED;
 
-    //TODO: Add the dbpedia URL once available
+        //TODO: Add the dbpedia URL once available
 
-    //Save the post
-    await post.save();
+        //Save the post
+        await post.save();
 
-    res.status(200).send(post);
+        res.status(200).send(post);
+    } catch (e) {
+        console.log(e)
+        res.status(500).json({error: e});
+    }
 }
 
 async function postUnacceptSuggestion(req, res) {
-    //Get the plant_id and suggestion_id from the URL
-    const plant_id = req.params.plant_id;
-    const suggestion_id = req.params.suggestion_id;
+    try {
+        //Get the plant_id and suggestion_id from the URL
+        const plant_id = req.params.plant_id;
+        const suggestion_id = req.params.suggestion_id;
 
-    const post = await getPostById(plant_id);
+        const post = await getPostById(plant_id);
 
-    //Set is_accepted to false
-    post.identification.is_accepted = false;
-    post.identification.date_accepted = null;
-    post.identification.accepted_potential = null;
-    post.identification.accepted_potential_id = null;
+        //Set is_accepted to false
+        post.identification.is_accepted = false;
+        post.identification.date_accepted = null;
+        post.identification.accepted_potential = null;
+        post.identification.accepted_potential_id = null;
 
-    post.state = postStates.IN_PROGRESS;
+        post.state = postStates.IN_PROGRESS;
 
-    await post.save();
+        await post.save();
 
-    res.status(200).send(post);
+        res.status(200).send(post);
+    } catch (e) {
+        console.log(e)
+        res.status(500).json({error: e});
+    }
 }
 
 function upvotesDownvotesAsAPercentage(upvotes, downvotes) {
