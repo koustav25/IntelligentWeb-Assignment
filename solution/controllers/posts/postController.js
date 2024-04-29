@@ -18,10 +18,8 @@ const mongoose = require("mongoose");
 
 async function getPost(req, res) {
     //TODO: Change this to the user ID once available
-    const userId = "6605a97814ddcdf43b5697d4"; //req.user.id;
-
+    const userId = req.user.id;
     const user = await getUserById(userId);
-
     res.render('posts/create_post', {title: 'Post', isLoggedIn: true, user: user, leafTypes, exposureTypes, seedTypes});
 }
 
@@ -61,8 +59,7 @@ async function postNewPost(req, res, next) {
         //If an identification has been made, set the state to IN_PROGRESS
         const state = (!identifiedAs) ? postStates.NEW_POST : postStates.IN_PROGRESS;
 
-        //TODO: Change this to the user ID once available
-        const userId = "6605a97814ddcdf43b5697d4";//req.user.id;
+        const userId = req.user.id;
 
         let imgData = [];
         if (images) {

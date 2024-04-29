@@ -92,6 +92,7 @@ $(document).ready(async function () {
                 })
             })
         }catch (e){
+            console.log(e)
             $errorBox.show()
         }
 

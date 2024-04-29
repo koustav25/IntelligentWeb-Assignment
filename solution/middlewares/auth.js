@@ -8,7 +8,8 @@ const isAuthenticated = (req, res, next) => {
         req.isLoggedIn = true;
         next();
     } else {
-        res.redirect("/login")
+        req.session.returnTo = req.originalUrl;
+        return res.redirect('/login');
     }
 }
 

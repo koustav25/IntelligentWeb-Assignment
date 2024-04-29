@@ -35,15 +35,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // TODO Uncomment Authentication Setup Once MongoDB and User Schema are created.
 /* Session Auth Setup */
-//app.use(sessionSetup);
-//app.use(passport.authenticate('session'))
+app.use(sessionSetup);
+app.use(passport.authenticate('session'))
 /* Session Error Handler */
-//app.use(sessionErrorHandler);
+app.use(sessionErrorHandler);
 
 /* Passport setup */
-//passport.use(authenticationStrategy)
-//passport.serializeUser(serializeUser)
-//passport.deserializeUser(deserializeUser)
+passport.use(authenticationStrategy)
+passport.serializeUser(serializeUser)
+passport.deserializeUser(deserializeUser)
 
 //Serve stylesheets and Javascript for libraries in node_modules
 app.use("/stylesheets", express.static(path.join(__dirname, "node_modules/bootstrap/dist/css")));
@@ -58,12 +58,14 @@ app.use("/javascripts", express.static(path.join(__dirname, "node_modules/leafle
 app.use("/stylesheets", express.static(path.join(__dirname, "node_modules/leaflet/dist")))
 app.use("/javascripts", express.static(path.join(__dirname, "node_modules/leaflet/dist")))
 
-app.use('/', indexRouter);
-app.use('/', userRouter);
-app.use('/admin', adminRouter);
-app.use('/api', apiRouter)
+// res.setHeader('Cache-Control', `max-age=0, no-cache`)
+
 app.use('/', authRouter);
-app.use('/', postsRouter);
+app.use('/', authInfo, indexRouter);
+app.use('/', isAuthenticated, userRouter);
+app.use('/admin', isAuthenticated, adminRouter);
+app.use('/api', isAuthenticated, apiRouter)
+app.use('/', isAuthenticated, postsRouter);
 
 //Only add debug routes if not in production
 if (process.env.ENVIRONMENT === undefined || process.env.ENVIRONMENT !== "prod") {

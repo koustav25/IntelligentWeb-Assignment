@@ -9,6 +9,9 @@ const session = require("express-session")
 const mongo = require("../model/mongodb");
 const passport = require("passport")
 const crypto = require("node:crypto")
+const MongoStore = require("connect-mongo");
+const mongoose = require("mongoose");
+const db = mongoose.connection
 
 // Creates a passport local strategy which determines how user authentication is performed.
 // The verify callback is executed after user submits login form.
@@ -47,19 +50,30 @@ const authenticate = passport.authenticate('local', {
 )
 
 // Setup express sessions with MongoDB storage.
+const store = MongoStore.create({
+    client: db.getClient(),
+    dbName: process.env.MONGO_DBNAME,
+    collection: 'sessions',
+    crypto: {
+        secret: process.env.STORE_SECRET || "secret",
+    },
+    ttl: 604800, // 7 days default session expiration
+})
+
+// Setup express sessions with MongoDB storage.
 const sessionSetup = session({
     secret: process.env.SESSION_SECRET || "secret",
-    resave: false,
+    store,
+    secure: true,
+    resave: true,
     saveUninitialized: false,
-    store: mongo.store,
-    name: "sessionId"
 })
 
 // Determines what data is stored in session after the user is authenticated (after login form is submitted).
 const serializeUser = (user, callback) => {
     process.nextTick(function () {
         // Null is passed to the callback if no errors occurred
-        callback(null, {user: {id: user.id, username: user.username, role: user.role, email: user.email}});
+        callback(null, {id: user.id, username: user.username, role: user.role, email: user.email});
     });
 }
 

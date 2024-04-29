@@ -8,7 +8,6 @@ window.addEventListener('offline', (e) => {
 });
 
 window.addEventListener('online', (e) => {
-    // console.log("online")
     $offlineBox.hide();
     isOnline = true
 });
