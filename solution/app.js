@@ -33,7 +33,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// TODO Uncomment Authentication Setup Once MongoDB and User Schema are created.
 /* Session Auth Setup */
 app.use(sessionSetup);
 app.use(passport.authenticate('session'))

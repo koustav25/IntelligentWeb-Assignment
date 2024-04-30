@@ -19,7 +19,7 @@ const mongoose = require("mongoose");
 async function getPost(req, res) {
     const userId = req.user.id;
     const user = await getUserById(userId);
-    res.render('posts/create_post', {title: 'Post', isLoggedIn: true, user: user, leafTypes, exposureTypes, seedTypes});
+    res.render('posts/create_post', {title: 'Post', isLoggedIn: req.isLoggedIn, user: user, leafTypes, exposureTypes, seedTypes});
 }
 
 async function postNewPost(req, res, next) {
@@ -151,7 +151,6 @@ async function getPlant(req, res, next) {
 
     try {
         const post = await getPostById(id)
-        //TODO: Add the correct auth info once available
         res.render('posts/plant_details', {
             title: 'Plant',
             plant: post,
@@ -160,8 +159,8 @@ async function getPlant(req, res, next) {
             leafTypes,
             seedTypes,
             upvotesDownvotesAsAPercentage,
-            user: {id: "6605a97814ddcdf43b5697d4"},
-            isLoggedIn: true
+            user: req.user,
+            isLoggedIn: req.isLoggedIn
         })
     } catch (err) {
         console.log(err)
@@ -350,11 +349,10 @@ async function getSuggestionHTML(req, res) {
     const suggestion = findSuggestion(post.identification.potentials, suggestion_id);
 
     //Render the suggestion HTML from the EJS template
-    //TODO: Add the correct auth info once available
     res.render('posts/suggestion', {
         suggestion: suggestion,
         identification: post.identification,
-        user: {id: "6605a97814ddcdf43b5697d4"},
+        user: req.user,
         upvotesDownvotesAsAPercentage,
         isPoster: (suggestion.suggesting_user.toString() === "6605a97814ddcdf43b5697d4")
     });

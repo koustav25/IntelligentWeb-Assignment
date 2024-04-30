@@ -6,12 +6,12 @@ function getAdminDashboard(req, res) {
     //TODO: Add admin dashboard rendering logic here
     //res.render('admin/dashboard', { title: 'Admin Dashboard' });
 
-    res.render("admin/index", {isLoggedIn: true})
+    res.render("admin/index", {isLoggedIn: req.isLoggedIn})
 }
 
 async function getAdminUsers(req, res) {
     const users = await getAllUsers()
-    res.render("admin/users", {isLoggedIn: true, users, roleTypes})
+    res.render("admin/users", {isLoggedIn: req.isLoggedIn, users, roleTypes})
 }
 
 async function getAdminUserDetails(req, res) {
@@ -19,7 +19,7 @@ async function getAdminUserDetails(req, res) {
 
     const user = (await getUserByIdWithPosts(id));
 
-    res.render("admin/user_details", {isLoggedIn: true, userDetails: user, roleTypes})
+    res.render("admin/user_details", {isLoggedIn: req.isLoggedIn, userDetails: user, roleTypes})
 }
 
 async function postUserUpdate(req, res) {
@@ -44,7 +44,7 @@ async function postUserUpdate(req, res) {
 
         //Check if the role of the user being changed is <= the role of the user making the change
         //TODO: Remove true once authentication is implemented
-        if (false && (req.user.role <= user.role && req.user.role >= roleTypes.ADMIN)) {
+        if (req.user.role <= user.role && req.user.role >= roleTypes.ADMIN) {
             return res.status(403).send({message: "You do not have permission to change this user's role"});
         }
 
@@ -60,7 +60,7 @@ async function postUserUpdate(req, res) {
 function getAdminPlants(req, res) {
     //TODO: Add admin plants rendering logic here
     const plants = getMockPlants()
-    res.render('admin/plants', { plants, isLoggedIn: true });
+    res.render('admin/plants', { plants, isLoggedIn: req.isLoggedIn });
 }
 
 function getAdminPlantDetails(req, res) {

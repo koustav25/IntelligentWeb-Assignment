@@ -89,7 +89,7 @@ async function updateProfile(req,res){
 function getNotifications(req, res) {
     const notifications = getUserNotifications()
 
-    res.render('user/notifications', {title: 'Notifications', notifications, user: {id: 1}});
+    res.render('user/notifications', {title: 'Notifications', notifications, user: req.user});
 }
 
 module.exports = {
