@@ -43,7 +43,6 @@ async function postUserUpdate(req, res) {
         }
 
         //Check if the role of the user being changed is <= the role of the user making the change
-        //TODO: Remove true once authentication is implemented
         if (req.user.role <= user.role && req.user.role >= roleTypes.ADMIN) {
             return res.status(403).send({message: "You do not have permission to change this user's role"});
         }
