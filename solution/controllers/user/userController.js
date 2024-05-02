@@ -1,6 +1,6 @@
 const { getUserNotifications } = require("../../util/mock/mockData")
 const {getUserById, updateUser, getAllNotifications} = require("../../model/mongodb");
-
+const postStates = require("../../model/enum/postStates")
 const {promisify} = require('node:util');
 const {randomBytes, pbkdf2} = require('node:crypto');
 const roleTypes = require("../../model/enum/roleTypes");
@@ -8,11 +8,10 @@ const {isLinux} = require("nodemon/lib/utils");
 const pbkdf2Promise = promisify(pbkdf2);
 
 async function getProfile(req, res) {
-    //TODO: Update to use req.user.id once authentication is implemented
-    const id = "6605a97814ddcdf43b5697d4" //req.user.id;
+    const id = req.user.id;
 
     const userDetails = await getUserById(id);
-    res.render('user/profile', {isLoggedIn: true, user: {id: 1}, userDetails});
+    res.render('user/profile', {isLoggedIn: req.isLoggedIn, userDetails, postStates});
 }
 
 async function postNewUserPassword(req, res) {
@@ -89,15 +88,14 @@ async function updateProfile(req,res){
 }
 
 async function getNotifications(req, res) {
-    //TODO: Change this to the user ID once available
-    const userId = "6605a97814ddcdf43b5697d4"; //req.user.id;
+    const userId = req.user.id;
 
     const n = getUserNotifications()
     const notifications = await getAllNotifications(userId);
     console.log(notifications[0].target_post.posting_user._id)
     console.log(notifications[0].target_user._id)
     console.log(notifications[0].target_user._id.equals(notifications[0].target_post.posting_user._id))
-    res.render('user/notifications', {title: 'Notifications', notifications, user: {id: 1},isLoggedIn: true});
+    res.render('user/notifications', {title: 'Notifications', notifications, user: req.user});
 }
 
 module.exports = {

@@ -47,7 +47,7 @@ self.addEventListener('activate', event => {
     )
 })
 
-// Fetch event to fetch from cache first
+//Fetch event to fetch from cache first
 self.addEventListener('fetch', async event => {
     event.respondWith((async () => {
         const cache = await caches.open("static");
@@ -56,7 +56,7 @@ self.addEventListener('fetch', async event => {
             console.log('Service Worker: Fetching from Cache: ', event.request.url);
             return cachedResponse;
         }
-        // console.log('Service Worker: Fetching from URL: ', event.request.url);
+        console.log('Service Worker: Fetching from URL: ', event.request.url);
         try {
             return await fetch(event.request)
         }catch(e) {

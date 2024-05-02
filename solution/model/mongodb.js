@@ -51,7 +51,7 @@ const searchUser = async (filter) => {
 }
 
 const getUserById = async (id) => {
-    return User.findOne({_id: id});
+    return User.findOne({_id: id}).populate("posts")
 }
 
 const updateUser = async (id, data) => {

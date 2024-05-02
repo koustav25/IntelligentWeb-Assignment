@@ -13,12 +13,15 @@ function getRegister(req, res) {
 
 const registerUser = async (req,res,next) => {
     try {
-        const {username, password, confirmPassword} = req.body
+        const {username, password, confirmPassword, first_name, last_name, email} = req.body
 
         const salt = randomBytes(16)
         const hashedPassword = await pbkdf2Promise(password, salt, 310000, 32, 'sha256')
         const user = new User({
             username,
+            first_name,
+            last_name,
+            email,
             password: hashedPassword,
             salt,
         });
@@ -39,16 +42,14 @@ const registerUser = async (req,res,next) => {
     }
 }
 
-const loginUser = (req,res,next) => {
-    const {username, password} = req.body
-    console.log(username, password)
-    res.send("OK")
-}
 
-const logoutUser = (req,res,next) => {
+const logoutUser = async (req,res,next) => {
     req.logout(err => {
-        if(err) return next(err)
-        res.redirect("/login")
+        if (err) return next(err);
+        req.session.destroy(err => {
+            if (err) return next(err);
+            res.redirect("/login")
+        });
     })
 }
 
@@ -56,6 +57,5 @@ module.exports = {
     getLogin,
     getRegister,
     registerUser,
-    loginUser,
     logoutUser
 }

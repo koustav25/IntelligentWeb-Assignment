@@ -11,7 +11,7 @@ async function getSearch(req, res) {
 
     const searchResults = await getPostsBySearchTerms(search_text, search_order);
 
-    res.render('posts/search', {isLoggedIn: true, searchResults, search_text, search_order, empty_query, postStates});
+    res.render('posts/search', {isLoggedIn: req.isLoggedIn, searchResults, search_text, search_order, empty_query, postStates});
 }
 
 module.exports = {
