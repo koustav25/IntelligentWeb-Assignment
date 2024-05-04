@@ -1,4 +1,6 @@
-const {getCommentOwnerId, getNotificationCount: getNotificationCountDB, getPostOwner: getPostOwnerDB, viewNotification : viewNotificationDB} = require("../../model/mongodb")
+const {getCommentOwnerId, getNotificationCount: getNotificationCountDB, getPostOwner: getPostOwnerDB, viewNotification : viewNotificationDB,
+    getAllNotifications
+} = require("../../model/mongodb")
 
 async function getNotificationCount(req, res, next) {
     try {
@@ -38,8 +40,20 @@ async function viewNotification(req, res, next) {
     }
 }
 
+async function  getNotifications(req,res,next) {
+    try {
+        const page = req.query.page ? req.query.page : 0;
+        console.log(page)
+        const notifications = await getAllNotifications(req.user.id, page)
+        res.status(200).json({notifications})
+    }catch(e) {
+        console.log(e)
+        next(e)
+    }
 
+}
 module.exports = {
+    getNotifications,
     getCommentOwner,
     viewNotification,
     getPostOwner,

@@ -4,6 +4,7 @@ const notificationApiController = require("../controllers/api/notification")
 const router = express.Router();
 
 router.get("/feed", feedApiController.fetchPosts);
+router.get("/get-notifications", notificationApiController.getNotifications);
 router.get("/new-notification-count", notificationApiController.getNotificationCount);
 router.get("/get-plant-owner", notificationApiController.getPostOwner)
 router.get("/get-comment-owner", notificationApiController.getCommentOwner)
