@@ -1,7 +1,7 @@
 let map;
 let postMarker;
 
-let socket = io();
+socket = io();
 
 let actionInProgress = false;
 let identificationHasChanged = false;
@@ -88,12 +88,13 @@ async function addNewComment() {
         //Send the comment to /plant/:id/comment
         const response = await axios.post(`/plant/${plantID}/comment`, newComment);
 
-        console.log(response.data);
+        console.log("response data: ", response.data);
 
-        socket.emit('new_comment', plantID, response.data);
+        socket.emit('new_comment', plantID, response.data.post);
+        socket.emit("notify", response.data.notification)
 
         //Add the comment to the page
-        await addCommentToPage(response.data._id);
+        await addCommentToPage(response.data.post._id);
     } catch (err) {
         console.error(err);
     }
@@ -118,7 +119,9 @@ async function addNewReply() {
 
         console.log(response.data);
 
-        socket.emit('new_reply', plantID, response.data);
+        socket.emit('new_reply', plantID, response.data.post);
+
+        socket.emit("notify", response.data.notification)
 
         //Add the reply to the page
         await addReplyToPage(commentID, response.data._id.toString());
@@ -226,7 +229,8 @@ async function toggleLikeButton(commentID) {
         if (hasLiked) {
             await axios.post(`/plant/${plantID}/comment/${commentID}/unlike`, data);
         } else {
-            await axios.post(`/plant/${plantID}/comment/${commentID}/like`, data);
+            const response = await axios.post(`/plant/${plantID}/comment/${commentID}/like`, data);
+            socket.emit("notify", response.data.notification)
         }
 
         socket.emit('like_count', plantID, {commentID: commentID, likes: data.likes});
@@ -273,8 +277,9 @@ async function submitSuggestion() {
 
     try {
         const response = await axios.post(`/plant/${plantID}/suggestion`, newSuggestion);
+        socket.emit('new_suggestion', plantID, response.data.suggestion);
 
-        socket.emit('new_suggestion', plantID, response.data);
+        socket.emit("notify", response.data.notification)
 
         await addSuggestionToPage(response.data._id);
 

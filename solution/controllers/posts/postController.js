@@ -197,8 +197,8 @@ async function postComment(req, res, next) {
     try {
         console.log(plant_id)
         console.log(user_id)
-        const post = await addComment(plant_id, {userID: user_id, content: text, likes: 0})
-        res.status(200).send(post);
+        const {post, notification} = await addComment(plant_id, {userID: user_id, content: text, likes: 0})
+        res.status(200).json({post, notification});
     } catch (err) {
         console.log(err)
         res.status(500).json({error: err});
@@ -259,8 +259,8 @@ async function postReply(req, res) {
     }
 
     try {
-        const post = await addReply(plant_id, comment_id, {userID: user_id, content: text, likes: 0})
-        res.status(200).send(post);
+        const {post, notification} = await addReply(plant_id, comment_id, {userID: user_id, content: text, likes: 0})
+        res.status(200).json({post,notification});
     } catch (err) {
         console.log(err)
         res.status(500).json({error: err});
@@ -314,9 +314,9 @@ async function postLike(req, res) {
         await post.save();
 
         // Send notification
-        await addNotification(post._id, comment.user, notificationTypes.NEW_LIKE, post.title, comment.content, userID)
+        const notification = await addNotification(post._id, comment.user, notificationTypes.NEW_LIKE, post.title, comment.content, userID)
 
-        res.status(200).send(comment);
+        res.status(200).json({comment, notification});
     } catch (e) {
         console.log(e)
         res.status(500).json({error: e});
@@ -373,13 +373,13 @@ async function postSuggestion(req, res) {
     }
 
     try {
-        const suggestion = await addSuggestion(plant_id, {userID: user_id, name: text})
+        const {suggestion, notification} = await addSuggestion(plant_id, {userID: user_id, name: text})
 
         const post = await getPostById(plant_id);
         post.state = postStates.IN_PROGRESS;
         await post.save();
-
-        res.status(200).send(suggestion);
+        console.log(suggestion, notification)
+        res.status(200).json({suggestion, notification});
     } catch (err) {
         console.log(err)
         res.status(500).json({error: err});

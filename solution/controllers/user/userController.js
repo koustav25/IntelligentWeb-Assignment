@@ -92,11 +92,10 @@ async function getNotifications(req, res) {
 
     const n = getUserNotifications()
     const notifications = await getAllNotifications(userId);
-    console.log(notifications[0].target_post.posting_user._id)
-    console.log(notifications[0].target_user._id)
-    console.log(notifications[0].target_user._id.equals(notifications[0].target_post.posting_user._id))
-    res.render('user/notifications', {title: 'Notifications', notifications, user: req.user});
+
+    res.render('user/notifications', {title: 'Notifications', notifications, user: req.user, isLoggedIn: req.isLoggedIn});
 }
+
 
 module.exports = {
     getProfile,

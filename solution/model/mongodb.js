@@ -194,10 +194,10 @@ const addComment = async (postId, data) => {
     }
     post.comments?.push(comment);
     await post.save();
-    await addNotification(post._id, post.posting_user._id, notificationTypes.NEW_COMMENT, post.title, post.content, data.userID)
 
+    const notification = await addNotification(post._id, post.posting_user._id, notificationTypes.NEW_COMMENT, post.title, comment.content, data.userID)
     const returnComment = post.comments[post.comments.length - 1];
-    return returnComment;
+    return {post: returnComment, notification};
 }
 
 /**
@@ -222,11 +222,11 @@ const addReply = async (postId, commentId, data) => {
 
         comment.replies.push(reply);
         await post.save();
-        await addNotification(postId, comment.user, notificationTypes.NEW_REPLY, post.title, reply.content, reply.user)
+        const notification = await addNotification(postId, comment.user, notificationTypes.NEW_REPLY, post.title, reply.content, reply.user)
 
         //Get the latest reply
         const returnReply = comment.replies[comment.replies.length - 1];
-        return returnReply;
+        return {post:returnReply, notification}
     }
 }
 
@@ -281,7 +281,8 @@ const addSuggestion = async (postId, data) => {
 
     await post.save();
 
-    return post.identification.potentials[post.identification.potentials.length - 1];
+    const notification = await addNotification(post._id, post.posting_user._id, notificationTypes.NEW_IDENTIFICATION, post.title, suggestion.name, suggestion.suggesting_user)
+    return {suggestion:post.identification.potentials[post.identification.potentials.length - 1], notification};
 }
 
 /**
@@ -326,6 +327,8 @@ const addNotification = async (targetPostId, targetUserId, notificationType, not
 
     const newNotification = new Notification(notification)
     await newNotification.save()
+
+    return newNotification
 }
 
 const getAllNotifications = async (userId) => {
@@ -334,10 +337,33 @@ const getAllNotifications = async (userId) => {
         populate: {
             path: 'posting_user'
         }
-    })
+    }).sort({createdAt: -1})
+}
+
+const getNotificationCount = async (userId) => {
+    return await Notification.countDocuments({target_user: userId, seen: false}).exec()
+}
+
+const viewNotification = async (notificationId) => {
+    const notification = await Notification.findById(notificationId);
+    notification.seen = true
+
+    await notification.save()
+}
+
+const getPostOwner = async (plantID) => {
+    return await Post.findById(plantID).select("posting_user")
+}
+
+const getCommentOwnerId = async(postID, commentID) => {
+    const comment = await getCommentFromPost(postID, commentID);
+    return comment.user
 }
 
 module.exports = {
+    viewNotification,
+    getPostOwner,
+    getNotificationCount,
     searchUser,
     getAllUsers,
     updateUser,
@@ -357,5 +383,6 @@ module.exports = {
     createPost,
     getFeedPosts,
     addNotification,
-    getAllNotifications
+    getAllNotifications,
+    getCommentOwnerId
 }

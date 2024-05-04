@@ -41,8 +41,16 @@ const notificationTypes = {
                     title: `Your comment under ${plantName} was liked!`,
                     body: `${commentAuthorFullName} liked your comment: "${content.length > 30 ? content.slice(0,30): content}..."`
                 }
+            case NEW_IDENTIFICATION:
+                return {
+                    title: `Your post ${plantName} has a new identification suggestion!`,
+                    body: `${commentAuthorFullName} suggested: "${content.length > 30 ? content.slice(0,30): content}..."`
+                }
             default:
-                return 'Unknown';
+                return {
+                    title: `Notification Type Unknown!`,
+                    body: `Invalid body."`
+                }
         }
     }
 };

@@ -97,15 +97,24 @@ body {
     scale: 100%;
 }
 
-.notification-icon {
+.notification-icon{
     transition: 0.5s;
 
     scale: 75%;
 
     opacity: 75%;
 }
-
-.notification-icon:hover {
+.notification-counter {
+    min-width: 20px;
+    min-height: 20px;
+    right: -5px;
+    top: -4px;
+    padding: 2px;
+    font-size: 14px;
+    text-shadow: 1px 1px 5px #000
+;
+}
+.notification-icon:hover{
     transition: 0.2s;
 
     scale: 100%;
@@ -115,6 +124,23 @@ body {
 
 
     opacity: 50%;
+}
+.fa-envelope-open:before, .fa-envelope:before{
+    padding: 5px;
+}
+.fa-envelope-open:hover:before{
+    width: 100%;
+    height: 100%;
+    border-radius: 100%;
+    background: #c4c4c4;
+    cursor: pointer;
+}
+
+
+@media (max-width: 992px) {
+    .notification-counter {
+        position: static !important;
+    }
 }
 
 .mh-200 {
