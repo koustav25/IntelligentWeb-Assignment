@@ -9,5 +9,6 @@ router.get("/new-notification-count", notificationApiController.getNotificationC
 router.get("/get-plant-owner", notificationApiController.getPostOwner)
 router.get("/get-comment-owner", notificationApiController.getCommentOwner)
 
+router.post("/mark-all-notifications-as-read", notificationApiController.markAllAsRead)
 router.post("/view-notification", notificationApiController.viewNotification)
 module.exports = router;

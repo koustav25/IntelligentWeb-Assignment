@@ -13,7 +13,7 @@ window.addEventListener('online', (e) => {
     $offlineBox.hide();
     isOnline = true
 });
-
+socket.emit("zero_out_notification_count")
 window.addEventListener("load", async (e) => {
 
     try {
@@ -28,5 +28,4 @@ window.addEventListener("load", async (e) => {
     socket.on("new_notification", () => {
         $notificationCounter.text(parseInt($notificationCounter.text()) + 1)
     })
-
 })

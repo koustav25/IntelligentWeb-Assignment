@@ -360,7 +360,16 @@ const getCommentOwnerId = async(postID, commentID) => {
     return comment.user
 }
 
+const markAllNotificationAsRead = async (userID) => {
+    const notifications = await Notification.find({target_user: userID, seen: false})
+
+    for(let n of notifications){
+        n.seen = true
+        await n.save()
+    }
+}
 module.exports = {
+    markAllNotificationAsRead,
     viewNotification,
     getPostOwner,
     getNotificationCount,

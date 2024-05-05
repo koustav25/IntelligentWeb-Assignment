@@ -1,4 +1,3 @@
-const $notifications = $("[data-seen-false]")
 const $markAllBtn = $("#mark-all")
 const $notificationsWrapper = $("#notifications-wrapper")
 
@@ -71,6 +70,10 @@ const updateNotifications = (notifications) => {
     for (let i = 0; i < notifications.length; i++) {
         const $n = $(getNotificationHTML(notifications[i]))
         $notificationsWrapper.append($n)
+        const $envelope = $(`[data-envelope-${notifications[i]._id}]`)
+        $envelope.on('click', async () => {
+            await markAsRead($n, $envelope, notifications[i]._id)
+        })
     }
 }
 
@@ -84,28 +87,26 @@ window.addEventListener("load", async e => {
         console.log(e)
     }
 
-    $notifications.each(function () {
-        const $envelope = $(`[data-envelope-${this.id}]`)
-        $envelope.on('click', async () => {
-            await markAsRead($(this), $envelope, this.id)
-        })
-    });
 
-    $markAllBtn.on("click", () => {
-        $notifications.each(async function () {
+    $markAllBtn.on("click", async () => {
+        $("[data-seen-false]").each(async function () {
             const $envelope = $(`[data-envelope-${this.id}]`)
-            await markAsRead($(this), $envelope, this.id)
+            $(this).removeClass("border-danger-subtle");
+            $envelope.removeClass("fa-envelope-open")
+            $envelope.addClass("fa-envelope")
+            $(`[data-new-${this.id}]`).remove()
         });
+        await axios.post("/api/mark-all-notifications-as-read")
+        $notificationCounter.text(0)
+
     })
 
     socket.on("new_notification", data => {
-        console.log(data)
         $notificationsWrapper.prepend(getNotificationHTML(data))
     })
 })
 
 $(window).scroll(async function () {
-    console.log(document.getElementById("notifications-wrapper").children.length)
 
     const timeDiff = Date.now() - updateNotificationTime
     if (timeDiff > updateNotificationsGap && $(window).scrollTop() + $(window).height() >= $(document).height()) {

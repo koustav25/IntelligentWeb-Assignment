@@ -91,7 +91,7 @@ async function addNewComment() {
         console.log("response data: ", response.data);
 
         socket.emit('new_comment', plantID, response.data.post);
-        socket.emit("notify", response.data.notification)
+        socket.emit("new_notification", response.data.notification)
 
         //Add the comment to the page
         await addCommentToPage(response.data.post._id);
@@ -121,7 +121,7 @@ async function addNewReply() {
 
         socket.emit('new_reply', plantID, response.data.post);
 
-        socket.emit("notify", response.data.notification)
+        socket.emit("new_notification", response.data.notification)
 
         //Add the reply to the page
         await addReplyToPage(commentID, response.data._id.toString());
@@ -230,7 +230,7 @@ async function toggleLikeButton(commentID) {
             await axios.post(`/plant/${plantID}/comment/${commentID}/unlike`, data);
         } else {
             const response = await axios.post(`/plant/${plantID}/comment/${commentID}/like`, data);
-            socket.emit("notify", response.data.notification)
+            socket.emit("new_notification", response.data.notification)
         }
 
         socket.emit('like_count', plantID, {commentID: commentID, likes: data.likes});
@@ -279,7 +279,7 @@ async function submitSuggestion() {
         const response = await axios.post(`/plant/${plantID}/suggestion`, newSuggestion);
         socket.emit('new_suggestion', plantID, response.data.suggestion);
 
-        socket.emit("notify", response.data.notification)
+        socket.emit("new_notification", response.data.notification)
 
         await addSuggestionToPage(response.data._id);
 
