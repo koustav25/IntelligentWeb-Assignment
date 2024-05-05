@@ -27,7 +27,7 @@ const getNotificationHTML = (notification) => {
                                 ${envelopeTag}
                             </div>
                             <h3 class="ms-1 m-0 fs-5 align-self-center">
-                                ${notification.content.title}
+                                <a class="notification-link" href="/plant/${notification.target_post._id}">${notification.content.title}</a>
                             </h3>
                         </div>
         

@@ -16,9 +16,7 @@ const exposureTypes = require("../../model/enum/exposureTypes");
 const seedTypes = require("../../model/enum/seedTypes");
 const notificationTypes = require("../../model/enum/notificationTypes")
 
-const {mongo} = require("mongoose");
 const mongoose = require("mongoose");
-const {add} = require("nodemon/lib/rules");
 
 async function getPost(req, res) {
     const userId = req.user.id;
@@ -195,8 +193,6 @@ async function postComment(req, res, next) {
     }
 
     try {
-        console.log(plant_id)
-        console.log(user_id)
         const {post, notification} = await addComment(plant_id, {userID: user_id, content: text, likes: 0})
         res.status(200).json({post, notification});
     } catch (err) {
@@ -378,7 +374,6 @@ async function postSuggestion(req, res) {
         const post = await getPostById(plant_id);
         post.state = postStates.IN_PROGRESS;
         await post.save();
-        console.log(suggestion, notification)
         res.status(200).json({suggestion, notification});
     } catch (err) {
         console.log(err)

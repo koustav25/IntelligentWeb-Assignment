@@ -4,7 +4,6 @@ const postStates = require("../../model/enum/postStates")
 const {promisify} = require('node:util');
 const {randomBytes, pbkdf2} = require('node:crypto');
 const roleTypes = require("../../model/enum/roleTypes");
-const {isLinux} = require("nodemon/lib/utils");
 const pbkdf2Promise = promisify(pbkdf2);
 
 async function getProfile(req, res) {
@@ -88,12 +87,8 @@ async function updateProfile(req,res){
 }
 
 async function getNotifications(req, res) {
-    const userId = req.user.id;
 
-    const n = getUserNotifications()
-    const notifications = await getAllNotifications(userId);
-
-    res.render('user/notifications', {title: 'Notifications', notifications, user: req.user, isLoggedIn: req.isLoggedIn});
+    res.render('user/notifications', {title: 'Notifications',user: req.user, isLoggedIn: req.isLoggedIn});
 }
 
 
