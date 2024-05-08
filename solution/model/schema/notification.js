@@ -12,6 +12,13 @@ const notificationSchema = new mongoose.Schema({
             required: true,
             autopopulate: true
         },
+        target_comment: {
+            type: mongoose.Schema.Types.ObjectId,
+            required: false,
+            ref: "Comment",
+            default: null,
+            autopopulate: false
+        },
         state: {
             type: Number,
             required: true
@@ -21,9 +28,9 @@ const notificationSchema = new mongoose.Schema({
             required: true
         },
         seen: {
-          type: Boolean,
-          default: false,
-          required: true
+            type: Boolean,
+            default: false,
+            required: true
         },
         content: {
             title: {

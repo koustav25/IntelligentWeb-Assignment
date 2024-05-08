@@ -8,7 +8,7 @@ const {
     getSuggestionFromPost,
     findSuggestion,
     getUserById, createPost, updateUser,
-    addNotification,
+    addNotification, deleteLikeNotificationByCommentId,
 } = require("../../model/mongodb");
 const postStates = require("../../model/enum/postStates");
 const leafTypes = require("../../model/enum/leafTypes");
@@ -310,7 +310,7 @@ async function postLike(req, res) {
         await post.save();
 
         // Send notification
-        const notification = await addNotification(post._id, comment.user, notificationTypes.NEW_LIKE, post.title, comment.content, userID)
+        const notification = await addNotification(post._id, comment.user, notificationTypes.NEW_LIKE, post.title, comment.content, userID, comment._id)
 
         res.status(200).json({comment, notification});
     } catch (e) {
@@ -339,8 +339,8 @@ async function postUnlike(req, res) {
 
         //Save the post
         await post.save();
-
-        res.status(200).send(comment);
+        const notification = await deleteLikeNotificationByCommentId(comment._id)
+        res.status(200).json({comment, notification});
     } catch (e) {
         console.log(e)
         res.status(500).json({error: e});

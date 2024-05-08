@@ -227,7 +227,9 @@ async function toggleLikeButton(commentID) {
 
     try {
         if (hasLiked) {
-            await axios.post(`/plant/${plantID}/comment/${commentID}/unlike`, data);
+            const response = await axios.post(`/plant/${plantID}/comment/${commentID}/unlike`, data);
+            socket.emit("delete_notification", response.data.notification)
+
         } else {
             const response = await axios.post(`/plant/${plantID}/comment/${commentID}/like`, data);
             socket.emit("new_notification", response.data.notification)

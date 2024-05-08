@@ -222,7 +222,7 @@ const addReply = async (postId, commentId, data) => {
 
         comment.replies.push(reply);
         await post.save();
-        const notification = await addNotification(postId, comment.user, notificationTypes.NEW_REPLY, post.title, reply.content, reply.user)
+        const notification = await addNotification(postId, comment.user, notificationTypes.NEW_REPLY, post.title, reply.content, reply.user, comment._id)
 
         //Get the latest reply
         const returnReply = comment.replies[comment.replies.length - 1];
@@ -315,11 +315,12 @@ const createPost = async (postData) => {
     return Post.create(postData);
 }
 
-const addNotification = async (targetPostId, targetUserId, notificationType, notificationTitle, content = "", authorId = null) => {
+const addNotification = async (targetPostId, targetUserId, notificationType, notificationTitle, content = "", authorId = null, targetCommentId = null) => {
     const author = await User.findById(authorId)
     const notification = {
         target_user: targetUserId,
         target_post: targetPostId,
+        target_comment: targetCommentId,
         notification_type: notificationType,
         state: NEW,
         content: notificationTypes.notificationTypeToContent(notificationType, notificationTitle, author.first_name + " " + author.last_name, content)
@@ -337,7 +338,7 @@ const getAllNotifications = async (userId,page = 0, limit = 10) => {
         populate: {
             path: 'posting_user'
         }
-    }).skip(page * limit).limit(limit).sort({createdAt: -1})
+    }).sort({createdAt: -1}).skip(page * limit).limit(limit)
 }
 
 const getNotificationCount = async (userId) => {
@@ -345,10 +346,7 @@ const getNotificationCount = async (userId) => {
 }
 
 const viewNotification = async (notificationId) => {
-    const notification = await Notification.findById(notificationId);
-    notification.seen = true
-
-    await notification.save()
+    return await Notification.updateOne({_id: notificationId}, {$set: {"seen": true}})
 }
 
 const getPostOwner = async (plantID) => {
@@ -361,12 +359,11 @@ const getCommentOwnerId = async(postID, commentID) => {
 }
 
 const markAllNotificationAsRead = async (userID) => {
-    const notifications = await Notification.find({target_user: userID, seen: false})
+    await Notification.updateMany({target_user: userID, seen:false}, {$set: {"seen": true}})
+}
 
-    for(let n of notifications){
-        n.seen = true
-        await n.save()
-    }
+const deleteLikeNotificationByCommentId = async (commentID) => {
+    return await Notification.findOneAndDelete({target_comment: commentID, notification_type: notificationTypes.NEW_LIKE})
 }
 module.exports = {
     markAllNotificationAsRead,
@@ -393,5 +390,6 @@ module.exports = {
     getFeedPosts,
     addNotification,
     getAllNotifications,
-    getCommentOwnerId
+    getCommentOwnerId,
+    deleteLikeNotificationByCommentId
 }

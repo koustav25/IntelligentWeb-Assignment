@@ -104,6 +104,10 @@ window.addEventListener("load", async e => {
     socket.on("new_notification", data => {
         $notificationsWrapper.prepend(getNotificationHTML(data))
     })
+    socket.on("delete_notification", data => {
+        $(`#${data.notificationID}`).remove()
+        $notificationCounter.text(parseInt($notificationCounter.text()) - 1)
+    })
 })
 
 $(window).scroll(async function () {

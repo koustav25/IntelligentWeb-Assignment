@@ -1,5 +1,5 @@
 const {getCommentOwnerId, getNotificationCount: getNotificationCountDB, getPostOwner: getPostOwnerDB, viewNotification : viewNotificationDB,markAllNotificationAsRead,
-    getAllNotifications
+    getAllNotifications, deleteLikeNotificationByCommentId
 } = require("../../model/mongodb")
 
 async function getNotificationCount(req, res, next) {
@@ -33,7 +33,7 @@ async function getCommentOwner(req,res,next) {
 async function viewNotification(req, res, next) {
     try {
         const {notificationID} = req.body
-        const view = await viewNotificationDB(notificationID);
+        await viewNotificationDB(notificationID);
         res.status(200)
     } catch (e) {
         next(e)
@@ -60,6 +60,8 @@ async function markAllAsRead(req,res,next) {
         next(e)
     }
 }
+
+
 
 module.exports = {
     markAllAsRead,
