@@ -7,6 +7,8 @@ const MongoStore = require('connect-mongo')
 const {User} = require("./schema/user");
 const {Post} = require("./schema/post");
 const {Notification} = require("./schema/notification");
+const {NEW} = require("./enum/notificationStates")
+const notificationTypes = require("./enum/notificationTypes")
 
 /* Connection Properties */
 const MONGO_HOST = process.env.MONGO_HOST || "localhost";
@@ -105,16 +107,16 @@ const getPostsBySearchTerms = async (search_text, search_order, limit) => {
     let sort = {}
     switch (search_order) {
         case 'recent':
-            sort = { createdAt: -1 };
+            sort = {createdAt: -1};
             break;
         case 'oldest':
-            sort = { createdAt: 1 };
+            sort = {createdAt: 1};
             break;
         case 'user':
-            sort = { "posting_user.first_name": 1, "posting_user.last_name": 1 };
+            sort = {"posting_user.first_name": 1, "posting_user.last_name": 1};
             break;
         default:
-            sort = { createdAt: -1 };
+            sort = {createdAt: -1};
     }
 
     //Perform a text search
@@ -193,8 +195,9 @@ const addComment = async (postId, data) => {
     post.comments?.push(comment);
     await post.save();
 
+    const notification = await addNotification(post._id, post.posting_user._id, notificationTypes.NEW_COMMENT, post.title, comment.content, data.userID)
     const returnComment = post.comments[post.comments.length - 1];
-    return returnComment;
+    return {post: returnComment, notification};
 }
 
 /**
@@ -219,10 +222,11 @@ const addReply = async (postId, commentId, data) => {
 
         comment.replies.push(reply);
         await post.save();
+        const notification = await addNotification(postId, comment.user, notificationTypes.NEW_REPLY, post.title, reply.content, reply.user, comment._id)
 
         //Get the latest reply
         const returnReply = comment.replies[comment.replies.length - 1];
-        return returnReply;
+        return {post:returnReply, notification}
     }
 }
 
@@ -277,7 +281,8 @@ const addSuggestion = async (postId, data) => {
 
     await post.save();
 
-    return post.identification.potentials[post.identification.potentials.length - 1];
+    const notification = await addNotification(post._id, post.posting_user._id, notificationTypes.NEW_IDENTIFICATION, post.title, suggestion.name, suggestion.suggesting_user)
+    return {suggestion:post.identification.potentials[post.identification.potentials.length - 1], notification};
 }
 
 /**
@@ -310,7 +315,61 @@ const createPost = async (postData) => {
     return Post.create(postData);
 }
 
+const addNotification = async (targetPostId, targetUserId, notificationType, notificationTitle, content = "", authorId = null, targetCommentId = null) => {
+    const author = await User.findById(authorId)
+    const notification = {
+        target_user: targetUserId,
+        target_post: targetPostId,
+        target_comment: targetCommentId,
+        notification_type: notificationType,
+        state: NEW,
+        content: notificationTypes.notificationTypeToContent(notificationType, notificationTitle, author.first_name + " " + author.last_name, content)
+    }
+
+    const newNotification = new Notification(notification)
+    await newNotification.save()
+
+    return newNotification
+}
+
+const getAllNotifications = async (userId,page = 0, limit = 10) => {
+    return await Notification.find({target_user: userId}).populate({
+        path: 'target_post',
+        populate: {
+            path: 'posting_user'
+        }
+    }).sort({createdAt: -1}).skip(page * limit).limit(limit)
+}
+
+const getNotificationCount = async (userId) => {
+    return await Notification.countDocuments({target_user: userId, seen: false}).exec()
+}
+
+const viewNotification = async (notificationId) => {
+    return await Notification.updateOne({_id: notificationId}, {$set: {"seen": true}})
+}
+
+const getPostOwner = async (plantID) => {
+    return await Post.findById(plantID).select("posting_user")
+}
+
+const getCommentOwnerId = async(postID, commentID) => {
+    const comment = await getCommentFromPost(postID, commentID);
+    return comment.user
+}
+
+const markAllNotificationAsRead = async (userID) => {
+    await Notification.updateMany({target_user: userID, seen:false}, {$set: {"seen": true}})
+}
+
+const deleteLikeNotificationByCommentId = async (commentID) => {
+    return await Notification.findOneAndDelete({target_comment: commentID, notification_type: notificationTypes.NEW_LIKE})
+}
 module.exports = {
+    markAllNotificationAsRead,
+    viewNotification,
+    getPostOwner,
+    getNotificationCount,
     searchUser,
     getAllUsers,
     updateUser,
@@ -328,5 +387,9 @@ module.exports = {
     getSuggestionFromPost,
     findSuggestion,
     createPost,
-    getFeedPosts
+    getFeedPosts,
+    addNotification,
+    getAllNotifications,
+    getCommentOwnerId,
+    deleteLikeNotificationByCommentId
 }

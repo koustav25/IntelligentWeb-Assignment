@@ -1,5 +1,5 @@
 const { getUserNotifications } = require("../../util/mock/mockData")
-const {getUserById, updateUser} = require("../../model/mongodb");
+const {getUserById, updateUser, getAllNotifications} = require("../../model/mongodb");
 const postStates = require("../../model/enum/postStates")
 const {promisify} = require('node:util');
 const {randomBytes, pbkdf2} = require('node:crypto');
@@ -86,11 +86,11 @@ async function updateProfile(req,res){
     }
 }
 
-function getNotifications(req, res) {
-    const notifications = getUserNotifications()
+async function getNotifications(req, res) {
 
-    res.render('user/notifications', {title: 'Notifications', notifications, user: req.user});
+    res.render('user/notifications', {title: 'Notifications',user: req.user, isLoggedIn: req.isLoggedIn});
 }
+
 
 module.exports = {
     getProfile,

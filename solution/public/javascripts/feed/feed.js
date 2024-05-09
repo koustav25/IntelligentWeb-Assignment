@@ -62,7 +62,7 @@ $feedEnd.hide()
 
 let page = 1
 let currentPosts = []
-let socket = io()
+socket = io()
 let updateFeedTime = Date.now()
 
 const updateFeed = (posts) => {

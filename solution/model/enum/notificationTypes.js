@@ -22,6 +22,36 @@ const notificationTypes = {
             default:
                 return 'Unknown';
         }
+    },
+
+    notificationTypeToContent: (notificationType, postTitle, commentAuthorFullName, content) => {
+        switch (notificationType) {
+            case NEW_COMMENT:
+                return {
+                    title: `Your post ${postTitle} has a new comment!`,
+                    body: `${commentAuthorFullName} added a comment: "${content.length > 30 ? content.slice(0,30): content}..."`
+                }
+            case NEW_REPLY:
+                return {
+                    title: `Your comment under ${postTitle} has a new reply!`,
+                    body: `${commentAuthorFullName} replied to your comment: "${content.length > 30 ? content.slice(0,30): content}..."`
+                }
+            case NEW_LIKE:
+                return {
+                    title: `Your comment under ${postTitle} was liked!`,
+                    body: `${commentAuthorFullName} liked your comment: "${content.length > 30 ? content.slice(0,30): content}..."`
+                }
+            case NEW_IDENTIFICATION:
+                return {
+                    title: `Your post ${postTitle} has a new identification suggestion!`,
+                    body: `${commentAuthorFullName} suggested: "${content.length > 30 ? content.slice(0,30): content}..."`
+                }
+            default:
+                return {
+                    title: `Notification Type Unknown!`,
+                    body: `Invalid body."`
+                }
+        }
     }
 };
 

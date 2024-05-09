@@ -7,13 +7,15 @@ const {
     addSuggestion,
     getSuggestionFromPost,
     findSuggestion,
-    getUserById, createPost, updateUser
+    getUserById, createPost, updateUser,
+    addNotification, deleteLikeNotificationByCommentId,
 } = require("../../model/mongodb");
 const postStates = require("../../model/enum/postStates");
 const leafTypes = require("../../model/enum/leafTypes");
 const exposureTypes = require("../../model/enum/exposureTypes");
 const seedTypes = require("../../model/enum/seedTypes");
-const {mongo} = require("mongoose");
+const notificationTypes = require("../../model/enum/notificationTypes")
+
 const mongoose = require("mongoose");
 
 async function getPost(req, res) {
@@ -128,7 +130,7 @@ async function postNewPost(req, res, next) {
         user.posts.push(post._id);
 
 // Save the updated user document
-        await updateUser(userId,user);
+        await updateUser(userId, user);
 
         res.status(200).send(post);
     } catch (err) {
@@ -191,8 +193,8 @@ async function postComment(req, res, next) {
     }
 
     try {
-        const post = await addComment(plant_id, {userID: user_id, content: text, likes: 0})
-        res.status(200).send(post);
+        const {post, notification} = await addComment(plant_id, {userID: user_id, content: text, likes: 0})
+        res.status(200).json({post, notification});
     } catch (err) {
         console.log(err)
         res.status(500).json({error: err});
@@ -253,8 +255,8 @@ async function postReply(req, res) {
     }
 
     try {
-        const post = await addReply(plant_id, comment_id, {userID: user_id, content: text, likes: 0})
-        res.status(200).send(post);
+        const {post, notification} = await addReply(plant_id, comment_id, {userID: user_id, content: text, likes: 0})
+        res.status(200).json({post,notification});
     } catch (err) {
         console.log(err)
         res.status(500).json({error: err});
@@ -307,11 +309,15 @@ async function postLike(req, res) {
         //Save the post
         await post.save();
 
-        res.status(200).send(comment);
+        // Send notification
+        const notification = await addNotification(post._id, comment.user, notificationTypes.NEW_LIKE, post.title, comment.content, userID, comment._id)
+
+        res.status(200).json({comment, notification});
     } catch (e) {
         console.log(e)
         res.status(500).json({error: e});
     }
+
 }
 
 async function postUnlike(req, res) {
@@ -333,8 +339,8 @@ async function postUnlike(req, res) {
 
         //Save the post
         await post.save();
-
-        res.status(200).send(comment);
+        const notification = await deleteLikeNotificationByCommentId(comment._id)
+        res.status(200).json({comment, notification});
     } catch (e) {
         console.log(e)
         res.status(500).json({error: e});
@@ -363,13 +369,12 @@ async function postSuggestion(req, res) {
     }
 
     try {
-        const suggestion = await addSuggestion(plant_id, {userID: user_id, name: text})
+        const {suggestion, notification} = await addSuggestion(plant_id, {userID: user_id, name: text})
 
         const post = await getPostById(plant_id);
         post.state = postStates.IN_PROGRESS;
         await post.save();
-
-        res.status(200).send(suggestion);
+        res.status(200).json({suggestion, notification});
     } catch (err) {
         console.log(err)
         res.status(500).json({error: err});
