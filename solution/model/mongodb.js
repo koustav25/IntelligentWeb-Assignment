@@ -11,6 +11,7 @@ const {NEW} = require("./enum/notificationStates")
 const notificationTypes = require("./enum/notificationTypes")
 
 /* Connection Properties */
+const MONGO_USE_LOCAL = process.env.MONGO_USE_LOCAL || false;
 const MONGO_HOST = process.env.MONGO_HOST || "localhost";
 const MONGO_USER = process.env.MONGO_USER || "admin";
 const MONGO_PASS = process.env.MONGO_PASS;
@@ -18,7 +19,13 @@ const MONGO_DBNAME = process.env.MONGO_DBNAME || "test";
 const MONGO_CONNNAME = process.env.MONGO_CONNNAME || "mongodb";
 
 /* Connection String */
-const connectionString = `mongodb+srv://${MONGO_USER}:${MONGO_PASS}@${MONGO_HOST}/${MONGO_DBNAME}?retryWrites=true&w=majority`;
+let connectionString;
+
+if (MONGO_USE_LOCAL) {
+    connectionString = `mongodb://localhost:27017/${MONGO_DBNAME}`;
+} else {
+    connectionString = `mongodb+srv://${MONGO_USER}:${MONGO_PASS}@${MONGO_HOST}/${MONGO_DBNAME}?retryWrites=true&w=majority`;
+}
 /* Variables */
 let connected = false;
 
@@ -226,7 +233,7 @@ const addReply = async (postId, commentId, data) => {
 
         //Get the latest reply
         const returnReply = comment.replies[comment.replies.length - 1];
-        return {post:returnReply, notification}
+        return {post: returnReply, notification}
     }
 }
 
@@ -282,7 +289,7 @@ const addSuggestion = async (postId, data) => {
     await post.save();
 
     const notification = await addNotification(post._id, post.posting_user._id, notificationTypes.NEW_IDENTIFICATION, post.title, suggestion.name, suggestion.suggesting_user)
-    return {suggestion:post.identification.potentials[post.identification.potentials.length - 1], notification};
+    return {suggestion: post.identification.potentials[post.identification.potentials.length - 1], notification};
 }
 
 /**
@@ -332,7 +339,7 @@ const addNotification = async (targetPostId, targetUserId, notificationType, not
     return newNotification
 }
 
-const getAllNotifications = async (userId,page = 0, limit = 10) => {
+const getAllNotifications = async (userId, page = 0, limit = 10) => {
     return await Notification.find({target_user: userId}).populate({
         path: 'target_post',
         populate: {
@@ -353,17 +360,20 @@ const getPostOwner = async (plantID) => {
     return await Post.findById(plantID).select("posting_user")
 }
 
-const getCommentOwnerId = async(postID, commentID) => {
+const getCommentOwnerId = async (postID, commentID) => {
     const comment = await getCommentFromPost(postID, commentID);
     return comment.user
 }
 
 const markAllNotificationAsRead = async (userID) => {
-    await Notification.updateMany({target_user: userID, seen:false}, {$set: {"seen": true}})
+    await Notification.updateMany({target_user: userID, seen: false}, {$set: {"seen": true}})
 }
 
 const deleteLikeNotificationByCommentId = async (commentID) => {
-    return await Notification.findOneAndDelete({target_comment: commentID, notification_type: notificationTypes.NEW_LIKE})
+    return await Notification.findOneAndDelete({
+        target_comment: commentID,
+        notification_type: notificationTypes.NEW_LIKE
+    })
 }
 module.exports = {
     markAllNotificationAsRead,
