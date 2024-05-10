@@ -51,20 +51,27 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', async event => {
     event.respondWith((async () => {
         const cache = await caches.open("static");
-        const cachedResponse = await cache.match(event.request);
-        if (cachedResponse) {
-            //Check if the fetch request is from a redirected URL
-            if(cachedResponse.redirected) {
-                console.log("Service Worker: Fetching from URL: ", event.request.url);
-                return fetch(event.request);
-            }
-            console.log('Service Worker: Fetching from Cache: ', event.request.url);
-            return cachedResponse;
-        }
         console.log('Service Worker: Fetching from URL: ', event.request.url);
         try {
-            return await fetch(event.request)
+            let response = await fetch(event.request)
+
+            //Don't cache the response if it's not a GET request
+            if (event.request.method === "GET") {
+                //Cache the fetched response
+                if (response.redirected) {
+                    response = await cleanResponse(response);
+                }
+                await cache.put(event.request, response.clone());
+            }
+            return response;
         }catch(e) {
+            //If the fetch request fails, try to fetch from cache
+            const cachedResponse = await cache.match(event.request);
+            if (cachedResponse) {
+                console.log('Service Worker: Fetching from Cache: ', event.request.url);
+                return cachedResponse;
+            }
+
             console.log("Service Worker: Fetch Error: ", event.request.url)
         }
 

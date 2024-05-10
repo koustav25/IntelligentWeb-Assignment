@@ -1,4 +1,35 @@
+socket = io();
+
+function registerSockets() {
+    const posts = $('.plant-post');
+    posts.each(function() {
+        const postId = $(this).data('plant-id');
+        socket.emit('viewing_plant', { plant_id: postId });
+        console.log('viewing plant', postId);
+    });
+
+    socket.on('new_comment', data => {
+        const $commentCounter = $(`.comment-count[data-post-id="${data.post_id}"]`);
+        const count = parseInt($commentCounter.text()) + 1;
+        $commentCounter.text(count);
+    });
+
+    document.addEventListener('beforeunload', function() {
+        posts.each(function() {
+            const postId = $(this).data('plant-id');
+            socket.emit('leaving_plant', { plant_id: postId });
+        });
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    if(isOnline) {
+        registerSockets();
+    } else {
+        window.addEventListener('online', function() {
+            registerSockets();
+        });
+    }
     $('#searchForm').on('submit', function() {
         event.preventDefault();
         event.stopPropagation();

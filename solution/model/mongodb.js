@@ -233,7 +233,7 @@ const addReply = async (postId, commentId, data) => {
 
         //Get the latest reply
         const returnReply = comment.replies[comment.replies.length - 1];
-        return {post: returnReply, notification}
+        return {reply: returnReply, notification}
     }
 }
 
