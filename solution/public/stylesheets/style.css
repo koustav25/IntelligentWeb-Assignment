@@ -100,7 +100,7 @@ body {
 .notification-icon {
     transition: 0.5s;
 
-    scale: 75%;
+    scale: 50%;
 
     opacity: 75%;
 }
