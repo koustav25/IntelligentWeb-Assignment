@@ -1,13 +1,35 @@
-const $offlineBox = $("#offline-mode")
+let $offlineBox;
+let $searchBar;
+let $searchWarn;
+
 var isOnline = navigator.onLine;
 
-isOnline ? $offlineBox.hide() : $offlineBox.show()
-window.addEventListener('offline', (e) => {
-    $offlineBox.show();
-    isOnline = false
-});
+document.addEventListener('DOMContentLoaded', function() {
+    $offlineBox = $('#offline-mode');
+    $searchBar = $('#searchBar');
+    $searchWarn = $('#searchWarn');
 
-window.addEventListener('online', (e) => {
-    $offlineBox.hide();
-    isOnline = true
+    if (isOnline) {
+        $searchWarn.addClass('d-none');
+        $searchBar.removeClass('d-none');
+        $offlineBox.hide();
+    } else {
+        $searchWarn.removeClass('d-none');
+        $searchBar.addClass('d-none');
+        $offlineBox.show();
+    }
+
+    window.addEventListener('offline', (e) => {
+        $offlineBox.show();
+        $searchWarn.removeClass('d-none');
+        $searchBar.addClass('d-none');
+        isOnline = false
+    });
+
+    window.addEventListener('online', (e) => {
+        $offlineBox.hide();
+        $searchWarn.addClass('d-none');
+        $searchBar.removeClass('d-none');
+        isOnline = true
+    });
 });

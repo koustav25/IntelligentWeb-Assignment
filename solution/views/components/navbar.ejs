@@ -1,20 +1,20 @@
-<%- include("header.ejs")%>
+<%- include("header.ejs") %>
 
 <div class="container-fluid w-100 p-0">
     <nav class="navbar navbar-expand-lg bg-success rounded-bottom-4 shadow-sm" data-bs-theme="dark">
 
         <div class="container-fluid">
             <a class="navbar-brand text-light fw-medium fs-4 px-2" href="/">PLANTS</a>
+            <div id="offline-mode" class="bg-danger rounded-2 text-white pe-2 ps-2 pt-1 pb-1">
+                Offline mode
+            </div>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                     data-bs-target="#navbarSupportedContent"
                     aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div id="offline-mode" class="bg-danger rounded-2 text-white pe-2 ps-2 pt-1 pb-1">
-                Offline mode
-            </div>
             <div class="collapse navbar-collapse justify-content-between" id="navbarSupportedContent">
-                <ul class="navbar-nav mb-2 mb-lg-0">
+                <ul class="navbar-nav mb-2 mb-lg-0 text-center">
 
                     <% if (isLoggedIn) { %>
                         <li class="nav-item">
@@ -23,7 +23,7 @@
                         <li class="nav-item">
                             <a class="nav-link" href="/post">New Post</a>
                         </li>
-                        <li class="nav-item d-lg-none">
+                        <li class="nav-item d-lg-none" id="mobileSearchButton">
                             <a class="nav-link" href="/search">Search</a>
                         </li>
                     <% } %>
@@ -32,7 +32,7 @@
                 <div class="navbar-nav w-50 d-none d-lg-block">
                     <% if (isLoggedIn) { %>
                         <form class="p-0 m-0 w-100 d-inline-flex w-100 nav-item rounded-2 bg-success-subtle searchBox"
-                              action="/search">
+                              action="/search" id="searchBar">
                             <label for="searchBox" class="visually-hidden">Search</label>
                             <input id="searchBox" name="text" class="text-center w-100 border-0 bg-transparent py-2"
                                    href=""
@@ -41,24 +41,38 @@
                                 <i class="fa-solid fa-magnifying-glass fa-2x text-white my-auto px-2 py-1"></i>
                             </button>
                         </form>
+                        <div class="p-0 m-0 w-100 d-inline-flex nav-item rounded-2 border border-danger-subtle bg-success-subtle searchBox d-none"
+                             id="searchWarn">
+                            <input class="text-center w-100 border-0 bg-transparent py-2" disabled
+                                   placeholder="Search Unavailable Offline"/>
+                            <button class="btn p-0 m-0" type="button">
+                                <div class="fa-stack text-white my-auto p-0 m-0 px-2 fa-1x">
+                                    <i class="fa-solid fa-wifi fa-stack-2x my-0 py-0"></i>
+<!--                                    <i class="fa-solid fa-warning text-white fw-bold fa-stack-1x my-0 py-0" style="scale: 0.5; opacity: 100%; position: relative; top: 5px"></i>-->
+                                    <i class="fa-solid fa-slash text-warning fw-bold fa-stack-2x my-0 py-0" style="opacity: 100%"></i>
+                                </div>
+                            </button>
+                        </div>
                     <% } %>
                 </div>
 
                 <ul class="navbar-nav mb-2 mb-lg-0 justify-content-center text-center">
                     <% if (isLoggedIn) { %>
-                        <li class="nav-item align-content-center d-inline-flex me-3 position-relative">
-                            <a class="nav-link d-lg-none" href="/notifications">Notifications</a>
-                            <a class="nav-item d-none d-lg-block my-auto py-auto align-content-center d-inline-flex" href="/notifications">
+                        <li class="nav-item align-content-center d-inline-flex position-relative text-center me-lg-3">
+                            <a class="nav-link d-lg-none w-100" href="/notifications">Notifications</a>
+                            <a class="nav-item d-none d-lg-block my-auto py-auto align-content-center d-inline-flex"
+                               href="/notifications">
                                 <i class="fa-solid fa-bell fa-2x text-white notification-icon my-auto"></i>
-                                <span id="notification-count" class="notification-counter d-flex justify-content-center align-items-center rounded-circle bg-danger text-white position-absolute d-none">0</span>
+                                <span id="notification-count"
+                                      class="notification-counter d-flex justify-content-center align-items-center rounded-circle bg-danger text-white position-absolute d-none">0</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="/profile">Profile</a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item text-center">
                             <form action="/logout" method="POST" id="logout-form">
-                                <button type="submit" class="nav-link">Logout</button>
+                                <button type="submit" class="nav-link w-100">Logout</button>
                             </form>
                         </li>
                     <% } else { %>
@@ -74,5 +88,5 @@
 
 <script src="/javascripts/navbar/navbar.js"></script>
 <% if(isLoggedIn) { %>
-<script src="/javascripts/navbar/navbar_authorised.js"></script>
+    <script src="/javascripts/navbar/navbar_authorised.js"></script>
 <% } %>

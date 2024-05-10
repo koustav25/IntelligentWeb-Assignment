@@ -1,7 +1,8 @@
 let socket;
-const $notificationCounter = $("#notification-count")
+let $notificationCounter;
 
 window.addEventListener("load", async (e) => {
+    $notificationCounter = $("#notification-count")
 
     try {
         const notificationCount = await axios.get("/api/new-notification-count")
@@ -16,7 +17,7 @@ window.addEventListener("load", async (e) => {
 
         socket.on("new_notification", () => {
             //If the notifications count was 0, then we need to show the counter
-            if (parseInt($notificationCounter.text()) === 0) {
+            if (parseInt($notificationCounter.text()) == 0) {
                 $notificationCounter.removeClass("d-none")
             }
 
