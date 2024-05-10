@@ -25,7 +25,7 @@ self.addEventListener('install', event => {
             console.log('Service Worker: App Shell Cached');
         }
         catch{
-            console.log("error occured while caching...")
+            console.log("error occurred while caching...")
         }
 
     })());
@@ -53,6 +53,11 @@ self.addEventListener('fetch', async event => {
         const cache = await caches.open("static");
         const cachedResponse = await cache.match(event.request);
         if (cachedResponse) {
+            //Check if the fetch request is from a redirected URL
+            if(cachedResponse.redirected) {
+                console.log("Service Worker: Fetching from URL: ", event.request.url);
+                return fetch(event.request);
+            }
             console.log('Service Worker: Fetching from Cache: ', event.request.url);
             return cachedResponse;
         }
@@ -65,3 +70,25 @@ self.addEventListener('fetch', async event => {
 
     })());
 });
+
+//Taken from https://stackoverflow.com/questions/45434470/only-in-chrome-service-worker-a-redirected-response-was-used-for-a-reque
+//Accessed 10/05/2024
+//In order to address the issue of the service worker not being able to handle redirect requests
+function cleanResponse(response) {
+    const clonedResponse = response.clone();
+
+    // Not all browsers support the Response.body stream, so fall back to reading
+    // the entire body into memory as a blob.
+    const bodyPromise = 'body' in clonedResponse ?
+        Promise.resolve(clonedResponse.body) :
+        clonedResponse.blob();
+
+    return bodyPromise.then((body) => {
+        // new Response() is happy when passed either a stream or a Blob.
+        return new Response(body, {
+            headers: clonedResponse.headers,
+            status: clonedResponse.status,
+            statusText: clonedResponse.statusText,
+        });
+    });
+}
