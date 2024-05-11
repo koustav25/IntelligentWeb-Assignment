@@ -110,8 +110,12 @@ $(document).ready(async function () {
 
 
     $(window).scroll(async function () {
+
         if(isOnline){
-            if (Date.now() - updateFeedTime > 3000 && $(window).scrollTop() + $(window).height() >= $(document).height()) {
+            const timeDiff = Date.now() - updateFeedTime
+            if (timeDiff > updateFeedGap && $(window).scrollTop() + $(window).height() >= $(document).height()) {
+                updateFeedTime = Date.now()
+
                 $feedEnd.hide()
                 $loadingSpinner.show()
                 const newPosts = await axios.get("/api/feed", {params: {page}})
@@ -123,10 +127,11 @@ $(document).ready(async function () {
                     $feedEnd.show()
                 }
                 $loadingSpinner.hide()
-                updateFeedTime = Date.now()
             }
 
-            if (Date.now() - updateFeedTime > 3000 && $(window).scrollTop() <= 0) {
+            if (timeDiff > updateFeedGap && $(window).scrollTop() <= 0) {
+                updateFeedTime = Date.now()
+
                 page = 1
                 $feedWrapper.empty()
                 $feedEnd.hide()
