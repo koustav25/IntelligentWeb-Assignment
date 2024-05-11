@@ -648,3 +648,77 @@ function openReplyModal(commentID) {
     $('#replyToCommentID').val(commentID);
     $('#replyToCommentModal').modal('show');
 }
+
+//Simulate the loading of the DBPedia content
+document.addEventListener('DOMContentLoaded', async () => {
+    //     setTimeout(() => {
+    //
+    //         $('#dbPediaSpinner').collapse();
+    //
+    //         //Randomly pick a number between 1 and 9
+    //         const random = Math.floor(Math.random() * 9) + 1;
+    //
+    //         //If the number is 1, show the content
+    //         if (random <= 5) {
+    //             $('#dbpediaContent').collapse('show');
+    //         }
+    //
+    //         //If the number is 2, show the failed to retrieve message (offline)
+    //         else if (random === 6) {
+    //             $('#dbPediaFailedMessage').text('Failed to retrieve information from DBPedia. Are you offline?');
+    //             $('#dbPediaFailed').collapse();
+    //         }
+    //
+    //         //If the number is 3, show the failed to retrieve message (unknown plant)
+    //         else if (random === 7) {
+    //             $('#dbPediaFailedMessage').text('Failed to retrieve information from DBPedia. The plant may not be in the database.');
+    //             $('#dbPediaFailed').collapse();
+    //         }
+    //
+    //         //If the number is 4, show the failed to retrieve message (unknown error)
+    //         else if (random === 8) {
+    //             $('#dbPediaFailedMessage').text('Failed to retrieve information from DBPedia. An unknown error occurred.');
+    //             $('#dbPediaFailed').collapse();
+    //         }
+    //
+    //         //If the number is 5, show the failed to retrieve message (no identification)
+    //         else if (random === 9) {
+    //             $('#dbPediaFailedMessage').text('Failed to retrieve information from DBPedia. No identification has been made yet.');
+    //             $('#dbPediaFailed').collapse();
+    //         }
+    //
+    //     }, 2000);
+    // });
+
+    try {
+        const response = await axios.get(`/plant/${plantID}/suggestion/${acceptedIdentificationID}/dbpedia`)
+
+        const data = response.data;
+        const dbPediaName = document.getElementById('dbPediaName');
+        const dbPediaDescription = document.getElementById('dbPediaDescription');
+        const dbPediaImage = document.getElementById('dbPediaImage');
+        const dbPediaLink = document.getElementById('dbPediaLink');
+
+        dbPediaName.innerText = data.plant.replace("http://dbpedia.org/resource/", "");
+        dbPediaDescription.innerText = data.description;
+        dbPediaImage.src = data.thumbnail;
+        dbPediaLink.href = data.plant;
+
+        $('#dbPediaSpinner').collapse('hide');
+        $('#dbpediaContent').collapse('show');
+    } catch (error) {
+        console.error(error);
+
+        //Check response code
+        if (error.response.status === 404) {
+            $('#dbPediaFailedMessage').text('Failed to retrieve information from DBPedia. The plant may not be in the database.');
+        } else if (error.response.status === 503) {
+            $('#dbPediaFailedMessage').text('Failed to retrieve information from DBPedia. Are you offline?');
+        } else {
+            $('#dbPediaFailedMessage').text('Failed to retrieve information from DBPedia. An unknown error occurred.');
+        }
+
+        $('#dbPediaSpinner').collapse('hide');
+        $('#dbPediaFailed').collapse('show');
+    }
+});
