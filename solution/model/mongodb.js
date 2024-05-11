@@ -353,7 +353,7 @@ const getNotificationCount = async (userId) => {
 }
 
 const viewNotification = async (notificationId) => {
-    return await Notification.updateOne({_id: notificationId}, {$set: {"seen": true}})
+    return await Notification.findOneAndUpdate({_id: notificationId}, {$set: {"seen": true}})
 }
 
 const getPostOwner = async (plantID) => {

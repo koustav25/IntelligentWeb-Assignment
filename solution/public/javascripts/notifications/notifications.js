@@ -63,9 +63,8 @@ const markAsRead = async (wrapper, envelope, id) => {
     envelope.removeClass("fa-envelope-open")
     envelope.addClass("fa-envelope")
     $(`[data-new-${id}`).remove()
-    const newCounter = parseInt($notificationCounter.text()) - 1
-    $notificationCounter.text(newCounter > 0 ? newCounter : 0);
-    await axios.post("/api/view-notification", {notificationID: id})
+    const response = await axios.post("/api/view-notification", {notificationID: id})
+    socket.emit("read_notification", response.data.notification)
 }
 
 const appendNotification = (n, append = true) => {
@@ -84,12 +83,6 @@ const appendNotification = (n, append = true) => {
 
 const updateNotifications = (notifications) => {
     for (let i = 0; i < notifications.length; i++) {
-        // const $n = $(getNotificationHTML(notifications[i]))
-        // $notificationsWrapper.append($n)
-        // const $envelope = $(`[data-envelope-${notifications[i]._id}]`)
-        // $envelope.on('click', async () => {
-        //     await markAsRead($n, $envelope, notifications[i]._id)
-        // })
         appendNotification(notifications[i])
     }
 }
