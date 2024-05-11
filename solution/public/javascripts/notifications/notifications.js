@@ -63,17 +63,34 @@ const markAsRead = async (wrapper, envelope, id) => {
     envelope.removeClass("fa-envelope-open")
     envelope.addClass("fa-envelope")
     $(`[data-new-${id}`).remove()
+    const newCounter = parseInt($notificationCounter.text()) - 1
+    $notificationCounter.text(newCounter > 0 ? newCounter : 0);
     await axios.post("/api/view-notification", {notificationID: id})
+}
+
+const appendNotification = (n, append = true) => {
+    const $nTag = $(getNotificationHTML(n))
+    if(append){
+        $notificationsWrapper.append($nTag)
+    } else {
+        $notificationsWrapper.prepend($nTag)
+
+    }
+    const $envelope = $(`[data-envelope-${n._id}]`)
+    $envelope.on('click', async () => {
+        await markAsRead($nTag, $envelope, n._id)
+    })
 }
 
 const updateNotifications = (notifications) => {
     for (let i = 0; i < notifications.length; i++) {
-        const $n = $(getNotificationHTML(notifications[i]))
-        $notificationsWrapper.append($n)
-        const $envelope = $(`[data-envelope-${notifications[i]._id}]`)
-        $envelope.on('click', async () => {
-            await markAsRead($n, $envelope, notifications[i]._id)
-        })
+        // const $n = $(getNotificationHTML(notifications[i]))
+        // $notificationsWrapper.append($n)
+        // const $envelope = $(`[data-envelope-${notifications[i]._id}]`)
+        // $envelope.on('click', async () => {
+        //     await markAsRead($n, $envelope, notifications[i]._id)
+        // })
+        appendNotification(notifications[i])
     }
 }
 
@@ -102,8 +119,9 @@ window.addEventListener("load", async e => {
     })
 
     socket.on("new_notification", data => {
-        $notificationsWrapper.prepend(getNotificationHTML(data))
+        appendNotification(data, false)
     })
+
     socket.on("delete_notification", data => {
         $(`#${data.notificationID}`).remove()
         $notificationCounter.text(parseInt($notificationCounter.text()) - 1)
