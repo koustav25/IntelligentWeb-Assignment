@@ -23,6 +23,11 @@ window.addEventListener("load", async (e) => {
 
             $notificationCounter.text(parseInt($notificationCounter.text()) + 1)
         })
+
+        socket.on("read_notification", () => {
+            const newCounter = parseInt($notificationCounter.text()) - 1
+            $notificationCounter.text(newCounter > 0 ? newCounter : 0);
+        })
     } catch (e) {
         console.log(e)
     }
