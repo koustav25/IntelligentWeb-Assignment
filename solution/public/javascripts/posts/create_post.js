@@ -1,5 +1,5 @@
 let marker;
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Setting date input value to today's date
     let today = new Date();
     const dd = String(today.getDate()).padStart(2, '0');
@@ -19,9 +19,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     mymap.on('click', onMapClick);
 
-    document.getElementById('useCurrentLocation').addEventListener('click', function() {
+    document.getElementById('useCurrentLocation').addEventListener('click', function () {
         if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position) {
+            navigator.geolocation.getCurrentPosition(function (position) {
                 var lat = position.coords.latitude;
                 var lng = position.coords.longitude;
                 var latlng = L.latLng(lat, lng);
@@ -98,34 +98,58 @@ async function handleFormSubmit(event) {
         }
 
         //Prepare formData
-        const formData = new FormData();
-        formData.append('title', title);
-        formData.append('seen_at', seen_at);
-        formData.append('description', description);
-        formData.append('location_name', location_name);
-        formData.append('latitude', latitude);
-        formData.append('longitude', longitude);
-        formData.append('height', height);
-        formData.append('spread', spread);
-        formData.append('sun_exposure', sun_exposure);
-        formData.append('has_flowers', has_flowers);
-        formData.append('flower_colour', colour);
-        formData.append('leaf_type', leaf_type);
-        formData.append('seed_type', seed_type);
-        for (let i = 0; i < images.length; i++) {
-            formData.append('images', images[i]);
+        // const formData = new FormData();
+        // formData.append('title', title);
+        // formData.append('seen_at', seen_at);
+        // formData.append('description', description);
+        // formData.append('location_name', location_name);
+        // formData.append('latitude', latitude);
+        // formData.append('longitude', longitude);
+        // formData.append('height', height);
+        // formData.append('spread', spread);
+        // formData.append('sun_exposure', sun_exposure);
+        // formData.append('has_flowers', has_flowers);
+        // formData.append('flower_colour', colour);
+        // formData.append('leaf_type', leaf_type);
+        // formData.append('seed_type', seed_type);
+        // for (let i = 0; i < images.length; i++) {
+        //     formData.append('images', images[i]);
+        // }
+        //
+        // const response = await axios.post('/post', formData, {
+        //     headers: {
+        //         'Content-Type': 'multipart/form-data'
+        //     }
+        // });
+
+        const post_info = {
+            title,
+            seen_at,
+            description,
+            location_name,
+            latitude,
+            longitude,
+            height,
+            spread,
+            sun_exposure,
+            has_flowers,
+            flower_colour: colour,
+            leaf_type,
+            seed_type,
+            images,
         }
 
-        const response = await axios.post('/post', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        });
+        const db = await openNewPostIdb();
+        await addNewPostToIdb(db, post_info);
 
-        $postButton.removeClass('disabled');
-        $postSpinner.addClass('d-none');
+        setTimeout(() => {
+            //$postButton.removeClass('disabled');
+            $postSpinner.addClass('d-none');
 
-        window.location.href = `/plant/${response.data._id}`;
+            setTimeout(() => {
+                window.location.href = `/feed`;
+            }, 1000);
+        }, 3000);
 
     } catch (error) {
         console.error(error);

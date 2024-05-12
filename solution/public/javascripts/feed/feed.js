@@ -75,6 +75,10 @@ const updateFeed = (posts) => {
 }
 $(document).ready(async function () {
     if(isOnline){
+        navigator.serviceWorker.ready.then(registration => {
+            registration.sync.register("sync-new-post");
+        });
+
         socket.on("new_comment", data => {
             const $commentCounter = $(`#comment-counter-${data.post_id}`)
             const count = parseInt($commentCounter.text()) + 1
