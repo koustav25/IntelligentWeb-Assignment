@@ -158,6 +158,39 @@ $(document).ready(async function () {
     });
 });
 
+let pendingPostsBanner;
+let pendingPostsCount;
+document.addEventListener('DOMContentLoaded', async function () {
+    pendingPostsCount = $('#pendingPostsCount');
+    pendingPostsBanner = $('#pendingPostsBanner');
+
+    if (isOnline) {
+        pendingPostsBanner.addClass('d-none');
+    } else {
+        const postIdb = await openNewPostIdb();
+        const posts = await getPostsFromIDB(postIdb);
+
+        const postCount = posts.length;
+
+        pendingPostsBanner.removeClass('d-none');
+        pendingPostsCount.text(postCount);
+    }
+
+    window.addEventListener('online', async function () {
+        pendingPostsBanner.addClass('d-none');
+    });
+
+    window.addEventListener('offline', async function () {
+        const postIdb = await openNewPostIdb();
+        const posts = await getPostsFromIDB(postIdb);
+
+        const postCount = posts.length;
+
+        pendingPostsBanner.removeClass('d-none');
+        pendingPostsCount.text(postCount);
+    });
+});
+
 window.addEventListener('beforeunload', function (event) {
     currentPosts.map(post => socket.emit("leaving_plant", {plant_id: post._id}))
 });
