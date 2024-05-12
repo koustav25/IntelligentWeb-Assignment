@@ -207,8 +207,7 @@ async function getCommentHTML(req, res) {
         const plant_id = req.params.plant_id;
         const comment_id = req.params.comment_id;
 
-        //TODO: Change this to the user ID once available
-        const userId = "6605a97814ddcdf43b5697d4";//req.user.id;
+        const userId = req.user.id;
 
         //Get the comment from the post
         const comment = await getCommentFromPost(plant_id, comment_id);
@@ -255,8 +254,8 @@ async function postReply(req, res) {
     }
 
     try {
-        const {post, notification} = await addReply(plant_id, comment_id, {userID: user_id, content: text, likes: 0})
-        res.status(200).json({post,notification});
+        const {reply, notification} = await addReply(plant_id, comment_id, {userID: user_id, content: text, likes: 0})
+        res.status(200).json({reply,notification});
     } catch (err) {
         console.log(err)
         res.status(500).json({error: err});
@@ -270,8 +269,7 @@ async function getReplyHTML(req, res) {
         const comment_id = req.params.comment_id;
         const reply_id = req.params.reply_id;
 
-        //TODO: Change this to the user ID once available
-        const userId = "6605a97814ddcdf43b5697d4";//req.user.id;
+        const userId = req.user.id;
 
         //Get the comment from the post
         const comment = await getCommentFromPost(plant_id, reply_id);

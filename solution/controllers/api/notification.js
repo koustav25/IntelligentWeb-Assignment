@@ -33,8 +33,8 @@ async function getCommentOwner(req,res,next) {
 async function viewNotification(req, res, next) {
     try {
         const {notificationID} = req.body
-        await viewNotificationDB(notificationID);
-        res.status(200)
+        const n = await viewNotificationDB(notificationID);
+        res.status(200).json({notification: n})
     } catch (e) {
         next(e)
     }

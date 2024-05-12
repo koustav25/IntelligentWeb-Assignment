@@ -95,6 +95,9 @@ async function addNewComment() {
 
         //Add the comment to the page
         await addCommentToPage(response.data.post._id);
+
+        //Clear the comment text box
+        $('#addCommentText').val('');
     } catch (err) {
         console.error(err);
     }
@@ -119,12 +122,12 @@ async function addNewReply() {
 
         console.log(response.data);
 
-        socket.emit('new_reply', plantID, response.data.post);
+        socket.emit('new_reply', plantID, response.data.reply);
 
         socket.emit("new_notification", response.data.notification)
 
         //Add the reply to the page
-        await addReplyToPage(commentID, response.data._id.toString());
+        await addReplyToPage(commentID, response.data.reply._id.toString());
 
         $('#replyToCommentModal').modal('hide');
         $('#replyText').val('');
@@ -283,7 +286,7 @@ async function submitSuggestion() {
 
         socket.emit("new_notification", response.data.notification)
 
-        await addSuggestionToPage(response.data._id);
+        await addSuggestionToPage(response.data.suggestion._id);
 
     } catch (err) {
         console.error(err);
