@@ -9,7 +9,6 @@ const {Post} = require("./schema/post");
 const {Notification} = require("./schema/notification");
 const {NEW} = require("./enum/notificationStates")
 const notificationTypes = require("./enum/notificationTypes")
-const postStates = require("./enum/postStates");
 
 /* Connection Properties */
 const MONGO_USE_LOCAL = process.env.MONGO_USE_LOCAL || false;

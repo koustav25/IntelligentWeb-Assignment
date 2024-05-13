@@ -1,5 +1,4 @@
 const { getFeedPosts } = require("../../model/mongodb")
-const postStates = require("../../model/enum/postStates")
 const fetchPosts = async (req, res, next) => {
     const page = req.query.page
     try {
