@@ -17,11 +17,19 @@ const seedTypes = require("../../model/enum/seedTypes");
 const notificationTypes = require("../../model/enum/notificationTypes")
 
 const mongoose = require("mongoose");
+const axios = require('axios');
 
 async function getPost(req, res) {
     const userId = req.user.id;
     const user = await getUserById(userId);
-    res.render('posts/create_post', {title: 'Post', isLoggedIn: req.isLoggedIn, user: user, leafTypes, exposureTypes, seedTypes});
+    res.render('posts/create_post', {
+        title: 'Post',
+        isLoggedIn: req.isLoggedIn,
+        user: user,
+        leafTypes,
+        exposureTypes,
+        seedTypes
+    });
 }
 
 async function postNewPost(req, res, next) {
@@ -255,7 +263,7 @@ async function postReply(req, res) {
 
     try {
         const {reply, notification} = await addReply(plant_id, comment_id, {userID: user_id, content: text, likes: 0})
-        res.status(200).json({reply,notification});
+        res.status(200).json({reply, notification});
     } catch (err) {
         console.log(err)
         res.status(500).json({error: err});
@@ -579,6 +587,128 @@ function upvotesDownvotesAsAPercentage(upvotes, downvotes) {
     return {upvote: upvotePercentage, downvote: downvotePercentage};
 }
 
+async function getDBPediaInfo(req, res) {
+    //Get the suggestion ID from the parameters
+    const plant_id = req.params.plant_id;
+    const suggestion_id = req.params.suggestion_id;
+
+    //Get the suggestion from the post
+    const suggestion = await getSuggestionFromPost(plant_id, suggestion_id);
+
+    if (!suggestion) {
+        res.status(404);
+        res.send("Invalid suggestion ID");
+        return;
+    }
+
+    //Get the name of the plant from the suggestion
+    const plantName = suggestion.name;
+
+    //First, we need to check if any DBPedia records exist for the plant
+    const endpoint = `https://dbpedia.org/sparql`;
+
+    const query = `
+    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    PREFIX dbo: <http://dbpedia.org/ontology/>
+    PREFIX dbp: <http://dbpedia.org/property/>
+    
+    SELECT DISTINCT ?plant ?description ?thumbnail
+    WHERE {
+      ?plant rdf:type dbo:Plant ;
+             rdfs:label ?name ;
+             dbo:abstract ?description .
+      OPTIONAL { ?plant dbo:thumbnail ?thumbnail . }
+      FILTER (LANG(?name) = "en" && LANG(?description) = "en" && REGEX(?name, "${plantName}", "i"))
+    }`;
+
+    const encodedQuery = encodeURIComponent(query);
+
+    const url = `${endpoint}?query=${encodedQuery}&format=json`;
+
+    try {
+        const response = await axios.get(url);
+
+        let bindings = response.data.results.bindings;
+
+        //If no results are found, return an empty object
+        if (bindings.length === 0) {
+            res.status(404).json({});
+            return;
+        }
+
+        //Find the result that most closely matches the plant name
+        bindings = bindings.sort(function (a, b) {
+            const aDistance = levenshteinDistance(plantName, a.plant.value);
+            const bDistance = levenshteinDistance(plantName, b.plant.value);
+
+            return aDistance - bDistance;
+
+        });
+
+        let closest = bindings[0];
+
+        //Return the closest result
+        res.status(200).json({
+            plant: closest.plant.value,
+            description: closest.description.value,
+            thumbnail: closest.thumbnail ? closest.thumbnail.value : ""
+        });
+
+
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({error: e});
+    }
+}
+
+/**
+ * Calculate the Levenshtein distance between two strings.
+ * This distance function is used to compare the similarity between two strings.
+ * @param str1 The first string
+ * @param str2 The second string
+ * @returns {*} The Levenshtein distance between the two strings
+ */
+function levenshteinDistance(str1, str2) {
+    // Calculate the lengths of the input strings
+    const length1 = str1.length;
+    const length2 = str2.length;
+
+    // Initialize the distance matrix
+    const distanceMatrix = [];
+
+    // Initialize the first row of the matrix (for str1 to empty string)
+    for (let i = 0; i <= length1; i++) {
+        distanceMatrix[i] = [];
+        distanceMatrix[i][0] = i;
+    }
+
+    // Initialize the first column of the matrix (for empty string to str2)
+    for (let j = 0; j <= length2; j++) {
+        distanceMatrix[0][j] = j;
+    }
+
+    // Populate the rest of the matrix using dynamic programming
+    for (let i = 1; i <= length1; i++) {
+        for (let j = 1; j <= length2; j++) {
+            // If characters at the current positions are the same, no edit is needed
+            if (str1[i - 1] === str2[j - 1]) {
+                distanceMatrix[i][j] = distanceMatrix[i - 1][j - 1];
+            } else {
+                // Calculate the costs for different edit operations
+                const substitutionCost = distanceMatrix[i - 1][j - 1] + 1;
+                const insertionCost = distanceMatrix[i][j - 1] + 1;
+                const deletionCost = distanceMatrix[i - 1][j] + 1;
+                // Choose the minimum cost among the three options
+                distanceMatrix[i][j] = Math.min(substitutionCost, insertionCost, deletionCost);
+            }
+        }
+    }
+
+    // Return the Levenshtein distance between the two strings
+    return distanceMatrix[length1][length2];
+}
+
 
 module.exports = {
     getPost,
@@ -597,5 +727,6 @@ module.exports = {
     postDownvote,
     postUndownvote,
     postAcceptSuggestion,
-    postUnacceptSuggestion
+    postUnacceptSuggestion,
+    getDBPediaInfo
 }
