@@ -31,5 +31,22 @@ const postStates = {
             default:
                 return prefix + 'secondary';
         }
-    }
-}
+    },
+
+    postStateToIcon: (postState) => {
+        switch (postState) {
+            case NEW_POST:
+                return 'fa-solid fa-plus';
+            case IN_PROGRESS:
+                return 'fa-solid fa-comment';
+            case IDENTIFIED:
+                return 'fa-solid fa-check-circle';
+            default:
+                return 'fa-solid fa-question';
+        }
+    },
+
+    //Return a list of the possible post state integers
+    getList: () => Array.from(Object.values(postStates)).filter(value => typeof value === 'number')
+};
+

@@ -14,6 +14,8 @@ const postsRouter = require('./routes/posts');
 const userRouter = require('./routes/user');
 const apiRouter = require('./routes/api');
 
+const postStates = require("./model/enum/postStates")
+
 const {
   authenticationStrategy,
   serializeUser,

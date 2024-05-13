@@ -23,7 +23,7 @@ const postStates = {
     postStateToColor: (postState, prefix = "") => {
         switch (postState) {
             case NEW_POST:
-                return prefix + 'info';
+                return prefix + 'danger';
             case IN_PROGRESS:
                 return prefix + 'warning';
             case IDENTIFIED:
