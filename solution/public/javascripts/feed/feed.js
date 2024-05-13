@@ -1,12 +1,13 @@
 // Decode Large Base64 Buffers
-function Uint8ToString(u8a){
+function Uint8ToString(u8a) {
     const CHUNK_SZ = 0x8000;
     const c = [];
-    for (let i=0; i < u8a.length; i+=CHUNK_SZ) {
-        c.push(String.fromCharCode.apply(null, u8a.subarray(i, i+CHUNK_SZ)));
+    for (let i = 0; i < u8a.length; i += CHUNK_SZ) {
+        c.push(String.fromCharCode.apply(null, u8a.subarray(i, i + CHUNK_SZ)));
     }
     return c.join("");
 }
+
 const createPostDiv = post => {
     // No image placeholder
     let imgSrc = "https://placehold.co/600x400?text=No Images";
@@ -23,7 +24,7 @@ const createPostDiv = post => {
         <div class="col-sm-8 d-flex flex-column justify-content-between align-items-start">
             <div class="d-flex justify-content-between w-100 mb-2">
                 <h3 class="m-0"> ${post.title}</h3>
-                <span class="align-self-center">${new Date(post.seen_at).toLocaleDateString('en-GB', {
+                <span class="align-self-center">${new Date(post.createdAt).toLocaleDateString('en-GB', {
         day: "numeric",
         month: "short",
         year: "numeric",
@@ -32,7 +33,7 @@ const createPostDiv = post => {
     })}</span>
             </div>
             <div class="fst-italic">
-                ${(post.description.length > 50 ? post.description.slice(0,50) : post.description) + "..."}
+                ${(post.description.length > 50 ? post.description.slice(0, 50) : post.description) + "..."}
             </div>
             <div class="d-flex justify-content-between mt-3 w-100">
                 <div class="align-self-center">
@@ -45,7 +46,6 @@ const createPostDiv = post => {
         </div>
     </div>`
 }
-
 
 
 const $feedWrapper = $("#feed-wrapper")
@@ -65,16 +65,24 @@ let currentPosts = []
 socket = io()
 let updateFeedTime = Date.now()
 
-const updateFeed = (posts) => {
+const updateFeed = (posts, append = true) => {
     for (let i = 0; i < posts.length; i++) {
         socket.emit("viewing_plant", {plant_id: posts[i]._id})
         const $newPost = $(createPostDiv(posts[i]))
-        $feedWrapper.append($newPost)
+        if (append) {
+            $feedWrapper.append($newPost)
+        } else {
+            // Add most recent post to the top
+            $feedWrapper.prepend($newPost);
+
+            // Remove last post
+            $feedWrapper.children().last().remove()
+        }
     }
 
 }
 $(document).ready(async function () {
-    if(isOnline){
+    if (isOnline) {
         socket.on("new_comment", data => {
             const $commentCounter = $(`#comment-counter-${data.post_id}`)
             const count = parseInt($commentCounter.text()) + 1
@@ -88,10 +96,10 @@ $(document).ready(async function () {
 
             openFeedIDB().then(db => {
                 clearFeedIDB(db).then(() => {
-                    updateFeedIDB(db,currentPosts).then(() => console.log("Feed cached!"))
+                    updateFeedIDB(db, currentPosts).then(() => console.log("Feed cached!"))
                 })
             })
-        }catch (e){
+        } catch (e) {
             console.log(e)
             $errorBox.show()
         }
@@ -111,7 +119,7 @@ $(document).ready(async function () {
 
     $(window).scroll(async function () {
 
-        if(isOnline){
+        if (isOnline) {
             const timeDiff = Date.now() - updateFeedTime
             if (timeDiff > updateFeedGap && $(window).scrollTop() + $(window).height() >= $(document).height()) {
                 updateFeedTime = Date.now()
@@ -145,13 +153,24 @@ $(document).ready(async function () {
                     $updateSpinner.hide()
                     page += 1
                     updateFeedTime = Date.now()
-                }catch (e){
+                } catch (e) {
                     $errorBox.show();
                 }
 
             }
         }
     });
+
+    window.addEventListener("online", async () => {
+        let cachedPosts = []
+        const db = await openFeedIDB();
+        const posts = await getFeedIDB(db)
+        const response = await axios.post("/api/fetch-missing-posts", {lastPostDateTime: posts.length > 0 ? posts[0].createdAt : null})
+        currentPosts = [...response.data.newPosts, ...currentPosts]
+        currentPosts = currentPosts.slice(0, 10)
+        page = 2
+        updateFeed(response.data.newPosts, false)
+    })
 });
 
 window.addEventListener('beforeunload', function (event) {
