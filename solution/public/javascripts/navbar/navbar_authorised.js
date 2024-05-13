@@ -8,6 +8,8 @@ const setNotificationCounter = async ($counter) => {
 
     if (countInt > 0) {
         $notificationCounter.removeClass("d-none")
+    } else {
+        $notificationCounter.addClass("d-none")
     }
 
     return notificationCount
