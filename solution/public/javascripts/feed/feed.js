@@ -73,6 +73,8 @@ const updateFeed = (posts) => {
     }
 
 }
+
+
 $(document).ready(async function () {
     if(isOnline){
         socket.on("new_comment", data => {
@@ -97,6 +99,10 @@ $(document).ready(async function () {
         }
 
     } else {
+            $('#filterBy').prop('disabled', true);
+            $('#applyButton').prop('disabled', true);
+            $('#sortBy').prop('disabled', true);
+
         openFeedIDB().then(db => {
             getFeedIDB(db).then(posts => {
                 for (let i = 0; i < posts.length; i++) {
@@ -107,7 +113,39 @@ $(document).ready(async function () {
             console.log("Feed retrieved from cache!")
         })
     }
+    var selectedValue = "all";
+    $('#applyButton').on('click', async function (event) {
+        event.preventDefault();
+        selectedValue = $('#filterBy').val();
+        page = 1 ;
+        // Prevent default form submission behavior
+        $feedWrapper.empty();
 
+        if (isOnline) {
+            socket.on("new_comment", data => {
+                const $commentCounter = $(`#comment-counter-${data.post_id}`)
+                const count = parseInt($commentCounter.text()) + 1
+                $commentCounter.text(count)
+            })
+            try {
+                const stateValue = selectedValue === "completed" ? 2 : selectedValue === "inProgress" ? 1 : null;
+                const firstPagePosts = await axios.get("/api/feed", {params: {page, state: stateValue}})
+                updateFeed(firstPagePosts.data);
+
+                currentPosts = [...firstPagePosts.data]
+
+                openFeedIDB().then(db => {
+                    clearFeedIDB(db).then(() => {
+                        updateFeedIDB(db, currentPosts).then(() => console.log("Feed cached!"))
+                    })
+                })
+            } catch (e) {
+                console.log(e)
+                $errorBox.show()
+            }
+
+        }
+    });
 
     $(window).scroll(async function () {
 
