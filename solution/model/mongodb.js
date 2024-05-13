@@ -322,6 +322,31 @@ const createPost = async (postData) => {
     return Post.create(postData);
 }
 
+const getCommentsSinceTime = async (postID, time) => {
+    const post = await Post.findById(postID);
+
+    //If the post doesn't exist, return an empty array
+    if (!post) {
+        return [];
+    }
+
+    //Filter the comments array to only include comments that were created after the given time
+    const comments = post.comments.filter((comment) => comment.createdAt > time);
+    return comments;
+}
+
+const getRepliesSinceTime = async (postID, time) => {
+    const post = await Post.aggregate([
+        { $match: { _id: mongoose.Types.ObjectId(postID) } }, // Match the post
+        { $unwind: "$comments" }, // Deconstruct the comments array
+        { $unwind: "$comments.replies" }, // Deconstruct the replies array
+        { $match: { "comments.replies.createdAt": { $gt: new Date(time) } } }, // Match replies after the given time
+        { $replaceRoot: { newRoot: "$comments.replies" } } // Replace the root to the reply document
+    ]);
+
+    return post;
+}
+
 const addNotification = async (targetPostId, targetUserId, notificationType, notificationTitle, content = "", authorId = null, targetCommentId = null) => {
     const author = await User.findById(authorId)
     const notification = {
@@ -397,6 +422,8 @@ module.exports = {
     getSuggestionFromPost,
     findSuggestion,
     createPost,
+    getCommentsSinceTime,
+    getRepliesSinceTime,
     getFeedPosts,
     addNotification,
     getAllNotifications,

@@ -1,5 +1,8 @@
+importScripts('/javascripts/socket.io.min.js');
+
 importScripts('/javascripts/idb/idb.js');
 importScripts('/javascripts/idb/posting_idb.js');
+importScripts('/javascripts/idb/comments_idb.js');
 
 self.addEventListener('install', event => {
     console.log('Service Worker: Installing....');
@@ -135,6 +138,10 @@ function cleanResponse(response) {
 }
 //sync event
 self.addEventListener('sync', async event => {
+    let socket = io('http://localhost:3000', {
+        jsonp: false,
+        transports: ['websocket']
+    });
     if (event.tag === "sync-new-post") {
         console.log("Service Worker: Syncing new Posts");
 
@@ -195,6 +202,86 @@ self.addEventListener('sync', async event => {
                 }
             }
             console.log("Service Worker: Synced new Posts");
+        }
+    } else if (event.tag === "sync-new-comment") {
+        console.log("Service Worker: Syncing new Comments");
+
+        const db = await openCommentsIdb();
+        const comments = await getCommentsFromIdb(db);
+        if (comments.length > 0) {
+            for (const comment of comments) {
+                try {
+                    const temp_id = comment.temp_id;
+                    const post_id = comment.post_id;
+                    const user_id = comment.user_id;
+                    const text = comment.text;
+
+                    fetch(`http://localhost:3000/plant/${post_id}/comment`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            text: text,
+                            user_id: user_id
+                        })
+                    }).then(response => {
+                        if (response.ok) {
+                            return response.json();
+                        } else {
+                            console.log("Service Worker: Sync Error: ", response.statusText)
+                        }
+                    }).then(async data => {
+                        data.post.temp_id = temp_id;
+                        socket.emit("new_comment", post_id, data.post);
+                        socket.emit("new_notification", data.notification)
+
+                        await deleteCommentFromIdb(db, comment.id);
+                    }).catch(error => {
+                        console.log("Service Worker: Sync Error: ", error);
+                    });
+                } catch (e) {
+                    console.log("Service Worker: Sync Error: ", e);
+                }
+            }
+            console.log("Service Worker: Synced new Comments");
+        }
+    } else if (event.tag === "sync-new-reply") {
+        console.log("Service Worker: Syncing new Replies");
+
+        const db = await openCommentsIdb();
+        const replies = await getRepliesFromIdb(db);
+        if (replies.length > 0) {
+            for (const reply of replies) {
+                try {
+                    const post_id = reply.post_id;
+                    const comment_id = reply.comment_id;
+                    const user_id = reply.user_id;
+                    const reply_text = reply.reply_text;
+
+                    fetch(`http://localhost:3000/plant/${post_id}/comment/${comment_id}/reply`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            text: reply_text,
+                            user_id: user_id
+                        })
+                    }).then(response => {
+                        if (response.ok) {
+                            return response.json();
+                        } else {
+                            console.log("Service Worker: Sync Error: ", response.statusText)
+                        }
+                    });
+
+                    await deleteReplyFromIdb(db, reply.id);
+                } catch (e) {
+                    console.log("Service Worker: Sync Error: ", e);
+                }
+            }
+            console.log("Service Worker: Synced new Replies");
         }
     }
 });

@@ -6,6 +6,8 @@ socket = io();
 let actionInProgress = false;
 let identificationHasChanged = false;
 
+let lastConnectedTime;
+
 document.addEventListener('DOMContentLoaded', function () {
     //TODO: Initialise Socket.io
     registerSocketListeners();
@@ -29,6 +31,34 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+document.addEventListener('DOMContentLoaded', async function () {
+    //Once the page has loaded, we need to get any pending comments from the IndexedDB and add them to the page
+    const db = await openCommentsIdb();
+    const comments = await getCommentsFromIdb(db);
+
+    for (const comment of comments) {
+        addPlaceholderCommentToPage(comment);
+    }
+
+    window.addEventListener('offline', async () => {
+        //When we go offline, we need to store the time we went offline
+        lastConnectedTime = new Date();
+    });
+
+    window.addEventListener('online', async () => {
+        //Once we are back online, we need to check for any comments that may be on the server since we went offline
+        try {
+            const response = await axios.get(`/plant/${plantID}/comment/since?${encodeURIComponent({time: lastConnectedTime.toISOString()})}`);
+
+            for (const comment of response.data) {
+                await addCommentToPage(comment._id, comment.temp_id);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    });
+});
+
 
 function registerSocketListeners() {
     socket.on('new_suggestion', async (data) => {
@@ -43,7 +73,7 @@ function registerSocketListeners() {
 
     socket.on('new_comment', async (data) => {
         console.log('new_comment')
-        await addCommentToPage(data._id);
+        await addCommentToPage(data._id, data.temp_id);
     });
 
     socket.on('new_reply', async (data) => {
@@ -72,6 +102,15 @@ function registerSocketListeners() {
     });
 }
 
+function generateRandomId() {
+    const alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let id = '';
+    for (let i = 0; i < 24; i++) {
+        id += alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+    }
+    return id;
+}
+
 async function addNewComment() {
     const newCommentText = document.getElementById('addCommentText').value;
 
@@ -82,19 +121,30 @@ async function addNewComment() {
     const newComment = {
         text: newCommentText,
         user_id: userID,
+        post_id: plantID,
     };
 
     try {
         //Send the comment to /plant/:id/comment
-        const response = await axios.post(`/plant/${plantID}/comment`, newComment);
+        const tempId = generateRandomId();
 
-        console.log("response data: ", response.data);
+        addPlaceholderCommentToPage({
+            text: newCommentText,
+            temp_id: tempId
+        });
 
-        socket.emit('new_comment', plantID, response.data.post);
-        socket.emit("new_notification", response.data.notification)
+        const db = await openCommentsIdb();
+        await addCommentToIdb(db, newComment, tempId);
 
-        //Add the comment to the page
-        await addCommentToPage(response.data.post._id);
+        //const response = await axios.post(`/plant/${plantID}/comment`, newComment);
+
+        //console.log("response data: ", response.data);
+
+        // socket.emit('new_comment', plantID, response.data.post);
+        // socket.emit("new_notification", response.data.notification)
+        //
+        // //Add the comment to the page
+        // await addCommentToPage(response.data.post._id);
 
         //Clear the comment text box
         $('#addCommentText').val('');
@@ -138,7 +188,58 @@ async function addNewReply() {
 
 }
 
-async function addCommentToPage(commentID) {
+function generateCommentHtml(comment) {
+    return `
+    <div class="card comment-placeholder" data-temp-id="${comment.temp_id}">
+    <div class="card-body p-2 p-lg-3">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-inline-flex justify-content-between align-content-center w-100">
+                    <p class="m-0 p-0 align-content-center d-flex">
+                        <img class="rounded-5 my-auto mx-1"
+                             src="https://ui-avatars.com/api/?name=You&background=random&color=fff"
+                             width="20">
+                        <a class="link-hover text-decoration-none fw-medium my-auto px-2"><span
+                                    class="fs-6">You</span></a>
+                    </p>
+                    <p class="m-0 p-0 align-content-center my-auto fs-6">
+                        Pending
+                        <i class="fa-solid fa-circle-notch fa-spin"></i>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <p class="m-0 p-0 pt-1 text-wrap">${comment.text}</p>
+            </div>
+        </div>
+    </div>
+</div>
+    `;
+
+}
+
+function addPlaceholderCommentToPage(comment) {
+    const commentsContainer = document.getElementById('commentsContainer');
+
+    const noCommentsRow = $('#noCommentsRow');
+    if (noCommentsRow.is(':visible')) {
+        noCommentsRow.hide();
+    }
+
+    const newComment = document.createElement('div');
+    newComment.classList.add('row', 'pb-1');
+
+    const newCommentCol = document.createElement('div');
+    newCommentCol.classList.add('col-12');
+
+    newCommentCol.innerHTML = generateCommentHtml(comment);
+    newComment.appendChild(newCommentCol);
+    commentsContainer.prepend(newComment);
+}
+
+async function addCommentToPage(commentID, tempID) {
     //Make a request to the /plant/:plant_id/comment/:comment_id/render route to get the HTML for the comment
     try {
         const response = await axios.get(`/plant/${plantID}/comment/${commentID}/render`);
@@ -149,6 +250,13 @@ async function addCommentToPage(commentID) {
         //If the no comments row is visible, hide it
         if (noCommentsRow.is(':visible')) {
             noCommentsRow.hide();
+        }
+
+        //First, check if a placeholder comment exists and remove it
+        const placeholder = $(`.comment-placeholder[data-temp-id=${tempID}]`);
+
+        if (placeholder.length > 0) {
+            placeholder.remove();
         }
 
         //Create a new div element
@@ -238,7 +346,10 @@ async function toggleLikeButton(commentID) {
             socket.emit("new_notification", response.data.notification)
         }
 
-        socket.emit('like_count', plantID, {commentID: commentID, likes: data.likes});
+        socket.emit('like_count', plantID, {
+            commentID: commentID,
+            likes: data.likes
+        });
 
         success = true;
     } catch (err) {
@@ -250,12 +361,12 @@ async function toggleLikeButton(commentID) {
                 likeIndicator.addClass('text-danger');
                 likeIndicator.removeClass('fa-regular');
                 likeIndicator.addClass('fa-solid');
-                likesCount.text(likes + 1);
+                likesCount.text(likes);
             } else {
                 likeIndicator.removeClass('text-danger');
                 likeIndicator.removeClass('fa-solid');
                 likeIndicator.addClass('fa-regular');
-                likesCount.text(likes - 1);
+                likesCount.text(likes);
             }
         }
     }
@@ -635,13 +746,19 @@ async function acceptSuggestion(suggestionID) {
 function upvotesDownvotesAsAPercentage(upvotes, downvotes) {
     const total = upvotes + downvotes;
     if (total === 0) {
-        return {upvote: 50, downvote: 50};
+        return {
+            upvote: 50,
+            downvote: 50
+        };
     }
 
     const upvotePercentage = Math.floor((upvotes / total) * 100);
     const downvotePercentage = 100 - upvotePercentage;
 
-    return {upvote: upvotePercentage, downvote: downvotePercentage};
+    return {
+        upvote: upvotePercentage,
+        downvote: downvotePercentage
+    };
 }
 
 function openReplyModal(commentID) {

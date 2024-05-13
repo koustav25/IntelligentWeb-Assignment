@@ -4,7 +4,9 @@ const multer = require("multer");
 
 const {getPost, getPlant, postComment, getCommentHTML, postReply, getReplyHTML, postLike, postUnlike, postSuggestion,
     getSuggestionHTML, postUpvote, postUnupvote, postDownvote, postUndownvote, postUnacceptSuggestion,
-    postAcceptSuggestion, postNewPost
+    postAcceptSuggestion, postNewPost,
+    getCommentsSinceTime,
+    getRepliesSinceTime
 } = require("../controllers/posts/postController");
 const {getFeed} = require("../controllers/posts/feedController");
 const {getSearch} = require("../controllers/posts/searchController");
@@ -32,6 +34,10 @@ router.post("/plant/:plant_id/suggestion/:suggestion_id/downvote", userInBody, p
 router.post("/plant/:plant_id/suggestion/:suggestion_id/undownvote", userInBody, postUndownvote);
 router.post("/plant/:plant_id/suggestion/:suggestion_id/accept", postAcceptSuggestion);
 router.post("/plant/:plant_id/suggestion/:suggestion_id/unaccept", postUnacceptSuggestion);
+
+//Sync routes
+router.get("/plant/:plant_id/comment/since", getCommentsSinceTime);
+router.get("/plant/:plant_id/replies/since", getRepliesSinceTime);
 
 router.get("/post", getPost);
 
