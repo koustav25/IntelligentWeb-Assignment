@@ -50,4 +50,3 @@ const postStates = {
     getList: () => Array.from(Object.values(postStates)).filter(value => typeof value === 'number')
 };
 
-module.exports = postStates;

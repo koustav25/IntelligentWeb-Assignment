@@ -17,6 +17,7 @@ self.addEventListener('install', event => {
                 '/javascripts/idb/idb.js',
                 "/javascripts/leaflet.js",
                 "/javascripts/socket.io.min.js",
+                "/javascripts/post_states.js",
                 '/stylesheets/style.css',
                 "/stylesheets/leaflet.css",
                 '/stylesheets/bootstrap.min.css',
