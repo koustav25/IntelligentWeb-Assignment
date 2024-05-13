@@ -100,10 +100,6 @@ const getPostById = async (id) => {
     return post;
 }
 
-// const getFeedPosts = async (page = 1, limit = 10) => {
-//     return await Post.find().sort({createdAt: -1}).skip((page - 1) * limit).limit(limit)
-// }
-
 const getFeedPosts = async (page = 1, limit = 10, state = null) => {
     let query = Post.find().sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit);
     if (state !== null) {
