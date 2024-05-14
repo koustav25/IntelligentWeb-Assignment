@@ -863,3 +863,39 @@ function openReplyModal(commentID) {
     $('#replyToCommentID').val(commentID);
     $('#replyToCommentModal').modal('show');
 }
+
+//Simulate the loading of the DBPedia content
+document.addEventListener('DOMContentLoaded', async () => {
+
+    try {
+        const response = await axios.get(`/plant/${plantID}/suggestion/${acceptedIdentificationID}/dbpedia`)
+
+        const data = response.data;
+        const dbPediaName = document.getElementById('dbPediaName');
+        const dbPediaDescription = document.getElementById('dbPediaDescription');
+        const dbPediaImage = document.getElementById('dbPediaImage');
+        const dbPediaLink = document.getElementById('dbPediaLink');
+
+        dbPediaName.innerText = data.plant.replace("http://dbpedia.org/resource/", "");
+        dbPediaDescription.innerText = data.description;
+        dbPediaImage.src = data.thumbnail;
+        dbPediaLink.href = data.plant;
+
+        $('#dbPediaSpinner').collapse('hide');
+        $('#dbpediaContent').collapse('show');
+    } catch (error) {
+        console.error(error);
+
+        //Check response code
+        if (error.response.status === 404) {
+            $('#dbPediaFailedMessage').text('Failed to retrieve information from DBPedia. The plant may not be in the database.');
+        } else if (error.response.status === 503) {
+            $('#dbPediaFailedMessage').text('Failed to retrieve information from DBPedia. Are you offline?');
+        } else {
+            $('#dbPediaFailedMessage').text('Failed to retrieve information from DBPedia. An unknown error occurred.');
+        }
+
+        $('#dbPediaSpinner').collapse('hide');
+        $('#dbPediaFailed').collapse('show');
+    }
+});

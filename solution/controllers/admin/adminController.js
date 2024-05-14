@@ -1,6 +1,7 @@
 const {getUsers, getMockFeed, getMockPlants} = require("../../util/mock/mockData");
 const {getAllUsers, getUserById, getUserByIdWithPosts, updateUser} = require("../../model/mongodb");
 const roleTypes = require("../../model/enum/roleTypes");
+const postStates = require("../../model/enum/postStates");
 
 function getAdminDashboard(req, res) {
     //TODO: Add admin dashboard rendering logic here
@@ -19,7 +20,7 @@ async function getAdminUserDetails(req, res) {
 
     const user = (await getUserByIdWithPosts(id));
 
-    res.render("admin/user_details", {isLoggedIn: req.isLoggedIn, userDetails: user, roleTypes})
+    res.render("admin/user_details", {isLoggedIn: req.isLoggedIn, userDetails: user, roleTypes,postStates})
 }
 
 async function postUserUpdate(req, res) {

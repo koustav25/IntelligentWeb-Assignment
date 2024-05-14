@@ -1,18 +1,24 @@
 let socket;
 let $notificationCounter;
 
+const setNotificationCounter = async ($counter) => {
+    const notificationCount = await axios.get("/api/new-notification-count")
+    const countInt = parseInt(notificationCount.data.count)
+    $notificationCounter.text(countInt >= 0 ? countInt : 0)
+
+    if (countInt > 0) {
+        $notificationCounter.removeClass("d-none")
+    } else {
+        $notificationCounter.addClass("d-none")
+    }
+
+    return notificationCount
+}
 window.addEventListener("load", async (e) => {
     $notificationCounter = $("#notification-count")
 
     try {
-        const notificationCount = await axios.get("/api/new-notification-count")
-        const countInt = parseInt(notificationCount.data.count)
-        $notificationCounter.text(countInt >= 0 ? countInt : 0)
-
-        if (countInt > 0) {
-            $notificationCounter.removeClass("d-none")
-        }
-
+        const notificationCount = await setNotificationCounter($notificationCounter);
         socket.emit("user_active", {user_id: notificationCount.data.user_id})
 
         socket.on("new_notification", () => {
@@ -35,4 +41,8 @@ window.addEventListener("load", async (e) => {
 
 document.addEventListener("DOMContentLoaded", async (e) => {
     socket = io()
+
+    window.addEventListener('online', async (e) => {
+        await setNotificationCounter($notificationCounter);
+    });
 });

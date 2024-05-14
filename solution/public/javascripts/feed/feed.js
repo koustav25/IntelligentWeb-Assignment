@@ -37,7 +37,7 @@ const createPostDiv = post => {
             <div class="d-flex justify-content-between mt-3 w-100">
                 <div class="align-self-center">
                     Identification:
-                    <span class="text-shadow ${post.identification.is_accepted ? "text-success" : "text-warning"}">${post.identification.is_accepted ? "Completed" : "In Progress"}</span>
+                    <span class="text-shadow ${postStates.postStateToColor(post.state,"text-")}">${postStates.postStateToString(post.state)}</span>
                 </div>
                 <div class="btn btn-warning">Comments: <span id="comment-counter-${post._id}">${post.comments.length}</span></div>
                 <a class="btn btn-primary" href="/plant/${post._id}">See more</a>
@@ -85,9 +85,9 @@ $(document).ready(async function () {
             $commentCounter.text(count)
         })
         try {
-            const firstPagePosts = await axios.get("/api/feed", {params: {page}})
-            updateFeed(firstPagePosts.data)
-            currentPosts = [...firstPagePosts.data]
+            const response = await axios.get("/api/feed", {params: {page}})
+            updateFeed(response.data.posts)
+            currentPosts = [...response.data.posts]
             page += 1
 
             openFeedIDB().then(db => {
@@ -122,10 +122,10 @@ $(document).ready(async function () {
 
                 $feedEnd.hide()
                 $loadingSpinner.show()
-                const newPosts = await axios.get("/api/feed", {params: {page}})
-                updateFeed(newPosts.data)
-                currentPosts = [...currentPosts, ...newPosts.data]
-                if (newPosts.data.length > 0) {
+                const response = await axios.get("/api/feed", {params: {page}})
+                updateFeed(response.data.posts)
+                currentPosts = [...currentPosts, ...response.data.posts]
+                if (response.data.posts.length > 0) {
                     page += 1
                 } else {
                     $feedEnd.show()
@@ -143,9 +143,9 @@ $(document).ready(async function () {
                 currentPosts.map(post => socket.emit("leaving_plant", {plant_id: post._id}))
 
                 try {
-                    const updatePosts = await axios.get("/api/feed")
-                    updateFeed(updatePosts.data)
-                    currentPosts = updatePosts.data
+                    const response = await axios.get("/api/feed")
+                    updateFeed(response.data.posts)
+                    currentPosts = response.data.posts
                     $updateSpinner.hide()
                     page += 1
                     updateFeedTime = Date.now()
