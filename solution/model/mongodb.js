@@ -100,8 +100,8 @@ const getPostById = async (id) => {
     return post;
 }
 
-const getFeedPosts = async (page = 1, limit = 10) => {
-    return await Post.find().sort({createdAt: -1}).skip((page - 1) * limit).limit(limit)
+const getFeedPosts = async (page = 1, limit = 10, filters={}) => {
+    return await Post.find(filters).sort({createdAt: -1}).skip((page - 1) * limit).limit(limit)
 }
 
 const getPostsBySearchTerms = async (search_text, search_order, limit) => {

@@ -11,6 +11,17 @@ const fetchPosts = async (req, res, next) => {
 
 }
 
+const fetchMissingPosts = async (req,res,next) => {
+    try {
+        const { lastPostDateTime } = req.body;
+        const newPosts = await getFeedPosts(1, 10, {createdAt: {$gt: new Date(lastPostDateTime)}})
+        res.status(200).json({newPosts})
+    }catch(e){
+        res.status(500).json({newPosts: []})
+    }
+
+}
 module.exports = {
-    fetchPosts
+    fetchPosts,
+    fetchMissingPosts
 }
