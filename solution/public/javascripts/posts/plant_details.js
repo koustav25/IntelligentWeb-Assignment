@@ -179,15 +179,7 @@ async function addNewComment() {
         const db = await openCommentsIdb();
         await addCommentToIdb(db, newComment, tempId);
 
-        //const response = await axios.post(`/plant/${plantID}/comment`, newComment);
 
-        //console.log("response data: ", response.data);
-
-        // socket.emit('new_comment', plantID, response.data.post);
-        // socket.emit("new_notification", response.data.notification)
-        //
-        // //Add the comment to the page
-        // await addCommentToPage(response.data.post._id);
 
         //Clear the comment text box
         $('#addCommentText').val('');

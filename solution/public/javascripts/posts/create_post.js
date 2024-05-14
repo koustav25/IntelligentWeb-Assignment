@@ -97,31 +97,6 @@ async function handleFormSubmit(event) {
             return;
         }
 
-        //Prepare formData
-        // const formData = new FormData();
-        // formData.append('title', title);
-        // formData.append('seen_at', seen_at);
-        // formData.append('description', description);
-        // formData.append('location_name', location_name);
-        // formData.append('latitude', latitude);
-        // formData.append('longitude', longitude);
-        // formData.append('height', height);
-        // formData.append('spread', spread);
-        // formData.append('sun_exposure', sun_exposure);
-        // formData.append('has_flowers', has_flowers);
-        // formData.append('flower_colour', colour);
-        // formData.append('leaf_type', leaf_type);
-        // formData.append('seed_type', seed_type);
-        // for (let i = 0; i < images.length; i++) {
-        //     formData.append('images', images[i]);
-        // }
-        //
-        // const response = await axios.post('/post', formData, {
-        //     headers: {
-        //         'Content-Type': 'multipart/form-data'
-        //     }
-        // });
-
         const post_info = {
             title,
             seen_at,
