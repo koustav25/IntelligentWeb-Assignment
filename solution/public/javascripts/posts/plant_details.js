@@ -8,6 +8,8 @@ let identificationHasChanged = false;
 
 let lastConnectedTime;
 
+let suggestionButton;
+
 document.addEventListener('DOMContentLoaded', function () {
     //TODO: Initialise Socket.io
     registerSocketListeners();
@@ -28,6 +30,40 @@ document.addEventListener('DOMContentLoaded', function () {
         if (identificationHasChanged) {
             location.reload();
         }
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    suggestionButton = $('#suggestIdentificationButton');
+
+    const offlineIcon = `
+    <div class="fa-stack text-white my-auto p-0 m-0 px-2 fa-1x">
+        <i class="fa-solid fa-wifi fa-stack-1x my-0 py-0"></i>
+        <i class="fa-solid fa-slash text-warning fw-bold fa-stack-1x my-0 py-0" style="opacity: 100%"></i>
+    </div>
+    `
+
+    //When online, enable the suggestion button and make sure its text is "Suggest Identification"
+    //When offline, disable the suggestion button and make sure its text is "Suggestions Unavailable Offline"
+
+    if (isOnline) {
+        suggestionButton.prop('disabled', false);
+        suggestionButton.text('Suggest Identification');
+    } else {
+        suggestionButton.prop('disabled', true);
+
+        suggestionButton.html(offlineIcon + ' Suggestions Unavailable Offline');
+    }
+
+    window.addEventListener('online', function () {
+        suggestionButton.prop('disabled', false);
+        suggestionButton.text('Suggest Identification');
+    });
+
+    window.addEventListener('offline', function () {
+        suggestionButton.prop('disabled', true);
+
+        suggestionButton.html(offlineIcon + ' Suggestions Unavailable Offline');
     });
 });
 
