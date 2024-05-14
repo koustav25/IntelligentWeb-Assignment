@@ -162,14 +162,24 @@ $(document).ready(async function () {
     });
 
     window.addEventListener("online", async () => {
-        let cachedPosts = []
         const db = await openFeedIDB();
         const posts = await getFeedIDB(db)
         const response = await axios.post("/api/fetch-missing-posts", {lastPostDateTime: posts.length > 0 ? posts[0].createdAt : null})
         currentPosts = [...response.data.newPosts, ...currentPosts]
         currentPosts = currentPosts.slice(0, 10)
         page = 2
-        updateFeed(response.data.newPosts, false)
+
+        // As the function uses prepend and the array is sorted already the new posts have to be reversed
+        updateFeed(response.data.newPosts.reverse(), false)
+
+        // Cache new posts
+        if(response.data.newPosts.length > 0){
+            openFeedIDB().then(db => {
+                clearFeedIDB(db).then(() => {
+                    updateFeedIDB(db, currentPosts).then(() => console.log("Updated feed cached!"))
+                })
+            })
+        }
     })
 });
 
