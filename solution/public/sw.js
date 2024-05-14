@@ -223,7 +223,8 @@ self.addEventListener('sync', async event => {
                         },
                         body: JSON.stringify({
                             text: text,
-                            user_id: user_id
+                            user_id: user_id,
+                            temp_id: temp_id
                         })
                     }).then(response => {
                         if (response.ok) {
@@ -232,7 +233,6 @@ self.addEventListener('sync', async event => {
                             console.log("Service Worker: Sync Error: ", response.statusText)
                         }
                     }).then(async data => {
-                        data.post.temp_id = temp_id;
                         socket.emit("new_comment", post_id, data.post);
                         socket.emit("new_notification", data.notification)
 
@@ -254,10 +254,11 @@ self.addEventListener('sync', async event => {
         if (replies.length > 0) {
             for (const reply of replies) {
                 try {
-                    const post_id = reply.post_id;
+                    const post_id = reply.plant_id;
                     const comment_id = reply.comment_id;
                     const user_id = reply.user_id;
-                    const reply_text = reply.reply_text;
+                    const reply_text = reply.text;
+                    const temp_id = reply.temp_id;
 
                     fetch(`http://localhost:3000/plant/${post_id}/comment/${comment_id}/reply`, {
                         method: 'POST',
@@ -266,7 +267,8 @@ self.addEventListener('sync', async event => {
                         },
                         body: JSON.stringify({
                             text: reply_text,
-                            user_id: user_id
+                            user_id: user_id,
+                            temp_id: temp_id
                         })
                     }).then(response => {
                         if (response.ok) {
@@ -274,9 +276,14 @@ self.addEventListener('sync', async event => {
                         } else {
                             console.log("Service Worker: Sync Error: ", response.statusText)
                         }
-                    });
+                    }).then(async data => {
+                        socket.emit("new_reply", post_id, {comment_id, reply: data.reply});
+                        socket.emit("new_notification", data.notification)
 
-                    await deleteReplyFromIdb(db, reply.id);
+                        await deleteReplyFromIdb(db, reply.id);
+                    }).catch(error => {
+                        console.log("Service Worker: Sync Error: ", error);
+                    });
                 } catch (e) {
                     console.log("Service Worker: Sync Error: ", e);
                 }

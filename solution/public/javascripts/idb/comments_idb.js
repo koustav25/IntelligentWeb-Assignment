@@ -123,11 +123,17 @@ function addCommentToIdb(db, comment, tempId) {
     });
 }
 
-function addReplyToIdb(db, reply) {
+function addReplyToIdb(db, reply, tempId) {
     return new Promise((resolve, reject) => {
         const transaction = db.transaction(["replies"], "readwrite");
         const store = transaction.objectStore("replies");
-        const request = store.add(reply);
+
+        const replyObj = {
+            temp_id: tempId,
+            ...reply
+        }
+
+        const request = store.add(replyObj);
 
         request.addEventListener("success", () => {
             const getRequest = store.get(request.result);

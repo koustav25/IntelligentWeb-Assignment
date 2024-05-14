@@ -22,7 +22,11 @@ const commentSchema = new mongoose.Schema({
                 required: false,
                 autopopulate: true
             }
-        ]
+        ],
+        client_temp_id: {
+            type: String,
+            required: false
+        }
     },
     {
         timestamps: true

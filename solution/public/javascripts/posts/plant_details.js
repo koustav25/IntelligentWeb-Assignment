@@ -48,10 +48,17 @@ document.addEventListener('DOMContentLoaded', async function () {
     window.addEventListener('online', async () => {
         //Once we are back online, we need to check for any comments that may be on the server since we went offline
         try {
-            const response = await axios.get(`/plant/${plantID}/comment/since?${encodeURIComponent({time: lastConnectedTime.toISOString()})}`);
+            const response = await axios.get(`/plant/${plantID}/comment/since?time=${lastConnectedTime.toISOString()}`);
 
             for (const comment of response.data) {
-                await addCommentToPage(comment._id, comment.temp_id);
+                await addCommentToPage(comment._id, comment.client_temp_id);
+            }
+
+            //Once all of the comments have been loaded, we then need to look for new replies on old comments
+            const replyResponse = await axios.get(`/plant/${plantID}/replies/since?time=${lastConnectedTime.toISOString()}`);
+
+            for (const reply of replyResponse.data) {
+                await addReplyToPage(reply.commentId, reply.reply._id, reply.reply.client_temp_id);
             }
         } catch (err) {
             console.error(err);
@@ -73,12 +80,12 @@ function registerSocketListeners() {
 
     socket.on('new_comment', async (data) => {
         console.log('new_comment')
-        await addCommentToPage(data._id, data.temp_id);
+        await addCommentToPage(data._id, data.client_temp_id);
     });
 
     socket.on('new_reply', async (data) => {
         console.log('new_reply')
-        await addReplyToPage(data.comment_id, data._id);
+        await addReplyToPage(data.comment_id, data.reply._id, data.reply.client_temp_id);
     });
 
     socket.on('like_count', (data) => {
@@ -164,20 +171,34 @@ async function addNewReply() {
     const newReply = {
         text: newReplyText,
         user_id: userID,
+        comment_id: commentID,
+        plant_id: plantID
     };
 
     try {
         //Send the reply to /plant/:id/comment/:comment_id/reply
-        const response = await axios.post(`/plant/${plantID}/comment/${commentID}/reply`, newReply);
+        // const response = await axios.post(`/plant/${plantID}/comment/${commentID}/reply`, newReply);
+        //
+        // console.log(response.data);
+        //
+        // socket.emit('new_reply', plantID, response.data.reply);
+        //
+        // socket.emit("new_notification", response.data.notification)
 
-        console.log(response.data);
+        //Send the comment to /plant/:id/comment
+        const tempId = generateRandomId();
 
-        socket.emit('new_reply', plantID, response.data.reply);
+        addPlaceholderReplyToPage({
+            text: newReplyText,
+            temp_id: tempId,
+            comment_id: commentID
+        });
 
-        socket.emit("new_notification", response.data.notification)
+        const db = await openCommentsIdb();
+        await addReplyToIdb(db, newReply, tempId);
 
         //Add the reply to the page
-        await addReplyToPage(commentID, response.data.reply._id.toString());
+        //await addReplyToPage(commentID, response.data.reply._id.toString());
 
         $('#replyToCommentModal').modal('hide');
         $('#replyText').val('');
@@ -239,10 +260,36 @@ function addPlaceholderCommentToPage(comment) {
     commentsContainer.prepend(newComment);
 }
 
+function addPlaceholderReplyToPage(reply) {
+    const replySection = $('#reply_section-' + reply.comment_id);
+
+    if (replySection.hasClass('d-none')) {
+        replySection.removeClass('d-none');
+    }
+
+    const replyContainer = document.getElementById('reply_container-' + reply.comment_id);
+
+    const newReply = document.createElement('div');
+    newReply.classList.add('row', 'p-0');
+
+    const newReplyCol = document.createElement('div');
+    newReplyCol.classList.add('col-12', 'p-2', 'p-lg-1');
+
+    newReplyCol.innerHTML = generateCommentHtml(reply);
+    newReply.appendChild(newReplyCol);
+    replyContainer.appendChild(newReply);
+
+}
+
 async function addCommentToPage(commentID, tempID) {
     //Make a request to the /plant/:plant_id/comment/:comment_id/render route to get the HTML for the comment
     try {
         const response = await axios.get(`/plant/${plantID}/comment/${commentID}/render`);
+
+        //Check to see if the comment already exists on the page
+        const existingComment = $(`#comment_${commentID}`);
+        if (existingComment.length > 0) return;
+
         //Get the comments container
         const commentsContainer = document.getElementById('commentsContainer');
 
@@ -279,15 +326,30 @@ async function addCommentToPage(commentID, tempID) {
     }
 }
 
-async function addReplyToPage(commentID, replyID) {
+async function addReplyToPage(commentID, replyID, tempID) {
     //Make a request to the /plant/:plant_id/comment/:comment_id/reply/:reply_id/render route to get the HTML for the comment
     try {
         const response = await axios.get(`/plant/${plantID}/comment/${commentID}/reply/${replyID}/render`);
 
+        //Check to see if the reply already exists on the page
+        const existingReply = $(`#reply_${replyID}`);
+        if (existingReply.length > 0) return;
+
         const $replySection = $(`#reply_section-${commentID}`);
+
+        if ($replySection.hasClass('d-none')) {
+            $replySection.removeClass('d-none');
+        }
 
         //Get the replies container
         const replyContainer = document.getElementById('reply_container-' + commentID);
+
+        //First, check if a placeholder comment exists and remove it
+        const placeholder = $(`.comment-placeholder[data-temp-id=${tempID}]`);
+
+        if (placeholder.length > 0) {
+            placeholder.remove();
+        }
 
         //Create a new div element
         const newComment = document.createElement('div');
