@@ -9,10 +9,13 @@ router.get("/plant/:plant_id/comment/since", postApiController.getCommentsSinceT
 router.get("/plant/:plant_id/replies/since", postApiController.getRepliesSinceTime);
 
 router.get("/feed", feedApiController.fetchPosts);
+
 router.get("/get-notifications", notificationApiController.getNotifications);
 router.get("/new-notification-count", notificationApiController.getNotificationCount);
 router.get("/get-plant-owner", notificationApiController.getPostOwner)
 router.get("/get-comment-owner", notificationApiController.getCommentOwner)
+
+router.post("/fetch-missing-posts", feedApiController.fetchMissingPosts)
 
 router.post("/mark-all-notifications-as-read", notificationApiController.markAllAsRead)
 router.post("/view-notification", notificationApiController.viewNotification)
