@@ -32,6 +32,7 @@ const server = http.createServer(app);
 
 const socketio = require('socket.io')(server, {
   pingTimeout: 6000,
+  cors: '*'
 });
 
 socket_core.init(socketio);
