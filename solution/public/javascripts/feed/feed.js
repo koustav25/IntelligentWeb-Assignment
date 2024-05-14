@@ -117,6 +117,7 @@ $(document).ready(async function () {
     $('#applyButton').on('click', async function (event) {
         event.preventDefault();
         selectedValue = $('#filterBy').val();
+        const sortBy = $('#sortBy').val();
         page = 1 ;
         // Prevent default form submission behavior
         $feedWrapper.empty();
@@ -129,7 +130,8 @@ $(document).ready(async function () {
             })
             try {
                 const stateValue = selectedValue === "completed" ? 2 : selectedValue === "inProgress" ? 1 : null;
-                const firstPagePosts = await axios.get("/api/feed", {params: {page, state: stateValue}})
+                const sortByValue = sortBy === "" ? null : sortBy;
+                const firstPagePosts = await axios.get("/api/feed", {params: {page, state: stateValue,sortBy:sortByValue }})
                 updateFeed(firstPagePosts.data);
 
                 currentPosts = [...firstPagePosts.data]

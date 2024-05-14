@@ -100,10 +100,23 @@ const getPostById = async (id) => {
     return post;
 }
 
-const getFeedPosts = async (page = 1, limit = 10, state = null) => {
-    let query = Post.find().sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit);
+const getFeedPosts = async (page = 1, limit = 10, state = null, sortBy = null) => {
+   // let query = Post.find().sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit);
+    let query = Post.find().skip((page - 1) * limit).limit(limit);
+
     if (state !== null) {
         query = query.where('state').equals(state);
+    }
+
+    if (sortBy !== null) {
+        let sortOptions = {};
+        // Add sorting logic based on sortBy value
+        if (sortBy === 'time') {
+            sortOptions = { seen_at: -1 }; // Sort by time (seen_at)
+        } else if (sortBy === 'numOfComments') {
+            sortOptions = { comments: -1 }; // Sort by number of comments
+        }
+        query = query.sort(sortOptions);
     }
     return await query.exec();
 };
