@@ -670,6 +670,7 @@ async function getDBPediaInfo(req, res) {
 /**
  * Calculate the Levenshtein distance between two strings.
  * This distance function is used to compare the similarity between two strings.
+ * @see https://en.wikipedia.org/wiki/Levenshtein_distance
  * @param str1 The first string
  * @param str2 The second string
  * @returns {*} The Levenshtein distance between the two strings
