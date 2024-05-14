@@ -84,14 +84,14 @@ document.addEventListener('DOMContentLoaded', async function () {
     window.addEventListener('online', async () => {
         //Once we are back online, we need to check for any comments that may be on the server since we went offline
         try {
-            const response = await axios.get(`/plant/${plantID}/comment/since?time=${lastConnectedTime.toISOString()}`);
+            const response = await axios.get(`/api/plant/${plantID}/comment/since?time=${lastConnectedTime.toISOString()}`);
 
             for (const comment of response.data) {
                 await addCommentToPage(comment._id, comment.client_temp_id);
             }
 
             //Once all of the comments have been loaded, we then need to look for new replies on old comments
-            const replyResponse = await axios.get(`/plant/${plantID}/replies/since?time=${lastConnectedTime.toISOString()}`);
+            const replyResponse = await axios.get(`/api/plant/${plantID}/replies/since?time=${lastConnectedTime.toISOString()}`);
 
             for (const reply of replyResponse.data) {
                 await addReplyToPage(reply.commentId, reply.reply._id, reply.reply.client_temp_id);
@@ -168,7 +168,6 @@ async function addNewComment() {
     };
 
     try {
-        //Send the comment to /plant/:id/comment
         const tempId = generateRandomId();
 
         addPlaceholderCommentToPage({
@@ -204,16 +203,6 @@ async function addNewReply() {
     };
 
     try {
-        //Send the reply to /plant/:id/comment/:comment_id/reply
-        // const response = await axios.post(`/plant/${plantID}/comment/${commentID}/reply`, newReply);
-        //
-        // console.log(response.data);
-        //
-        // socket.emit('new_reply', plantID, response.data.reply);
-        //
-        // socket.emit("new_notification", response.data.notification)
-
-        //Send the comment to /plant/:id/comment
         const tempId = generateRandomId();
 
         addPlaceholderReplyToPage({

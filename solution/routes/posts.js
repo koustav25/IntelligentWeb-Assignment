@@ -36,10 +36,6 @@ router.post("/plant/:plant_id/suggestion/:suggestion_id/unaccept", postUnacceptS
 
 router.get("/plant/:plant_id/suggestion/:suggestion_id/dbpedia", getDBPediaInfo)
 
-//Sync routes
-router.get("/plant/:plant_id/comment/since", getCommentsSinceTime);
-router.get("/plant/:plant_id/replies/since", getRepliesSinceTime);
-
 router.get("/post", getPost);
 
 const imageUpload = multer({
