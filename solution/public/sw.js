@@ -185,6 +185,7 @@ self.addEventListener('sync', async event => {
                         formData.append('images', images[i]);
                     }
 
+                    //Send the post to the server
                     fetch('http://localhost:3000/post', {
                         method: 'POST',
                         body: formData
@@ -194,10 +195,17 @@ self.addEventListener('sync', async event => {
                         } else {
                             console.log("Service Worker: Sync Error: ", response.statusText)
                         }
+                    }).then(async data => {
+                        //If successful, check if the post was successfully created
+                        if (data.post) {
+                            //Delete the post from the indexedDB so it doesn't get sent again
+                            await deletePostFromIdb(db, post.id);
+                        }
+                    }).catch(error => {
+                        console.log("Service Worker: Sync Error: ", error);
+
                     });
 
-
-                    await deletePostFromIdb(db, post.id);
                 } catch (e) {
                     console.log("Service Worker: Sync Error: ", e);
                 }
@@ -217,6 +225,7 @@ self.addEventListener('sync', async event => {
                     const user_id = comment.user_id;
                     const text = comment.text;
 
+                    //Send the comment to the server
                     fetch(`http://localhost:3000/plant/${post_id}/comment`, {
                         method: 'POST',
                         headers: {
@@ -234,9 +243,13 @@ self.addEventListener('sync', async event => {
                             console.log("Service Worker: Sync Error: ", response.statusText)
                         }
                     }).then(async data => {
+                        //If the comment was successfully sent to the server, emit a new_comment event to connected clients
                         socket.emit("new_comment", post_id, data.post);
+
+                        //Additionally, emit a new_notification event to connected clients
                         socket.emit("new_notification", data.notification)
 
+                        //Delete the comment from the indexedDB so it doesn't get sent again
                         await deleteCommentFromIdb(db, comment.id);
                     }).catch(error => {
                         console.log("Service Worker: Sync Error: ", error);
@@ -261,6 +274,7 @@ self.addEventListener('sync', async event => {
                     const reply_text = reply.text;
                     const temp_id = reply.temp_id;
 
+                    //Send the reply to the server
                     fetch(`http://localhost:3000/plant/${post_id}/comment/${comment_id}/reply`, {
                         method: 'POST',
                         headers: {
@@ -278,9 +292,13 @@ self.addEventListener('sync', async event => {
                             console.log("Service Worker: Sync Error: ", response.statusText)
                         }
                     }).then(async data => {
+                        //If the reply was successfully sent to the server, emit a new_reply event to connected clients
                         socket.emit("new_reply", post_id, {comment_id, reply: data.reply});
+
+                        //Additionally, emit a new_notification event to connected clients
                         socket.emit("new_notification", data.notification)
 
+                        //Delete the reply from the indexedDB so it doesn't get sent again
                         await deleteReplyFromIdb(db, reply.id);
                     }).catch(error => {
                         console.log("Service Worker: Sync Error: ", error);

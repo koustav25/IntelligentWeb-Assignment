@@ -11,9 +11,10 @@ let lastConnectedTime;
 let suggestionButton;
 
 document.addEventListener('DOMContentLoaded', function () {
-    //TODO: Initialise Socket.io
+    //Initialise Socket.io
     registerSocketListeners();
 
+    //Prepare the map and set the view to the post's coordinates
     map = L.map('map').setView([postCoords.latitude, postCoords.longitude], 13);
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -24,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
     postMarker = L.marker([postCoords.latitude, postCoords.longitude]).addTo(map);
 
 
-//On suggestion modal closed,
+    //On suggestion modal closed,
     $('#suggestIdentificationModal').on('hidden.bs.modal', function () {
         //If identification has changed, refresh the page
         if (identificationHasChanged) {
@@ -145,6 +146,10 @@ function registerSocketListeners() {
     });
 }
 
+/**
+ * Generates a random alphanumeric ID using the alphabet provided (a-z, A-Z, 0-9)
+ * @returns {string} The generated ID
+ */
 function generateRandomId() {
     const alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let id = '';
@@ -154,6 +159,11 @@ function generateRandomId() {
     return id;
 }
 
+/**
+ * Handles adding a new comment. This function is called when the user clicks the "Add Comment" button
+ * This places a placeholder comment on the page and then sends a request to the server to add the comment
+ * @returns {Promise<void>}
+ */
 async function addNewComment() {
     const newCommentText = document.getElementById('addCommentText').value;
 
@@ -179,7 +189,6 @@ async function addNewComment() {
         await addCommentToIdb(db, newComment, tempId);
 
 
-
         //Clear the comment text box
         $('#addCommentText').val('');
     } catch (err) {
@@ -187,6 +196,11 @@ async function addNewComment() {
     }
 }
 
+/**
+ * Handles adding a new reply. This function is called when the user clicks the "Add Reply" button
+ * This places a placeholder reply on the page and then sends a request to the server to add the reply
+ * @returns {Promise<void>}
+ */
 async function addNewReply() {
     const commentID = document.getElementById('replyToCommentID').value;
     const newReplyText = document.getElementById('replyText').value;
@@ -226,6 +240,11 @@ async function addNewReply() {
 
 }
 
+/**
+ * Generates the HTML for a placeholder comment or reply
+ * @param comment The comment object
+ * @returns {string} The HTML for the comment
+ */
 function generateCommentHtml(comment) {
     return `
     <div class="card comment-placeholder" data-temp-id="${comment.temp_id}">
@@ -258,6 +277,10 @@ function generateCommentHtml(comment) {
 
 }
 
+/**
+ * Generates the HTML for a placeholder comment and places it at the top of the comments container
+ * @param comment The comment object
+ */
 function addPlaceholderCommentToPage(comment) {
     const commentsContainer = document.getElementById('commentsContainer');
 
@@ -277,6 +300,10 @@ function addPlaceholderCommentToPage(comment) {
     commentsContainer.prepend(newComment);
 }
 
+/**
+ * Generates the HTML for a placeholder reply and places it at the bottom of the replies container
+ * @param reply The reply object
+ */
 function addPlaceholderReplyToPage(reply) {
     const replySection = $('#reply_section-' + reply.comment_id);
 
@@ -298,6 +325,14 @@ function addPlaceholderReplyToPage(reply) {
 
 }
 
+/**
+ * Adds a comment retrieved from the server to the page.
+ * This function is called when a new comment is received from the server.
+ * The comment is added to the top of the comments container and also removes any placeholder comments that correspond to the comment
+ * @param commentID The ID of the comment
+ * @param tempID The temporary ID of the comment placeholder
+ * @returns {Promise<void>}
+ */
 async function addCommentToPage(commentID, tempID) {
     //Make a request to the /plant/:plant_id/comment/:comment_id/render route to get the HTML for the comment
     try {
@@ -343,6 +378,15 @@ async function addCommentToPage(commentID, tempID) {
     }
 }
 
+/**
+ * Adds a reply retrieved from the server to the page.
+ * This function is called when a new reply is received from the server.
+ * The reply is added to the bottom of the replies container and also removes any placeholder replies that correspond to the reply
+ * @param commentID The ID of the parent comment
+ * @param replyID The ID of the reply
+ * @param tempID The temporary ID of the reply placeholder
+ * @returns {Promise<void>}
+ */
 async function addReplyToPage(commentID, replyID, tempID) {
     //Make a request to the /plant/:plant_id/comment/:comment_id/reply/:reply_id/render route to get the HTML for the comment
     try {
@@ -390,6 +434,14 @@ async function addReplyToPage(commentID, replyID, tempID) {
     }
 }
 
+/**
+ * Toggles the like button for a comment
+ * This function is called when the like button is pressed
+ * It sends a request to the server to like or unlike the comment and then updates the UI accordingly
+ * If the request fails, the UI is reverted back to its original state
+ * @param commentID The ID of the comment
+ * @returns {Promise<void>}
+ */
 async function toggleLikeButton(commentID) {
     const likeIndicator = $(`#comment_${commentID}_like_indicator`);
     const likesCount = $(`#comment_${commentID}_likes`);
@@ -452,6 +504,10 @@ async function toggleLikeButton(commentID) {
 
 }
 
+/**
+ * Submits a new plant identification suggestion to the server
+ * @returns {Promise<void>}
+ */
 async function submitSuggestion() {
     if (actionInProgress) {
         return;
@@ -485,6 +541,12 @@ async function submitSuggestion() {
     }
 }
 
+/**
+ * Adds a suggestion to the page by making a request to the server to render the suggestion HTML.
+ * This function is called when a new suggestion is received from the server.
+ * @param suggestionID
+ * @returns {Promise<void>}
+ */
 async function addSuggestionToPage(suggestionID) {
     const suggestionsContainer = document.getElementById('suggestionsContainer');
 
@@ -506,6 +568,13 @@ async function addSuggestionToPage(suggestionID) {
     }
 }
 
+/**
+ * Updates the UI for the upvote/downvote progress bars and counts
+ * This function is called when a user upvotes a suggestion.
+ * If the request to the server fails, the UI is reverted back to its original state
+ * @param suggestionID
+ * @returns {Promise<void>}
+ */
 async function upvoteSuggestion(suggestionID) {
     if (actionInProgress) {
         return;
@@ -611,6 +680,13 @@ async function upvoteSuggestion(suggestionID) {
     }
 }
 
+/**
+ * Updates the UI for the upvote/downvote progress bars and counts
+ * This function is called when a user downvotes a suggestion.
+ * If the request to the server fails, the UI is reverted back to its original state
+ * @param suggestionID
+ * @returns {Promise<void>}
+ */
 async function downvoteSuggestion(suggestionID) {
     if (actionInProgress) {
         return;
@@ -717,6 +793,12 @@ async function downvoteSuggestion(suggestionID) {
     }
 }
 
+/**
+ * Helper function to update the UI for the upvote/downvote progress bars and counts
+ * @param suggestionID The ID of the suggestion
+ * @param upvotes The number of upvotes
+ * @param downvotes The number of downvotes
+ */
 function updateUpvoteUI(suggestionID, upvotes, downvotes) {
     const upvoteProgress = $(`#suggestion_upvote_progress_${suggestionID}`);
     const downvoteProgress = $(`#suggestion_downvote_progress_${suggestionID}`);
@@ -730,6 +812,13 @@ function updateUpvoteUI(suggestionID, upvotes, downvotes) {
     downvoteCount.text(downvotes);
 }
 
+/**
+ * Accepts a suggestion and sends a request to the server to accept the suggestion.
+ * Upon success, the suggestion is marked as accepted and the accept button is hidden.
+ * If the request fails, the UI is reverted back to its original state.
+ * @param suggestionID The ID of the suggestion
+ * @returns {Promise<void>}
+ */
 async function acceptSuggestion(suggestionID) {
     if (actionInProgress) {
         return;
@@ -822,6 +911,13 @@ async function acceptSuggestion(suggestionID) {
     }
 }
 
+/**
+ * Helper function to calculate the upvote/downvote percentages for a suggestion
+ * This is used to generate the widths of the progress bars that make up the upvote/downvote bars
+ * @param upvotes The number of upvotes
+ * @param downvotes The number of downvotes
+ * @returns {{downvote: number, upvote: number}} The upvote and downvote percentages
+ */
 function upvotesDownvotesAsAPercentage(upvotes, downvotes) {
     const total = upvotes + downvotes;
     if (total === 0) {
@@ -840,13 +936,19 @@ function upvotesDownvotesAsAPercentage(upvotes, downvotes) {
     };
 }
 
+/**
+ * Opens the reply modal for a comment
+ * @param commentID The ID of the comment
+ */
 function openReplyModal(commentID) {
     $('#replyToCommentID').val(commentID);
     $('#replyToCommentModal').modal('show');
 }
 
-//Simulate the loading of the DBPedia content
+//When the page is loaded, if the user has accepted a suggestion, we need to retrieve the DBPedia information for the plant.
+//This also handles offline degradation as an error will be displayed if the request fails.
 document.addEventListener('DOMContentLoaded', async () => {
+    if (!hasAcceptedSuggestion) return;
 
     try {
         const response = await axios.get(`/plant/${plantID}/suggestion/${acceptedIdentificationID}/dbpedia`)
