@@ -83,6 +83,9 @@ const updateFeed = (posts, append = true) => {
 }
 $(document).ready(async function () {
     if (isOnline) {
+        navigator.serviceWorker.ready.then(registration => {
+            registration.sync.register("sync-new-post");
+        });
         socket.on("new_comment", data => {
             const $commentCounter = $(`#comment-counter-${data.post_id}`)
             const count = parseInt($commentCounter.text()) + 1
@@ -181,6 +184,39 @@ $(document).ready(async function () {
             })
         }
     })
+});
+
+let pendingPostsBanner;
+let pendingPostsCount;
+document.addEventListener('DOMContentLoaded', async function () {
+    pendingPostsCount = $('#pendingPostsCount');
+    pendingPostsBanner = $('#pendingPostsBanner');
+
+    if (isOnline) {
+        pendingPostsBanner.addClass('d-none');
+    } else {
+        const postIdb = await openNewPostIdb();
+        const posts = await getPostsFromIDB(postIdb);
+
+        const postCount = posts.length;
+
+        pendingPostsBanner.removeClass('d-none');
+        pendingPostsCount.text(postCount);
+    }
+
+    window.addEventListener('online', async function () {
+        pendingPostsBanner.addClass('d-none');
+    });
+
+    window.addEventListener('offline', async function () {
+        const postIdb = await openNewPostIdb();
+        const posts = await getPostsFromIDB(postIdb);
+
+        const postCount = posts.length;
+
+        pendingPostsBanner.removeClass('d-none');
+        pendingPostsCount.text(postCount);
+    });
 });
 
 window.addEventListener('beforeunload', function (event) {

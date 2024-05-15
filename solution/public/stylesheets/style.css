@@ -209,3 +209,20 @@ body {
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
+
+@keyframes loading-pulse {
+    0% {
+        background-color: var(--bs-light-bg-subtle);
+    }
+    50% {
+        background-color: var(--bs-secondary-bg-subtle);
+    }
+    100% {
+        background-color: var(--bs-light-bg-subtle);
+    }
+}
+
+.comment-placeholder {
+    background-color: var(--bs-light-bg-subtle);
+    animation: loading-pulse 2s infinite;
+}

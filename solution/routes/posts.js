@@ -4,7 +4,8 @@ const multer = require("multer");
 
 const {getPost, getPlant, postComment, getCommentHTML, postReply, getReplyHTML, postLike, postUnlike, postSuggestion,
     getSuggestionHTML, postUpvote, postUnupvote, postDownvote, postUndownvote, postUnacceptSuggestion,
-    postAcceptSuggestion, postNewPost, getDBPediaInfo
+    postAcceptSuggestion, postNewPost, getDBPediaInfo, getCommentsSinceTime,
+    getRepliesSinceTime
 } = require("../controllers/posts/postController");
 const {getFeed} = require("../controllers/posts/feedController");
 const {getSearch} = require("../controllers/posts/searchController");
