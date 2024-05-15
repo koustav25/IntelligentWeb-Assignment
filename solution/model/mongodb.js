@@ -101,9 +101,25 @@ const getPostById = async (id) => {
 }
 
 
-const getFeedPosts = async (page = 1, limit = 10, filters={}) => {
-    return await Post.find(filters).sort({createdAt: -1}).skip((page - 1) * limit).limit(limit)
-}
+const getFeedPosts = async (page = 1, limit = 10, filters = {}) => {
+    let query = Post.find().skip((page - 1) * limit).limit(limit);
+
+    if (filters.state !== undefined) {
+        query = query.where('state').equals(filters.state);
+    }
+
+    if (filters.sortBy === 'time') {
+        query = query.sort({ createdAt: -1 }); // Sort by time (createdAt)
+    } else if (filters.sortBy === 'numOfComments') {
+        let posts = await query.exec();
+        // Sort posts by the length of the comments array in descending order
+        posts.sort((a, b) => b.comments.length - a.comments.length);
+        return posts;
+    }
+
+    return await query.exec();
+};
+
 
 
 const getPostsBySearchTerms = async (search_text, search_order, limit) => {

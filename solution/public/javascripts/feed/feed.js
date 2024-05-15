@@ -8,6 +8,12 @@ function Uint8ToString(u8a) {
     return c.join("");
 }
 
+const PostState = {
+    ALL: undefined,
+    IN_PROGRESS: 1,
+    COMPLETED: 2
+};
+
 const createPostDiv = post => {
     // No image placeholder
     let imgSrc = "https://placehold.co/600x400?text=No Images";
@@ -110,10 +116,6 @@ $(document).ready(async function () {
         }
 
     } else {
-            $('#filterBy').prop('disabled', true);
-            $('#applyButton').prop('disabled', true);
-            $('#sortBy').prop('disabled', true);
-
         openFeedIDB().then(db => {
             getFeedIDB(db).then(posts => {
                 for (let i = 0; i < posts.length; i++) {
@@ -140,12 +142,12 @@ $(document).ready(async function () {
                 $commentCounter.text(count)
             })
             try {
-                const stateValue = selectedValue === "completed" ? 2 : selectedValue === "inProgress" ? 1 : null;
-                const sortByValue = sortBy === "" ? null : sortBy;
-                const firstPagePosts = await axios.get("/api/feed", {params: {page, state: stateValue,sortBy:sortByValue }})
-                updateFeed(firstPagePosts.data);
+                const stateValue = selectedValue === "completed" ? PostState.COMPLETED : selectedValue === "inProgress" ? PostState.IN_PROGRESS : PostState.ALL;
+                const sortByValue = sortBy === "" ? undefined : sortBy;
+                const response = await axios.get("/api/feed", {params: {page, state: stateValue,sortBy:sortByValue }})
 
-                currentPosts = [...firstPagePosts.data]
+                updateFeed(response.data.posts)
+                currentPosts = [...response.data.posts]
 
                 openFeedIDB().then(db => {
                     clearFeedIDB(db).then(() => {
@@ -157,6 +159,32 @@ $(document).ready(async function () {
                 $errorBox.show()
             }
 
+        }else{
+            // Offline mode handling
+            openFeedIDB().then(db => {
+                getFeedIDB(db).then(posts => {
+                    let filteredPosts = posts;
+
+                    // Apply state filter if needed
+                    if (selectedValue !== "all") {
+                        const stateValue = selectedValue === "completed" ? PostState.COMPLETED : selectedValue === "inProgress" ? PostState.IN_PROGRESS : PostState.ALL;
+                        filteredPosts = filteredPosts.filter(post => post.state === stateValue);
+                    }
+
+                    // Apply sortBy filter if needed
+                    if (sortBy === "time") {
+                        filteredPosts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+
+
+                    } else if (sortBy === "numOfComments") {
+                        filteredPosts.sort((a, b) => b.comments.length - a.comments.length);
+                    }
+
+                    updateFeed(filteredPosts);
+                    currentPosts = filteredPosts;
+                });
+            });
         }
     });
 

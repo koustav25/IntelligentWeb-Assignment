@@ -1,9 +1,20 @@
 const { getFeedPosts } = require("../../model/mongodb")
 
 const fetchPosts = async (req, res, next) => {
-    const page = req.query.page
+    const {page, state, sortBy} = req.query;
     try {
-        const posts = await getFeedPosts(page)
+        let posts;
+        const filters = {};
+        if (state) filters.state = state;
+        if (sortBy) filters.sortBy = sortBy;
+        if (state || sortBy) {
+
+            // If state is provided, apply the state filter
+            posts = await getFeedPosts(page, 10, filters);
+        } else {
+            // If state is not provided, fetch all posts
+            posts = await getFeedPosts(page);
+        }
         res.status(200).json({posts})
     } catch (e) {
         console.log(e)
