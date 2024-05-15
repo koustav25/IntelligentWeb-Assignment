@@ -52,8 +52,8 @@ async function handleFormSubmit(event) {
 
         $(this).removeClass('was-validated');
 
-        event.preventDefault();
-        event.stopPropagation();
+        //event.preventDefault();
+        //event.stopPropagation();
 
         $postButton.addClass('disabled');
         $postSpinner.removeClass('d-none');

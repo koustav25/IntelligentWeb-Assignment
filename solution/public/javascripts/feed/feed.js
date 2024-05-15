@@ -91,6 +91,11 @@ $(document).ready(async function () {
             const count = parseInt($commentCounter.text()) + 1
             $commentCounter.text(count)
         })
+        socket.emit("viewing_feed")
+        socket.on("new_post", (post) => {
+            console.log("NEW POST")
+            console.log(post)
+        })
         try {
             const response = await axios.get("/api/feed", {params: {page}})
             updateFeed(response.data.posts)
@@ -221,4 +226,5 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 window.addEventListener('beforeunload', function (event) {
     currentPosts.map(post => socket.emit("leaving_plant", {plant_id: post._id}))
+    socket.emit("leaving_feed")
 });

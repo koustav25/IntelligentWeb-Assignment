@@ -20,6 +20,8 @@ const mongoose = require("mongoose");
 const mongodb = require("../../model/mongodb");
 const axios = require('axios');
 
+const socket = require("../socket/socket.io")
+
 async function getPost(req, res) {
     const userId = req.user.id;
     const user = await getUserById(userId);
@@ -34,7 +36,13 @@ async function getPost(req, res) {
 }
 
 async function postNewPost(req, res, next) {
+    console.log("NEW POST NEW POST")
     try {
+        console.log("NEW POST NEW POST")
+
+        socket.broadcastNewPost({kupa:"kupa"})
+        console.log("NEW POST NEW POST")
+
         const title = req.body.title;
         const description = req.body.description;
         const seen_at = req.body.seen_at;
