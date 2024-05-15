@@ -734,7 +734,5 @@ module.exports = {
     postUndownvote,
     postAcceptSuggestion,
     postUnacceptSuggestion,
-    getDBPediaInfo,
-    getCommentsSinceTime,
-    getRepliesSinceTime
+    getDBPediaInfo
 }
