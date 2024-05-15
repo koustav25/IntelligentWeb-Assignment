@@ -11,6 +11,7 @@
 <script>
     const plantID = '<%= plant._id %>';
     const userID = '<%= user.id %>';
+    const hasAcceptedSuggestion = '<%= plant.identification.is_accepted %>';
 </script>
 
 <div class="container-fluid h-100">
@@ -289,7 +290,7 @@
                                             <div class="col-12">
                                                 <p class="m-0 p-0 text-center">No identification has been made
                                                     yet.</p>
-                                                <button class="btn btn-outline-success w-100 mt-2"
+                                                <button class="btn btn-outline-success w-100 mt-2" id="suggestIdentificationButton"
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#suggestIdentificationModal">
                                                     Suggest Identification
@@ -434,7 +435,7 @@
                                             <div class="col-12">
                                                 <p class="m-0 p-0 text-center">Disagree? Suggest an
                                                     identification:</p>
-                                                <button class="btn btn-outline-success w-100 mt-2"
+                                                <button class="btn btn-outline-success w-100 mt-2" id="suggestIdentificationButton"
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#suggestIdentificationModal">Suggest
                                                     Identification
@@ -451,7 +452,7 @@
                                                 <p class="m-0 p-0 text-center">Want to contribute to the
                                                     conversation?</p>
 
-                                                <button class="btn btn-outline-success w-100 mt-2"
+                                                <button class="btn btn-outline-success w-100 mt-2" id="suggestIdentificationButton"
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#suggestIdentificationModal">
                                                     Suggest Identification

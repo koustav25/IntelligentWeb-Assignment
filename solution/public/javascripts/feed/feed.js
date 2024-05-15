@@ -1,12 +1,13 @@
 // Decode Large Base64 Buffers
-function Uint8ToString(u8a){
+function Uint8ToString(u8a) {
     const CHUNK_SZ = 0x8000;
     const c = [];
-    for (let i=0; i < u8a.length; i+=CHUNK_SZ) {
-        c.push(String.fromCharCode.apply(null, u8a.subarray(i, i+CHUNK_SZ)));
+    for (let i = 0; i < u8a.length; i += CHUNK_SZ) {
+        c.push(String.fromCharCode.apply(null, u8a.subarray(i, i + CHUNK_SZ)));
     }
     return c.join("");
 }
+
 const createPostDiv = post => {
     // No image placeholder
     let imgSrc = "https://placehold.co/600x400?text=No Images";
@@ -23,7 +24,7 @@ const createPostDiv = post => {
         <div class="col-sm-8 d-flex flex-column justify-content-between align-items-start">
             <div class="d-flex justify-content-between w-100 mb-2">
                 <h3 class="m-0"> ${post.title}</h3>
-                <span class="align-self-center">${new Date(post.seen_at).toLocaleDateString('en-GB', {
+                <span class="align-self-center">${new Date(post.createdAt).toLocaleDateString('en-GB', {
         day: "numeric",
         month: "short",
         year: "numeric",
@@ -32,12 +33,12 @@ const createPostDiv = post => {
     })}</span>
             </div>
             <div class="fst-italic">
-                ${(post.description.length > 50 ? post.description.slice(0,50) : post.description) + "..."}
+                ${(post.description.length > 50 ? post.description.slice(0, 50) : post.description) + "..."}
             </div>
             <div class="d-flex justify-content-between mt-3 w-100">
                 <div class="align-self-center">
                     Identification:
-                    <span class="text-shadow ${post.identification.is_accepted ? "text-success" : "text-warning"}">${post.identification.is_accepted ? "Completed" : "In Progress"}</span>
+                    <span class="text-shadow ${postStates.postStateToColor(post.state,"text-")}">${postStates.postStateToString(post.state)}</span>
                 </div>
                 <div class="btn btn-warning">Comments: <span id="comment-counter-${post._id}">${post.comments.length}</span></div>
                 <a class="btn btn-primary" href="/plant/${post._id}">See more</a>
@@ -45,7 +46,6 @@ const createPostDiv = post => {
         </div>
     </div>`
 }
-
 
 
 const $feedWrapper = $("#feed-wrapper")
@@ -65,35 +65,46 @@ let currentPosts = []
 socket = io()
 let updateFeedTime = Date.now()
 
-const updateFeed = (posts) => {
+const updateFeed = (posts, append = true) => {
     for (let i = 0; i < posts.length; i++) {
         socket.emit("viewing_plant", {plant_id: posts[i]._id})
         const $newPost = $(createPostDiv(posts[i]))
-        $feedWrapper.append($newPost)
+        if (append) {
+            $feedWrapper.append($newPost)
+        } else {
+            // Add most recent post to the top
+            $feedWrapper.prepend($newPost);
+
+            // Remove last post
+            $feedWrapper.children().last().remove()
+        }
     }
 
 }
 
 
 $(document).ready(async function () {
-    if(isOnline){
+    if (isOnline) {
+        navigator.serviceWorker.ready.then(registration => {
+            registration.sync.register("sync-new-post");
+        });
         socket.on("new_comment", data => {
             const $commentCounter = $(`#comment-counter-${data.post_id}`)
             const count = parseInt($commentCounter.text()) + 1
             $commentCounter.text(count)
         })
         try {
-            const firstPagePosts = await axios.get("/api/feed", {params: {page}})
-            updateFeed(firstPagePosts.data)
-            currentPosts = [...firstPagePosts.data]
+            const response = await axios.get("/api/feed", {params: {page}})
+            updateFeed(response.data.posts)
+            currentPosts = [...response.data.posts]
             page += 1
 
             openFeedIDB().then(db => {
                 clearFeedIDB(db).then(() => {
-                    updateFeedIDB(db,currentPosts).then(() => console.log("Feed cached!"))
+                    updateFeedIDB(db, currentPosts).then(() => console.log("Feed cached!"))
                 })
             })
-        }catch (e){
+        } catch (e) {
             console.log(e)
             $errorBox.show()
         }
@@ -151,17 +162,17 @@ $(document).ready(async function () {
 
     $(window).scroll(async function () {
 
-        if(isOnline){
+        if (isOnline) {
             const timeDiff = Date.now() - updateFeedTime
             if (timeDiff > updateFeedGap && $(window).scrollTop() + $(window).height() >= $(document).height()) {
                 updateFeedTime = Date.now()
 
                 $feedEnd.hide()
                 $loadingSpinner.show()
-                const newPosts = await axios.get("/api/feed", {params: {page}})
-                updateFeed(newPosts.data)
-                currentPosts = [...currentPosts, ...newPosts.data]
-                if (newPosts.data.length > 0) {
+                const response = await axios.get("/api/feed", {params: {page}})
+                updateFeed(response.data.posts)
+                currentPosts = [...currentPosts, ...response.data.posts]
+                if (response.data.posts.length > 0) {
                     page += 1
                 } else {
                     $feedEnd.show()
@@ -179,18 +190,72 @@ $(document).ready(async function () {
                 currentPosts.map(post => socket.emit("leaving_plant", {plant_id: post._id}))
 
                 try {
-                    const updatePosts = await axios.get("/api/feed")
-                    updateFeed(updatePosts.data)
-                    currentPosts = updatePosts.data
+                    const response = await axios.get("/api/feed")
+                    updateFeed(response.data.posts)
+                    currentPosts = response.data.posts
                     $updateSpinner.hide()
                     page += 1
                     updateFeedTime = Date.now()
-                }catch (e){
+                } catch (e) {
                     $errorBox.show();
                 }
 
             }
         }
+    });
+
+    window.addEventListener("online", async () => {
+        const db = await openFeedIDB();
+        const posts = await getFeedIDB(db)
+        const response = await axios.post("/api/fetch-missing-posts", {lastPostDateTime: posts.length > 0 ? posts[0].createdAt : null})
+        currentPosts = [...response.data.newPosts, ...currentPosts]
+        currentPosts = currentPosts.slice(0, 10)
+        page = 2
+
+        // As the function uses prepend and the array is sorted already the new posts have to be reversed
+        updateFeed(response.data.newPosts.reverse(), false)
+
+        // Cache new posts
+        if(response.data.newPosts.length > 0){
+            openFeedIDB().then(db => {
+                clearFeedIDB(db).then(() => {
+                    updateFeedIDB(db, currentPosts).then(() => console.log("Updated feed cached!"))
+                })
+            })
+        }
+    })
+});
+
+let pendingPostsBanner;
+let pendingPostsCount;
+document.addEventListener('DOMContentLoaded', async function () {
+    pendingPostsCount = $('#pendingPostsCount');
+    pendingPostsBanner = $('#pendingPostsBanner');
+
+    if (isOnline) {
+        pendingPostsBanner.addClass('d-none');
+    } else {
+        const postIdb = await openNewPostIdb();
+        const posts = await getPostsFromIDB(postIdb);
+
+        const postCount = posts.length;
+
+        pendingPostsBanner.removeClass('d-none');
+        pendingPostsCount.text(postCount);
+    }
+
+    window.addEventListener('online', async function () {
+        pendingPostsBanner.addClass('d-none');
+    });
+
+    window.addEventListener('offline', async function () {
+        const postIdb = await openNewPostIdb();
+        const posts = await getPostsFromIDB(postIdb);
+
+        const postCount = posts.length;
+
+        pendingPostsBanner.removeClass('d-none');
+        pendingPostsCount.text(postCount);
     });
 });
 

@@ -100,26 +100,10 @@ const getPostById = async (id) => {
     return post;
 }
 
-const getFeedPosts = async (page = 1, limit = 10, state = null, sortBy = null) => {
-   // let query = Post.find().sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit);
-    let query = Post.find().skip((page - 1) * limit).limit(limit);
 
-    if (state !== null) {
-        query = query.where('state').equals(state);
-    }
-
-    if (sortBy !== null) {
-        let sortOptions = {};
-        // Add sorting logic based on sortBy value
-        if (sortBy === 'time') {
-            sortOptions = { seen_at: -1 }; // Sort by time (seen_at)
-        } else if (sortBy === 'numOfComments') {
-            sortOptions = { comments: -1 }; // Sort by number of comments
-        }
-        query = query.sort(sortOptions);
-    }
-    return await query.exec();
-};
+const getFeedPosts = async (page = 1, limit = 10, filters={}) => {
+    return await Post.find(filters).sort({createdAt: -1}).skip((page - 1) * limit).limit(limit)
+}
 
 
 const getPostsBySearchTerms = async (search_text, search_order, limit) => {
@@ -138,7 +122,10 @@ const getPostsBySearchTerms = async (search_text, search_order, limit) => {
             sort = {createdAt: 1};
             break;
         case 'user':
-            sort = {"posting_user.first_name": 1, "posting_user.last_name": 1};
+            sort = {
+                "posting_user.first_name": 1,
+                "posting_user.last_name": 1
+            };
             break;
         default:
             sort = {createdAt: -1};
@@ -147,11 +134,36 @@ const getPostsBySearchTerms = async (search_text, search_order, limit) => {
     //Perform a text search
     const posts = Post.find({
         $or: [
-            {title: {$regex: search_text, $options: 'i'}},
-            {description: {$regex: search_text, $options: 'i'}},
-            {"identification.potentials.name": {$regex: search_text, $options: 'i'}},
-            {"posting_user.first_name": {$regex: search_text, $options: 'i'}},
-            {"posting_user.last_name": {$regex: search_text, $options: 'i'}}
+            {
+                title: {
+                    $regex: search_text,
+                    $options: 'i'
+                }
+            },
+            {
+                description: {
+                    $regex: search_text,
+                    $options: 'i'
+                }
+            },
+            {
+                "identification.potentials.name": {
+                    $regex: search_text,
+                    $options: 'i'
+                }
+            },
+            {
+                "posting_user.first_name": {
+                    $regex: search_text,
+                    $options: 'i'
+                }
+            },
+            {
+                "posting_user.last_name": {
+                    $regex: search_text,
+                    $options: 'i'
+                }
+            }
         ]
     })
         .populate('posting_user')
@@ -211,47 +223,57 @@ const addPostPotentialIdentification = async (postId, potential) => {
  * @returns {Promise<Comment>} Returns the new comment object
  */
 const addComment = async (postId, data) => {
-    const post = await Post.findOne({_id: postId});
     const comment = {
         user: data.userID,
         content: data.content,
         likes: data.likes,
+        client_temp_id: data.client_temp_id
     }
-    post.comments?.push(comment);
-    await post.save();
+
+    //Push the new comment into the comments array and return the new comment
+    const post = Post.findOneAndUpdate({_id: postId}, {$push: {comments: comment}}, {new: true});
 
     const notification = await addNotification(post._id, post.posting_user._id, notificationTypes.NEW_COMMENT, post.title, comment.content, data.userID)
     const returnComment = post.comments[post.comments.length - 1];
-    return {post: returnComment, notification};
+    return {
+        post: returnComment,
+        notification
+    };
 }
 
 /**
  * Add a reply to a comment
  * @param postId {String} The ID of the post to add the reply to
  * @param commentId {String} The ID of the comment to add the reply to
- * @param data{{userID: String, content: String, likes: Number}} The data object containing the reply information
+ * @param data{{userID: String, content: String, likes: Number, client_temp_id: String}} The data object containing the reply information
  * @returns {Promise<Comment>} Returns the new reply object
  */
 const addReply = async (postId, commentId, data) => {
     const post = await Post.findById(postId);
 
     //As the comment schema is recursive, the comment could be multiple levels deep, so we will need to traverse the comments array to find the correct comment
-    const comment = findComment(post.comments, commentId);
+    let comment = findComment(post.comments, commentId);
 
     if (comment) {
         const reply = {
             user: data.userID,
             content: data.content,
-            likes: data.likes
+            likes: data.likes,
+            client_temp_id: data.client_temp_id
         }
 
-        comment.replies.push(reply);
-        await post.save();
+        //Push the new reply into the replies array of the comment and return the new reply
+        const post = await Post.findOneAndUpdate({_id: postId, "comments._id": commentId}, {$push: {"comments.$.replies": reply}}, {new: true});
+        comment = findComment(post.comments, commentId);
+
         const notification = await addNotification(postId, comment.user, notificationTypes.NEW_REPLY, post.title, reply.content, reply.user, comment._id)
 
         //Get the latest reply
         const returnReply = comment.replies[comment.replies.length - 1];
-        return {reply: returnReply, notification}
+        return {
+            reply: returnReply,
+            notification
+        }
     }
 }
 
@@ -307,7 +329,10 @@ const addSuggestion = async (postId, data) => {
     await post.save();
 
     const notification = await addNotification(post._id, post.posting_user._id, notificationTypes.NEW_IDENTIFICATION, post.title, suggestion.name, suggestion.suggesting_user)
-    return {suggestion: post.identification.potentials[post.identification.potentials.length - 1], notification};
+    return {
+        suggestion: post.identification.potentials[post.identification.potentials.length - 1],
+        notification
+    };
 }
 
 /**
@@ -340,6 +365,55 @@ const createPost = async (postData) => {
     return Post.create(postData);
 }
 
+const getCommentsSinceTime = async (postID, time) => {
+    const post = await Post.findById(postID);
+
+    //If the post doesn't exist, return an empty array
+    if (!post) {
+        return [];
+    }
+
+    //Filter the comments array to only include comments that were created after the given time
+    const comments = post.comments.filter((comment) => comment.createdAt > time);
+    return comments;
+}
+
+/**
+ * Returns an array of replies that were created after the given time.
+ * Important distinction: this function will only return replies that were created after the given time on comments that were created before the given time.
+ * This is because the function is designed to be used in conjunction with {@link getCommentsSinceTime}, and this will automatically handle comments that were created after the given time.
+ * @param postID
+ * @param time
+ * @returns {Promise<Aggregate<Array<any>>>}
+ */
+const getRepliesSinceTime = async (postID, time) => {
+    const post = await Post.aggregate([
+        {$match: {_id: new mongoose.Types.ObjectId(postID)}}, // Match the post
+        {$unwind: "$comments"}, // Deconstruct the comments array
+        {$match: {"comments.createdAt": {$lt: new Date(time)}}}, // Match comments before the given time
+        {
+            $addFields: {
+                "comments.filteredReplies": {
+                    $filter: {
+                        input: "$comments.replies",
+                        as: "reply",
+                        cond: {$gt: ["$$reply.createdAt", new Date(time)]}
+                    }
+                }
+            }
+        }, // Add a new field that contains the filtered replies
+        {$unwind: "$comments.filteredReplies"}, // Deconstruct the filteredReplies array
+        {
+            $project: {
+                "reply": "$comments.filteredReplies",
+                "commentId": "$comments._id"
+            }
+        } // Include only the new field and comment ID
+    ]);
+
+    return post;
+}
+
 const addNotification = async (targetPostId, targetUserId, notificationType, notificationTitle, content = "", authorId = null, targetCommentId = null) => {
     const author = await User.findById(authorId)
     const notification = {
@@ -367,7 +441,10 @@ const getAllNotifications = async (userId, page = 0, limit = 10) => {
 }
 
 const getNotificationCount = async (userId) => {
-    return await Notification.countDocuments({target_user: userId, seen: false}).exec()
+    return await Notification.countDocuments({
+        target_user: userId,
+        seen: false
+    }).exec()
 }
 
 const viewNotification = async (notificationId) => {
@@ -384,7 +461,10 @@ const getCommentOwnerId = async (postID, commentID) => {
 }
 
 const markAllNotificationAsRead = async (userID) => {
-    await Notification.updateMany({target_user: userID, seen: false}, {$set: {"seen": true}})
+    await Notification.updateMany({
+        target_user: userID,
+        seen: false
+    }, {$set: {"seen": true}})
 }
 
 const deleteLikeNotificationByCommentId = async (commentID) => {
@@ -415,6 +495,8 @@ module.exports = {
     getSuggestionFromPost,
     findSuggestion,
     createPost,
+    getCommentsSinceTime,
+    getRepliesSinceTime,
     getFeedPosts,
     addNotification,
     getAllNotifications,

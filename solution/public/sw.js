@@ -1,3 +1,9 @@
+importScripts('/javascripts/socket.io.min.js');
+
+importScripts('/javascripts/idb/idb.js');
+importScripts('/javascripts/idb/posting_idb.js');
+importScripts('/javascripts/idb/comments_idb.js');
+
 self.addEventListener('install', event => {
     console.log('Service Worker: Installing....');
     event.waitUntil((async () => {
@@ -17,6 +23,7 @@ self.addEventListener('install', event => {
                 '/javascripts/idb/idb.js',
                 "/javascripts/leaflet.js",
                 "/javascripts/socket.io.min.js",
+                "/javascripts/post_states.js",
                 '/stylesheets/style.css',
                 "/stylesheets/leaflet.css",
                 '/stylesheets/bootstrap.min.css',
@@ -130,3 +137,177 @@ function cleanResponse(response) {
         });
     });
 }
+//sync event
+self.addEventListener('sync', async event => {
+    let socket = io('http://localhost:3000', {
+        jsonp: false,
+        transports: ['websocket']
+    });
+    if (event.tag === "sync-new-post") {
+        console.log("Service Worker: Syncing new Posts");
+
+        const db = await openNewPostIdb();
+        const posts = await getPostsFromIDB(db);
+        if (posts.length > 0) {
+            for (const post of posts) {
+                try {
+                    const title = post.title;
+                    const seen_at = post.seen_at;
+                    const description = post.description;
+                    const location_name = post.location_name;
+                    const latitude = post.latitude;
+                    const longitude = post.longitude;
+                    const height = post.height;
+                    const spread = post.spread;
+                    const sun_exposure = post.sun_exposure;
+                    const has_flowers = post.has_flowers;
+                    const colour = post.flower_colour;
+                    const leaf_type = post.leaf_type;
+                    const seed_type = post.seed_type;
+                    const images = post.images;
+
+                    //Prepare formData
+                    const formData = new FormData();
+                    formData.append('title', title);
+                    formData.append('seen_at', seen_at);
+                    formData.append('description', description);
+                    formData.append('location_name', location_name);
+                    formData.append('latitude', latitude);
+                    formData.append('longitude', longitude);
+                    formData.append('height', height);
+                    formData.append('spread', spread);
+                    formData.append('sun_exposure', sun_exposure);
+                    formData.append('has_flowers', has_flowers);
+                    formData.append('flower_colour', colour);
+                    formData.append('leaf_type', leaf_type);
+                    formData.append('seed_type', seed_type);
+                    for (let i = 0; i < images.length; i++) {
+                        formData.append('images', images[i]);
+                    }
+
+                    //Send the post to the server
+                    fetch('http://localhost:3000/post', {
+                        method: 'POST',
+                        body: formData
+                    }).then(response => {
+                        if (response.ok) {
+                            return response.json();
+                        } else {
+                            console.log("Service Worker: Sync Error: ", response.statusText)
+                        }
+                    }).then(async data => {
+                        //If successful, check if the post was successfully created
+                        if (data.post) {
+                            //Delete the post from the indexedDB so it doesn't get sent again
+                            await deletePostFromIdb(db, post.id);
+                        }
+                    }).catch(error => {
+                        console.log("Service Worker: Sync Error: ", error);
+
+                    });
+
+                } catch (e) {
+                    console.log("Service Worker: Sync Error: ", e);
+                }
+            }
+            console.log("Service Worker: Synced new Posts");
+        }
+    } else if (event.tag === "sync-new-comment") {
+        console.log("Service Worker: Syncing new Comments");
+
+        const db = await openCommentsIdb();
+        const comments = await getCommentsFromIdb(db);
+        if (comments.length > 0) {
+            for (const comment of comments) {
+                try {
+                    const temp_id = comment.temp_id;
+                    const post_id = comment.post_id;
+                    const user_id = comment.user_id;
+                    const text = comment.text;
+
+                    //Send the comment to the server
+                    fetch(`http://localhost:3000/plant/${post_id}/comment`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            text: text,
+                            user_id: user_id,
+                            temp_id: temp_id
+                        })
+                    }).then(response => {
+                        if (response.ok) {
+                            return response.json();
+                        } else {
+                            console.log("Service Worker: Sync Error: ", response.statusText)
+                        }
+                    }).then(async data => {
+                        //If the comment was successfully sent to the server, emit a new_comment event to connected clients
+                        socket.emit("new_comment", post_id, data.post);
+
+                        //Additionally, emit a new_notification event to connected clients
+                        socket.emit("new_notification", data.notification)
+
+                        //Delete the comment from the indexedDB so it doesn't get sent again
+                        await deleteCommentFromIdb(db, comment.id);
+                    }).catch(error => {
+                        console.log("Service Worker: Sync Error: ", error);
+                    });
+                } catch (e) {
+                    console.log("Service Worker: Sync Error: ", e);
+                }
+            }
+            console.log("Service Worker: Synced new Comments");
+        }
+    } else if (event.tag === "sync-new-reply") {
+        console.log("Service Worker: Syncing new Replies");
+
+        const db = await openCommentsIdb();
+        const replies = await getRepliesFromIdb(db);
+        if (replies.length > 0) {
+            for (const reply of replies) {
+                try {
+                    const post_id = reply.plant_id;
+                    const comment_id = reply.comment_id;
+                    const user_id = reply.user_id;
+                    const reply_text = reply.text;
+                    const temp_id = reply.temp_id;
+
+                    //Send the reply to the server
+                    fetch(`http://localhost:3000/plant/${post_id}/comment/${comment_id}/reply`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            text: reply_text,
+                            user_id: user_id,
+                            temp_id: temp_id
+                        })
+                    }).then(response => {
+                        if (response.ok) {
+                            return response.json();
+                        } else {
+                            console.log("Service Worker: Sync Error: ", response.statusText)
+                        }
+                    }).then(async data => {
+                        //If the reply was successfully sent to the server, emit a new_reply event to connected clients
+                        socket.emit("new_reply", post_id, {comment_id, reply: data.reply});
+
+                        //Additionally, emit a new_notification event to connected clients
+                        socket.emit("new_notification", data.notification)
+
+                        //Delete the reply from the indexedDB so it doesn't get sent again
+                        await deleteReplyFromIdb(db, reply.id);
+                    }).catch(error => {
+                        console.log("Service Worker: Sync Error: ", error);
+                    });
+                } catch (e) {
+                    console.log("Service Worker: Sync Error: ", e);
+                }
+            }
+            console.log("Service Worker: Synced new Replies");
+        }
+    }
+});

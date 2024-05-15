@@ -17,6 +17,7 @@ const seedTypes = require("../../model/enum/seedTypes");
 const notificationTypes = require("../../model/enum/notificationTypes")
 
 const mongoose = require("mongoose");
+const mongodb = require("../../model/mongodb");
 const axios = require('axios');
 
 async function getPost(req, res) {
@@ -186,6 +187,8 @@ async function postComment(req, res, next) {
     //Get the text and user ID from the request
     const text = req.body.text;
     const user_id = req.body.user_id;
+    // The temp_id is used to identify the comment in the IndexedDB of the posting user
+    const temp_id = req.body.temp_id;
 
     //Check if the ID is valid
     if (!plant_id) {
@@ -201,7 +204,7 @@ async function postComment(req, res, next) {
     }
 
     try {
-        const {post, notification} = await addComment(plant_id, {userID: user_id, content: text, likes: 0})
+        const {post, notification} = await addComment(plant_id, {userID: user_id, content: text, likes: 0, client_temp_id: temp_id})
         res.status(200).json({post, notification});
     } catch (err) {
         console.log(err)
@@ -241,6 +244,8 @@ async function postReply(req, res) {
     //Get the text and user ID from the request
     const text = req.body.text;
     const user_id = req.body.user_id;
+    // The temp_id is used to identify the comment in the IndexedDB of the posting user
+    const temp_id = req.body.temp_id;
 
     //Check if the ID is valid
     if (!plant_id) {
@@ -262,7 +267,7 @@ async function postReply(req, res) {
     }
 
     try {
-        const {reply, notification} = await addReply(plant_id, comment_id, {userID: user_id, content: text, likes: 0})
+        const {reply, notification} = await addReply(plant_id, comment_id, {userID: user_id, content: text, likes: 0, client_temp_id: temp_id})
         res.status(200).json({reply, notification});
     } catch (err) {
         console.log(err)
@@ -665,6 +670,7 @@ async function getDBPediaInfo(req, res) {
 /**
  * Calculate the Levenshtein distance between two strings.
  * This distance function is used to compare the similarity between two strings.
+ * @see https://en.wikipedia.org/wiki/Levenshtein_distance
  * @param str1 The first string
  * @param str2 The second string
  * @returns {*} The Levenshtein distance between the two strings
