@@ -5,6 +5,8 @@ const {promisify} = require('node:util');
 const {randomBytes, pbkdf2} = require('node:crypto');
 const roleTypes = require("../../model/enum/roleTypes");
 const pbkdf2Promise = promisify(pbkdf2);
+const { notificationTypes } = require('../../model/enum/notificationTypes');
+const { notificationSates } = require('../../model/enum/notificationStates');
 
 async function getProfile(req, res) {
     const id = req.user.id;
@@ -86,15 +88,44 @@ async function updateProfile(req,res){
     }
 }
 
-async function getNotifications(req, res) {
+const getNotifications = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { page, limit, sortByDate, notificationType } = req.query;
+        let notifications = await getAllNotifications(userId, parseInt(page, 10) || 0, parseInt(limit, 10) || 10);
+        if (notificationType) {
+            notifications = notifications.filter(n => n.notification_type === notificationTypes[notificationType]);
+        }
+        if (sortByDate === 'oldest') {
+            notifications.reverse();
+        }
+        res.render('user/notifications', {
+            title: 'Your Notifications',
+            notifications,
+            user: req.user,
+            isLoggedIn: true
+        });
+    } catch (error) {
+        console.error('Error fetching notifications:', error);
+        res.status(500).send('Internal Server Error');
+    }
+};
 
-    res.render('user/notifications', {title: 'Notifications',user: req.user, isLoggedIn: req.isLoggedIn});
+async function markAllNotificationsAsRead(req, res) {
+    try {
+        const userId = req.user.id;
+        await markAllNotificationAsRead(userId);
+        res.redirect('user/notifications');
+    } catch (error) {
+        console.error('Error marking all notifications as read:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 }
-
 
 module.exports = {
     getProfile,
     postNewUserPassword,
     updateProfile,
-    getNotifications
+    getNotifications,
+    markAllNotificationsAsRead
 }
