@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 
-const {getProfile, getNotifications, postNewUserPassword, updateProfile,markAllNotificationsAsRead} = require("../controllers/user/userController");
+const {getProfile, getNotifications, postNewUserPassword, updateProfile} = require("../controllers/user/userController");
 
 router.get('/notifications', getNotifications);
-router.post('/notifications/markAllRead', markAllNotificationsAsRead);
+
 
 router.get('/profile', getProfile);
 
