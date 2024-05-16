@@ -205,7 +205,6 @@ async function postComment(req, res, next) {
         res.send("Invalid body");
         return;
     }
-    console.log(plant_id)
     try {
         const {post, notification} = await addComment(plant_id, {userID: user_id, content: text, likes: 0, client_temp_id: temp_id})
         res.status(200).json({post, notification});
