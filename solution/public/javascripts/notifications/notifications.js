@@ -87,6 +87,28 @@ const updateNotifications = (notifications) => {
     }
 }
 
+const fetchNotifications = () => {
+    const sortByDate = $("#sortByDate").val();
+    const notificationType = $("#notificationType").val();
+
+    axios.get(`/api/get-notifications`, {
+        params: {
+            sortByDate,
+            notificationType
+        }
+    })
+        .then(response => {
+            const notifications = response.data.notifications;
+            $notificationsWrapper.empty(); // Clear existing notifications
+            notifications.forEach(notification => {
+                appendNotification(notification); // Redraw all notifications
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching notifications:', error);
+        });
+}
+
 window.addEventListener("load", async e => {
     try {
         const firstPageNotifications = await axios.get("/api/get-notifications", {params: {page}})
@@ -96,6 +118,9 @@ window.addEventListener("load", async e => {
     } catch (e) {
         console.log(e)
     }
+
+    fetchNotifications();
+    $('#applyFilters').click(fetchNotifications);
 
 
     $markAllBtn.on("click", async () => {
