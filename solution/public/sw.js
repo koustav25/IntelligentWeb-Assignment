@@ -195,11 +195,11 @@ self.addEventListener('sync', async event => {
                         } else {
                             console.log("Service Worker: Sync Error: ", response.statusText)
                         }
-                    }).then(async data => {
+                    }).then(data => {
                         //If successful, check if the post was successfully created
-                        if (data.post) {
+                        if (data._id !== undefined) {
                             //Delete the post from the indexedDB so it doesn't get sent again
-                            await deletePostFromIdb(db, post.id);
+                            deletePostFromIdb(db, post.id);
                         }
                     }).catch(error => {
                         console.log("Service Worker: Sync Error: ", error);
