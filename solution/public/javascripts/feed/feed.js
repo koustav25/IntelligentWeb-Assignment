@@ -50,6 +50,7 @@ const createPostDiv = (post, toRecent = false) => {
 
 const $feedWrapper = $("#feed-wrapper")
 const $feedRecentWrapper = $("#feed-recent-wrapper")
+
 const $loadingSpinner = $("#loading-spinner")
 const $updateSpinner = $("#update-spinner")
 const $feedEnd = $("#feed-end")
@@ -205,24 +206,29 @@ $(document).ready(async function () {
 
 let pendingPostsBanner;
 let pendingPostsCount;
+let reconnectBanner;
 document.addEventListener('DOMContentLoaded', async function () {
     pendingPostsCount = $('#pendingPostsCount');
     pendingPostsBanner = $('#pendingPostsBanner');
+    reconnectBanner = $('#reconnect-banner')
 
     if (isOnline) {
         pendingPostsBanner.addClass('d-none');
+        reconnectBanner.addClass('d-none');
     } else {
         const postIdb = await openNewPostIdb();
         const posts = await getPostsFromIDB(postIdb);
 
         const postCount = posts.length;
 
+        reconnectBanner.removeClass('d-none');
         pendingPostsBanner.removeClass('d-none');
         pendingPostsCount.text(postCount);
     }
 
     window.addEventListener('online', async function () {
         pendingPostsBanner.addClass('d-none');
+        reconnectBanner.addClass('d-none');
     });
 
     window.addEventListener('offline', async function () {
@@ -231,6 +237,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         const postCount = posts.length;
 
+        reconnectBanner.removeClass('d-none');
         pendingPostsBanner.removeClass('d-none');
         pendingPostsCount.text(postCount);
     });
