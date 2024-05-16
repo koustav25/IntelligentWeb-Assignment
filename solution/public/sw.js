@@ -215,7 +215,7 @@ self.addEventListener('sync', async event => {
                             const submittedAt = new Date(post.submittedAt)
                             const now = new Date(Date.now())
                             if(now - submittedAt >= submittedOfflineThreshold){
-                                await sendSWNotification(`Your ${posts.length > 1 ? "posts have" : "post has"} been successfully uploaded to the server.`)
+                                sendSWNotification(`Your ${posts.length > 1 ? "posts have" : "post has"} been successfully uploaded to the server.`)
                             }
                         }
                     }).catch(error => {
@@ -272,7 +272,7 @@ self.addEventListener('sync', async event => {
                         const submittedAt = new Date(comment.submittedAt)
                         const now = new Date(Date.now())
                         if(now - submittedAt >= submittedOfflineThreshold){
-                            await sendSWNotification(`Your ${comments.length > 1 ? "comments have" : "comment has"} been successfully uploaded to the server.`)
+                            sendSWNotification(`Your ${comments.length > 1 ? "comments have" : "comment has"} been successfully uploaded to the server.`)
                         }
                     }).catch(error => {
                         console.log("Service Worker: Sync Error: ", error);
@@ -327,7 +327,7 @@ self.addEventListener('sync', async event => {
                         const submittedAt = new Date(reply.submittedAt)
                         const now = new Date(Date.now())
                         if(now - submittedAt >= submittedOfflineThreshold){
-                            await sendSWNotification(`Your ${replies.length > 1 ? "replies have" : "reply has"} been successfully uploaded to the server.`)
+                            sendSWNotification(`Your ${replies.length > 1 ? "replies have" : "reply has"} been successfully uploaded to the server.`)
                         }
                     }).catch(error => {
                         console.log("Service Worker: Sync Error: ", error);

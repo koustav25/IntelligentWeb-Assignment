@@ -24,7 +24,6 @@ document.addEventListener('DOMContentLoaded', function() {
         $searchWarn.removeClass('d-none');
         $searchBar.addClass('d-none');
         isOnline = false
-        sendNotification("You are offline!")
     });
 
     window.addEventListener('online',  (e) => {
@@ -32,6 +31,5 @@ document.addEventListener('DOMContentLoaded', function() {
         $searchWarn.addClass('d-none');
         $searchBar.removeClass('d-none');
         isOnline = true
-        sendNotification("You are back online!")
     })
 });
