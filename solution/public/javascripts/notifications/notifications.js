@@ -13,6 +13,8 @@ $updateSpinner.hide()
 $notificationsEnd.hide()
 
 let page = 0
+let sortByDate = 'mostRecent';
+let notificationType = 'allPosts';
 socket = io()
 let updateNotificationTime = Date.now()
 
@@ -87,27 +89,39 @@ const updateNotifications = (notifications) => {
     }
 }
 
-const fetchNotifications = () => {
-    const sortByDate = $("#sortByDate").val();
-    const notificationType = $("#notificationType").val();
+const fetchNotifications = (resetPage = false) => {
+    if (resetPage) {
+        page = 0;
+        $notificationsWrapper.empty();
+    }
+
+    sortByDate = $("#sortByDate").val();
+    notificationType = $("#notificationType").val();
 
     axios.get(`/api/get-notifications`, {
         params: {
+            page,
             sortByDate,
             notificationType
         }
     })
         .then(response => {
             const notifications = response.data.notifications;
-            $notificationsWrapper.empty(); // Clear existing notifications
-            notifications.forEach(notification => {
-                appendNotification(notification); // Redraw all notifications
-            });
+            if (notifications.length > 0) {
+                notifications.forEach(notification => {
+                    appendNotification(notification);
+                });
+                page++;
+            } else {
+                $notificationsEnd.show();
+            }
         })
         .catch(error => {
             console.error('Error fetching notifications:', error);
+            $errorBox.show();
         });
 }
+
 
 window.addEventListener("load", async e => {
     try {
@@ -118,9 +132,6 @@ window.addEventListener("load", async e => {
     } catch (e) {
         console.log(e)
     }
-
-    fetchNotifications();
-    $('#applyFilters').click(fetchNotifications);
 
 
     $markAllBtn.on("click", async () => {
@@ -144,12 +155,14 @@ window.addEventListener("load", async e => {
         $(`#${data.notificationID}`).remove()
         $notificationCounter.text(parseInt($notificationCounter.text()) - 1)
     })
+    $('#applyFilters').click(() => fetchNotifications(true));
 })
 
 $(window).scroll(async function () {
 
     const timeDiff = Date.now() - updateNotificationTime
     if (timeDiff > updateNotificationsGap && $(window).scrollTop() + $(window).height() >= $(document).height()) {
+        fetchNotifications();
         updateNotificationTime = Date.now()
 
         $notificationsEnd.hide()
