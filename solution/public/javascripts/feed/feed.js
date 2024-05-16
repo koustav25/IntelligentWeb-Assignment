@@ -24,6 +24,8 @@ let pendingPostsBanner;
 let pendingPostsCount;
 let reconnectBanner;
 
+const locationUnavailableToastId = "locationUnavailableToast";
+
 // Decode Large Base64 Buffers
 function Uint8ToString(u8a) {
     const CHUNK_SZ = 0x8000;
@@ -109,17 +111,10 @@ function registerSockets() {
     })
 }
 
-async function retrieveFirstPageDataFromServer() {
+async function retrieveFirstPageDataFromServer(sortValue, filterValue, lat, lon) {
     try {
         // Fetch first page
-        const response = await axios.get("/api/feed", {
-            params: {
-                lastPostId: null,
-                filter: SortOrder.filterStateToInt(selectedFilterMode),
-                sortBy: SortOrder.sortStateToInt(selectedSortMode)
-            }
-        })
-        updateFeed(response.data.posts)
+        const response = await getPostsFromApi(null, filterValue, sortValue, lat, lon);
         currentPosts = [...response.data.posts]
 
         openFeedIDB().then(db => {
@@ -130,6 +125,24 @@ async function retrieveFirstPageDataFromServer() {
     } catch (e) {
         console.log(e)
         $errorBox.show()
+    }
+}
+
+// Initialise toasts in the document
+document.addEventListener('DOMContentLoaded', async function () {
+    const toastElList = document.querySelectorAll('.toast')
+    const toastList = [...toastElList].map(toastEl => new bootstrap.Toast(toastEl, {}))
+});
+
+const showToast = (id) => {
+    //Get the toast element
+    const toastEl = document.getElementById(id);
+    //Get the toast instance
+    const toast = bootstrap.Toast.getInstance(toastEl);
+
+    if (toast) {
+        //Show the toast
+        toast.show();
     }
 }
 
@@ -154,19 +167,142 @@ $(document).ready(async function () {
     }
 });
 
+function checkLocationPermission($sortBy) {
+    //If the sort is set to by distance, we need to try and get the user's location
+    //If we can't get the user's location, we should show an error message, and disable the option to sort by distance, and reset the sort to recent
+    if (selectedSortMode === SortOrder.sortStateIntToString(SortOrder.DISTANCE)) {
+        //Check if the user's location is available
+        if (!navigator.geolocation) {
+            //If the user's location is not available, show an error message
+            showToast(locationUnavailableToastId);
+
+            //Reset the filter to recent
+            $sortBy.val(SortOrder.sortStateIntToString(SortOrder.RECENT));
+            selectedSortMode = SortOrder.sortStateIntToString(SortOrder.RECENT);
+
+            //Disable the filter by distance option
+            $sortBy.find(`option[value="${SortOrder.DISTANCE}"]`).prop('disabled', true);
+        }
+    }
+}
+
+function handleLocationFailure($sortBy) {
+    //If the user's location is not available, show an error message
+    showToast(locationUnavailableToastId);
+
+    //Reset the filter to recent
+    $sortBy.val(SortOrder.sortStateIntToString(SortOrder.RECENT));
+    selectedSortMode = SortOrder.sortStateIntToString(SortOrder.RECENT);
+
+    //Disable the filter by distance option
+    $sortBy.find(`option[value="${SortOrder.DISTANCE}"]`).prop('disabled', true);
+
+    // Call the apply button click event to refresh the feed
+    $('#applyButton').click();
+}
+
+async function processMissingPosts(posts, filterValue, sortValue, lat, lon) {
+    const response = await axios.post("/api/fetch-missing-posts", {
+        lastPostDateTime: posts.length > 0 ? posts[0].createdAt : null,
+        filter: filterValue,
+        sortBy: sortValue,
+        lat: lat,
+        lon: lon
+    })
+
+    currentPosts = [...response.data.newPosts, ...currentPosts]
+    currentPosts = currentPosts.slice(0, 10)
+
+    // As the function uses prepend and the array is sorted already the new posts have to be reversed
+    updateFeed(response.data.newPosts.reverse(), false)
+
+    // Cache new posts
+    if (response.data.newPosts.length > 0) {
+        openFeedIDB().then(db => {
+            clearFeedIDB(db).then(() => {
+                updateFeedIDB(db, currentPosts).then(() => console.log("Updated feed cached!"))
+            })
+        })
+    }
+}
+
+async function getPostsFromApi(lastPostId, filterValue, sortByValue, lat, lon) {
+    const response = await axios.get("/api/feed", {
+        params: {
+            lastPostId: lastPostId,
+            filter: filterValue,
+            sortBy: sortByValue,
+            lat: lat,
+            lon: lon
+        }
+    });
+    updateFeed(response.data.posts);
+    return response;
+}
+
+async function fetchNewPosts(filterValue, sortByValue, lat, lon) {
+    const response = await getPostsFromApi(null, filterValue, sortByValue, lat, lon);
+    currentPosts = [...response.data.posts];
+
+    openFeedIDB().then(db => {
+        clearFeedIDB(db).then(() => {
+            updateFeedIDB(db, currentPosts).then(() => console.log("Cached updated feed!"));
+
+            // Update the sort state in the cache
+            setSortState(db, {
+                filter: selectedFilterMode,
+                sort: selectedSortMode
+            }).then(() => console.log("Cached updated sort state!"));
+        });
+    });
+}
+
+async function fetchNextPosts(lastPostId, filterValue, sortByValue, lat, lon) {
+    const response = await getPostsFromApi(lastPostId, filterValue, sortByValue, lat, lon);
+    currentPosts = [...currentPosts, ...response.data.posts]
+    if (response.data.posts.length <= 0) {
+        $feedEnd.show()
+    }
+    $loadingSpinner.hide()
+}
+
+async function fetchRefreshedFeed(filterValue, sortByValue, lat, lon) {
+    const response = await getPostsFromApi(null, filterValue, sortByValue, lat, lon);
+
+    updateFeed(response.data.posts)
+    currentPosts = response.data.posts
+    $updateSpinner.hide()
+    updateFeedTime = Date.now()
+}
+
 //Filtering and sorting of posts
 $(document).ready(async function () {
     //Try to get the cached sort state
+    let $filterBy = $('#filterBy');
+    let $sortBy = $('#sortBy');
     openFeedIDB().then(db => {
         getSortState(db).then(sortState => {
             if (sortState) {
                 selectedFilterMode = sortState.filter;
                 selectedSortMode = sortState.sort;
-                $('#filterBy').val(selectedFilterMode);
-                $('#sortBy').val(selectedSortMode);
+                $filterBy.val(selectedFilterMode);
+                $sortBy.val(selectedSortMode);
 
                 if (isOnline) {
-                    retrieveFirstPageDataFromServer();
+                    checkLocationPermission($sortBy)
+
+                    const filter = SortOrder.filterStateToInt(selectedFilterMode);
+                    const sort = SortOrder.sortStateToInt(selectedSortMode);
+
+                    if (selectedSortMode === SortOrder.sortStateIntToString(SortOrder.DISTANCE) && navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(async function (position) {
+                            const lat = position.coords.latitude;
+                            const lon = position.coords.longitude;
+                            await retrieveFirstPageDataFromServer(sort, filter, lat, lon);
+                        }, () => handleLocationFailure($sortBy));
+                    } else {
+                        retrieveFirstPageDataFromServer(sort, filter, null, null);
+                    }
                 }
             }
         });
@@ -175,8 +311,10 @@ $(document).ready(async function () {
     // When the apply button is clicked, apply the filter and sort the posts
     $('#applyButton').on('click', async function (event) {
         event.preventDefault();
-        selectedFilterMode = $('#filterBy').val();
-        selectedSortMode = $('#sortBy').val();
+        selectedFilterMode = $filterBy.val();
+        selectedSortMode = $sortBy.val();
+
+        checkLocationPermission($sortBy);
 
         // Clear the feed as we are changing the filter
         $feedWrapper.empty();
@@ -186,28 +324,18 @@ $(document).ready(async function () {
                 const filterValue = SortOrder.filterStateToInt(selectedFilterMode);
                 const sortByValue = SortOrder.sortStateToInt(selectedSortMode);
 
-                const response = await axios.get("/api/feed", {
-                    params: {
-                        lastPostId: null,
-                        filter: filterValue,
-                        sortBy: sortByValue
+                //If the filter is set to by distance, we need to get the user's location
+                if (sortByValue === SortOrder.DISTANCE) {
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(async function (position) {
+                            const lat = position.coords.latitude;
+                            const lon = position.coords.longitude;
+                            await fetchNewPosts(filterValue, sortByValue, lat, lon);
+                        }, () => handleLocationFailure($sortBy));
                     }
-                })
-
-                updateFeed(response.data.posts)
-                currentPosts = [...response.data.posts]
-
-                openFeedIDB().then(db => {
-                    clearFeedIDB(db).then(() => {
-                        updateFeedIDB(db, currentPosts).then(() => console.log("Cached updated feed!"))
-
-                        // Update the sort state in the cache
-                        setSortState(db, {
-                            filter: selectedFilterMode,
-                            sort: selectedSortMode
-                        }).then(() => console.log("Cached updated sort state!"))
-                    })
-                })
+                } else {
+                    await fetchNewPosts(filterValue, sortByValue, null, null);
+                }
             } catch (e) {
                 console.log(e)
                 $errorBox.show()
@@ -233,13 +361,38 @@ $(document).ready(async function () {
                         case SortOrder.OLDEST:
                             filteredPosts.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
                             break;
-                        case SortOrder.MOST_COMMENTED:
-                            filteredPosts.sort((a, b) => b.comments.length - a.comments.length);
+                        case SortOrder.DISTANCE:
+                            // Sort by distance
+                            if (navigator.geolocation) {
+                                navigator.geolocation.getCurrentPosition(async function (position) {
+                                    const lat = position.coords.latitude;
+                                    const lon = position.coords.longitude;
+                                    filteredPosts.sort((a, b) => {
+                                        const distanceA = haversine_distance(lat, lon, a.location.coordinates[1], a.location.coordinates[0]);
+                                        const distanceB = haversine_distance(lat, lon, b.location.coordinates[1], b.location.coordinates[0]);
+                                        return distanceA - distanceB;
+                                    }, () => handleLocationFailure($sortBy));
+                                    updateFeed(filteredPosts);
+                                    currentPosts = filteredPosts;
+
+                                    // Update the sort state in the cache
+                                    setSortState(db, {
+                                        sort: selectedSortMode,
+                                        filter: selectedFilterMode
+                                    }).then(() => console.log("Cached updated sort state!"))
+                                });
+                            }
                             break;
                     }
 
                     updateFeed(filteredPosts);
                     currentPosts = filteredPosts;
+
+                    // Update the sort state in the cache
+                    setSortState(db, {
+                        sort: selectedSortMode,
+                        filter: selectedFilterMode
+                    }).then(() => console.log("Cached updated sort state!"))
                 });
             });
         }
@@ -257,20 +410,21 @@ $(document).ready(async function () {
                 $loadingSpinner.show()
 
                 const lastPost = currentPosts[currentPosts.length - 1]
-                const response = await axios.get("/api/feed", {
-                    params: {
-                        lastPostId: lastPost._id,
-                        filter: SortOrder.filterStateToInt(selectedFilterMode),
-                        sortBy: SortOrder.sortStateToInt(selectedSortMode)
-                    }
-                })
 
-                updateFeed(response.data.posts)
-                currentPosts = [...currentPosts, ...response.data.posts]
-                if (response.data.posts.length <= 0) {
-                    $feedEnd.show()
+                checkLocationPermission($sortBy)
+
+                const filterValue = SortOrder.filterStateToInt(selectedFilterMode);
+                const sortByValue = SortOrder.sortStateToInt(selectedSortMode);
+
+                if (selectedSortMode === SortOrder.sortStateIntToString(SortOrder.DISTANCE) && navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(async function (position) {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        await fetchNextPosts(lastPost._id, filterValue, sortByValue, lat, lon);
+                    }, () => handleLocationFailure($sortBy));
+                } else {
+                    await fetchNextPosts(lastPost._id, filterValue, sortByValue, null, null);
                 }
-                $loadingSpinner.hide()
             }
 
             // Refresh feed
@@ -284,19 +438,21 @@ $(document).ready(async function () {
                 $updateSpinner.show()
                 currentPosts.map(post => socket.emit("leaving_plant", {plant_id: post._id}))
 
-                try {
-                    const response = await axios.get("/api/feed", {
-                        params: {
-                            lastPostId: null,
-                            filter: SortOrder.filterStateToInt(selectedFilterMode),
-                            sortBy: SortOrder.sortStateToInt(selectedSortMode)
-                        }
-                    })
+                checkLocationPermission($sortBy)
 
-                    updateFeed(response.data.posts)
-                    currentPosts = response.data.posts
-                    $updateSpinner.hide()
-                    updateFeedTime = Date.now()
+                const filterValue = SortOrder.filterStateToInt(selectedFilterMode);
+                const sortByValue = SortOrder.sortStateToInt(selectedSortMode);
+
+                try {
+                    if (selectedSortMode === SortOrder.sortStateIntToString(SortOrder.DISTANCE) && navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(async function (position) {
+                            const lat = position.coords.latitude;
+                            const lon = position.coords.longitude;
+                            await fetchRefreshedFeed(filterValue, sortByValue, lat, lon);
+                        }, () => handleLocationFailure($sortBy));
+                    } else {
+                        await fetchRefreshedFeed(filterValue, sortByValue, null, null);
+                    }
                 } catch (e) {
                     $errorBox.show();
                 }
@@ -313,25 +469,19 @@ $(document).ready(async function () {
         const db = await openFeedIDB();
         const posts = await getFeedIDB(db)
 
-        const response = await axios.post("/api/fetch-missing-posts", {
-            lastPostDateTime: posts.length > 0 ? posts[0].createdAt : null,
-            filter: SortOrder.filterStateToInt(selectedFilterMode),
-            sortBy: SortOrder.sortStateToInt(selectedSortMode)
-        })
+        checkLocationPermission($sortBy)
 
-        currentPosts = [...response.data.newPosts, ...currentPosts]
-        currentPosts = currentPosts.slice(0, 10)
+        const filterValue = SortOrder.filterStateToInt(selectedFilterMode);
+        const sortByValue = SortOrder.sortStateToInt(selectedSortMode);
 
-        // As the function uses prepend and the array is sorted already the new posts have to be reversed
-        updateFeed(response.data.newPosts.reverse(), false)
-
-        // Cache new posts
-        if (response.data.newPosts.length > 0) {
-            openFeedIDB().then(db => {
-                clearFeedIDB(db).then(() => {
-                    updateFeedIDB(db, currentPosts).then(() => console.log("Updated feed cached!"))
-                })
-            })
+        if (selectedSortMode === SortOrder.sortStateIntToString(SortOrder.DISTANCE) && navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(async function (position) {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                await processMissingPosts(posts, filterValue, sortByValue, lat, lon);
+            }, () => handleLocationFailure($sortBy));
+        } else {
+            await processMissingPosts(posts, filterValue, sortByValue, null, null);
         }
     })
 });

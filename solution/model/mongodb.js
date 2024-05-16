@@ -106,13 +106,30 @@ const getPostById = async (id) => {
  * @param limit Posts per page
  * @param filters Query filters
  * @param sortOrder Sort order of the query (Default is RECENT)
+ * @param userLat User's latitude (if available and needed)
+ * @param userLong User's longitude (if available and needed)
  * @returns {Promise<Post[]>}
  */
-const getFeedPosts = async (lastPostId = null, limit = 10, filters = {}, sortOrder = SortOrder.RECENT) => {
-    let pipeline = [
+const getFeedPosts = async (lastPostId = null, limit = 10, filters = {}, sortOrder = SortOrder.RECENT, userLat = null, userLong = null) => {
+    let pipeline = [];
+
+    console.log(await Post.collection.getIndexes({full: true}))
+
+    if (sortOrder === SortOrder.DISTANCE && userLong && userLat) {
+        pipeline.push({
+            $geoNear: {
+                near: { type: "Point", coordinates: [ userLong, userLat ] },
+                distanceField: "distance",
+                spherical: true,
+                key: "location.coords" // specify the field that contains the GeoJSON data
+            }
+        });
+    }
+
+    pipeline.push(
         { $match: filters },
         { $addFields: { commentsCount: { $size: "$comments" } } } // Add a new field commentsCount
-    ];
+    );
 
     switch (sortOrder) {
         case SortOrder.RECENT:
@@ -120,6 +137,9 @@ const getFeedPosts = async (lastPostId = null, limit = 10, filters = {}, sortOrd
             break;
         case SortOrder.OLDEST:
             pipeline.push({ $sort: { createdAt: 1 } });
+            break;
+        case SortOrder.DISTANCE:
+            pipeline.push({ $sort: { distance: 1 } });
             break;
         default:
             pipeline.push({ $sort: { createdAt: -1 } });

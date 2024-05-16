@@ -1,6 +1,7 @@
 const SortOrder = {
     RECENT: 0,
     OLDEST: 1,
+    DISTANCE: 2,
 
     sortStateToInt: (state) => {
         switch (state) {
@@ -8,6 +9,8 @@ const SortOrder = {
                 return SortOrder.RECENT;
             case "1":
                 return SortOrder.OLDEST;
+            case "2":
+                return SortOrder.DISTANCE;
             default:
                 return SortOrder.RECENT;
         }
