@@ -26,10 +26,11 @@ document.addEventListener('DOMContentLoaded', function() {
         isOnline = false
     });
 
-    window.addEventListener('online', (e) => {
+    window.addEventListener('online', async (e) => {
         $offlineBox.hide();
         $searchWarn.addClass('d-none');
         $searchBar.removeClass('d-none');
         isOnline = true
-    });
+        await sendNotification("You are back online!")
+    })
 });

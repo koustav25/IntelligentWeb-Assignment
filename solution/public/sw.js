@@ -23,15 +23,15 @@ self.addEventListener('install', event => {
                 '/javascripts/idb/idb.js',
                 "/javascripts/leaflet.js",
                 "/javascripts/socket.io.min.js",
-                "/javascripts/post_states.js",
+                "/javascripts/posts/post_states.js",
                 '/stylesheets/style.css',
                 "/stylesheets/leaflet.css",
                 '/stylesheets/bootstrap.min.css',
                 '/images/logo.png',
             ]);
             console.log('Service Worker: App Shell Cached');
-        } catch {
-            console.log("error occurred while caching...")
+        } catch (e){
+            console.log(e)
         }
 
     })());

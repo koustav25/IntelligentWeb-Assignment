@@ -45,4 +45,19 @@ document.addEventListener("DOMContentLoaded", async (e) => {
     window.addEventListener('online', async (e) => {
         await setNotificationCounter($notificationCounter);
     });
+
+    if("Notification" in window){
+        if(Notification.permission !== "granted"){
+            Notification.requestPermission().then(permission => {
+                if(permission === "granted"){
+                    navigator.serviceWorker.ready.then(swr => {
+                        swr.showNotification("Plants App", {body:" Notifications are enabled"})
+                            .then(r => {
+                                console.log(r)
+                            })
+                    })
+                }
+            })
+        }
+    }
 });
