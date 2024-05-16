@@ -4,6 +4,14 @@ importScripts('/javascripts/idb/idb.js');
 importScripts('/javascripts/idb/posting_idb.js');
 importScripts('/javascripts/idb/comments_idb.js');
 
+/**
+ * Util function to send notification with the service worker interface
+ * @param body Content of the notification
+ */
+const sendSWNotification = async (body) => {
+    await self.registration.showNotification("Plants App", {body, icon: "/images/logo.png"})
+}
+
 self.addEventListener('install', event => {
     console.log('Service Worker: Installing....');
     event.waitUntil((async () => {
@@ -199,6 +207,7 @@ self.addEventListener('sync', async event => {
                         //If successful, check if the post was successfully created
                         if (data._id !== undefined) {
                             //Delete the post from the indexedDB so it doesn't get sent again
+                            console.log("POST DELTEDED")
                             deletePostFromIdb(db, post.id);
                         }
                     }).catch(error => {
@@ -210,6 +219,7 @@ self.addEventListener('sync', async event => {
                     console.log("Service Worker: Sync Error: ", e);
                 }
             }
+            await sendSWNotification(`Your ${posts.length > 1 ? "posts have" : "post has"} been successfully uploaded to the server.`)
             console.log("Service Worker: Synced new Posts");
         }
     } else if (event.tag === "sync-new-comment") {

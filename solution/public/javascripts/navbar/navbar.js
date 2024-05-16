@@ -24,13 +24,14 @@ document.addEventListener('DOMContentLoaded', function() {
         $searchWarn.removeClass('d-none');
         $searchBar.addClass('d-none');
         isOnline = false
+        sendNotification("You are offline!")
     });
 
-    window.addEventListener('online', async (e) => {
+    window.addEventListener('online',  (e) => {
         $offlineBox.hide();
         $searchWarn.addClass('d-none');
         $searchBar.removeClass('d-none');
         isOnline = true
-        await sendNotification("You are back online!")
+        sendNotification("You are back online!")
     })
 });

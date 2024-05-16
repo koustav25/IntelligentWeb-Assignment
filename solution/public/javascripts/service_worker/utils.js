@@ -1,9 +1,7 @@
 /**
- * Util function to send notification with a service worker
+ * Util function to send notification with the Notification Object
  * @param body Content of the notification
- * @returns {Promise<void>}
  */
-const sendNotification = async (body) => {
-    const swr = await navigator.serviceWorker.ready
-    await swr.showNotification("Plants App", {body})
+const sendNotification = (body) => {
+    new Notification("Plants App", {body, icon: "/images/logo.png"})
 }
