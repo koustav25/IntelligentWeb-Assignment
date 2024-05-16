@@ -36,13 +36,7 @@ async function getPost(req, res) {
 }
 
 async function postNewPost(req, res, next) {
-    console.log("NEW POST NEW POST")
     try {
-        console.log("NEW POST NEW POST")
-
-        socket.broadcastNewPost({kupa:"kupa"})
-        console.log("NEW POST NEW POST")
-
         const title = req.body.title;
         const description = req.body.description;
         const seen_at = req.body.seen_at;
@@ -140,6 +134,7 @@ async function postNewPost(req, res, next) {
         }
 
         const post = await createPost(postObject);
+        socket.broadcastNewPost({post})
 
         const user = await getUserById(userId); // Get the user by ID
 

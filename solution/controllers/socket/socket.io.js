@@ -17,8 +17,6 @@ exports.init = (server) => {
     });
 }
 
-exports.broadcastNewPost = post => {
-    console.log(io)
-    console.log(post)
-    io.to("feed").emit("new_post", {post})
+exports.broadcastNewPost = data => {
+    io.to("feed").emit("new_post", data)
 }

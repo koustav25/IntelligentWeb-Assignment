@@ -7,9 +7,6 @@ function registerFeedSockets(io, socket) {
         console.log("User leaving feed")
         socket.leave("feed")
     })
-    socket.on("new_post", () => {
-        console.log("new post")
-    })
 }
 
 module.exports = {
