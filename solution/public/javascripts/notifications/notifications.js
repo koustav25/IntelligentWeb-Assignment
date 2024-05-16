@@ -169,7 +169,7 @@ $(window).scroll(async function () {
     const timeDiff = Date.now() - updateNotificationTime
     if (timeDiff > updateNotificationsGap && $(window).scrollTop() + $(window).height() >= $(document).height()) {
         updateNotificationTime = Date.now()
-        $notificationsEnd.hide();
+
         $loadingSpinner.show()
         try {
             const newNotifications = await axios.get("/api/get-notifications", {
@@ -179,9 +179,10 @@ $(window).scroll(async function () {
                     notificationType
                 }
             })
-            updateNotifications(newNotifications.data.notifications)
+
 
             if (newNotifications.data.notifications.length > 0) {
+                updateNotifications(newNotifications.data.notifications);
                 page += 1
             } else {
                 $notificationsEnd.show()
@@ -198,6 +199,8 @@ $(window).scroll(async function () {
         updateNotificationTime = Date.now()
         $updateSpinner.show();
         try {
+            page = 0;
+            $notificationsWrapper.empty();
             const newNotifications = await axios.get("/api/get-notifications", {
                 params: {page, sortByDate, notificationType}
             });
