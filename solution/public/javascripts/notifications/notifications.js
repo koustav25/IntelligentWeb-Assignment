@@ -128,9 +128,11 @@ window.addEventListener("load", async e => {
         const firstPageNotifications = await axios.get("/api/get-notifications", {params: {page}})
         updateNotifications(firstPageNotifications.data.notifications)
         page += 1
-        $loadingSpinner.hide()
     } catch (e) {
         console.log(e)
+        $errorBox.show();
+    }finally {
+        $loadingSpinner.hide();
     }
 
 
@@ -162,10 +164,8 @@ $(window).scroll(async function () {
 
     const timeDiff = Date.now() - updateNotificationTime
     if (timeDiff > updateNotificationsGap && $(window).scrollTop() + $(window).height() >= $(document).height()) {
-        fetchNotifications();
         updateNotificationTime = Date.now()
 
-        $notificationsEnd.hide()
         $loadingSpinner.show()
         try {
             const newNotifications = await axios.get("/api/get-notifications", {params: {page}})
@@ -176,10 +176,11 @@ $(window).scroll(async function () {
             } else {
                 $notificationsEnd.show()
             }
-            $loadingSpinner.hide()
         } catch (e) {
             $errorBox.show();
             console.log(e)
+        }finally {
+            $loadingSpinner.hide();
         }
 
 
@@ -187,21 +188,19 @@ $(window).scroll(async function () {
 
     if (timeDiff > updateNotificationsGap && $(window).scrollTop() <= 0) {
         updateNotificationTime = Date.now()
-
-        page = 0
-        $notificationsWrapper.empty()
-        $notificationsEnd.hide()
-        $updateSpinner.show()
+        $updateSpinner.show();
         try {
-            const updateNotificationPage = await axios.get("/api/get-notifications", {params: {page}})
-            updateNotifications(updateNotificationPage.data.notifications)
-            $updateSpinner.hide()
-            page += 1
+            page = 0;
+            const updateNotificationPage = await axios.get("/api/get-notifications", {params: {page}});
+            $notificationsWrapper.empty();
+            updateNotifications(updateNotificationPage.data.notifications);
+            page += 1;
         } catch (e) {
-            console.log(e)
+            console.error(e);
             $errorBox.show();
+        } finally {
+            $updateSpinner.hide();
         }
-
     }
-
 });
+
