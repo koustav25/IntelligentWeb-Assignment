@@ -99,10 +99,18 @@ const getPostById = async (id) => {
     }
     return post;
 }
-
-
-const getFeedPosts = async (page = 1, limit = 10, filters = {}) => {
-    let query = Post.find().skip((page - 1) * limit).limit(limit);
+/**
+ * Fetch batches of 10 of posts with filters and with reference to the date
+ * @param lastPostCreatedAt Reference post for the query
+ * @param limit Posts per page
+ * @param filters Query filters
+ * @returns {Promise<Posts>}
+ */
+const getFeedPosts = async (lastPostId = null, limit = 10, filters = {}) => {
+    let query = Post.find(filters).sort({createdAt: -1}).limit(limit)
+    if (lastPostId) {
+        query = query.find({'_id': {$lt: lastPostId}})
+    }
 
     if (filters.state !== undefined) {
         query = query.where('state').equals(filters.state);
@@ -117,10 +125,8 @@ const getFeedPosts = async (page = 1, limit = 10, filters = {}) => {
         return posts;
     }
 
-    return await query.exec();
-};
-
-
+    return await query.exec()
+}
 
 const getPostsBySearchTerms = async (search_text, search_order, limit) => {
     //If search_text is empty, return an empty array
@@ -279,7 +285,10 @@ const addReply = async (postId, commentId, data) => {
         }
 
         //Push the new reply into the replies array of the comment and return the new reply
-        const post = await Post.findOneAndUpdate({_id: postId, "comments._id": commentId}, {$push: {"comments.$.replies": reply}}, {new: true});
+        const post = await Post.findOneAndUpdate({
+            _id: postId,
+            "comments._id": commentId
+        }, {$push: {"comments.$.replies": reply}}, {new: true});
         comment = findComment(post.comments, commentId);
 
         const notification = await addNotification(postId, comment.user, notificationTypes.NEW_REPLY, post.title, reply.content, reply.user, comment._id)

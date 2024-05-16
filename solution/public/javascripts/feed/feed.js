@@ -8,16 +8,16 @@ function Uint8ToString(u8a) {
     return c.join("");
 }
 
-const createPostDiv = post => {
+const createPostDiv = (post, toRecent = false) => {
     // No image placeholder
     let imgSrc = "https://placehold.co/600x400?text=No Images";
-    if (post.images.length && post.images.length > 0) {
+    if (post.images && post.images.length && post.images.length > 0) {
         const img = post.images[0]
         const base64String = btoa(Uint8ToString(new Uint8Array(img.image_data.data)))
         imgSrc = `data:${img.image_type};base64,${base64String}`
     }
     return `
-    <div class="row mb-3 border-1 border shadow-sm rounded-3 p-4">
+    <div class="row mb-3 border-1 border shadow-sm rounded-3 p-4 ${toRecent ? 'border-danger-subtle' : ''}">
         <div class="col-sm-4">
             <img src="${imgSrc}" alt="Post Image" class="w-100 object-fit-cover mh-200">
         </div>
@@ -49,6 +49,8 @@ const createPostDiv = post => {
 
 
 const $feedWrapper = $("#feed-wrapper")
+const $feedRecentWrapper = $("#feed-recent-wrapper")
+
 const $loadingSpinner = $("#loading-spinner")
 const $updateSpinner = $("#update-spinner")
 const $feedEnd = $("#feed-end")
@@ -59,8 +61,8 @@ $errorBox.hide()
 $loadingSpinner.hide()
 $updateSpinner.hide()
 $feedEnd.hide()
+$feedRecentWrapper.hide()
 
-let page = 1
 let currentPosts = []
 socket = io()
 let updateFeedTime = Date.now()
@@ -82,6 +84,13 @@ const updateFeed = (posts, append = true) => {
 
 }
 
+const addRecentPost = (post) => {
+    socket.emit("viewing_plant", {plant_id: post._id})
+    const $postDiv = $(createPostDiv(post, true))
+    $feedRecentWrapper.prepend($postDiv)
+    $feedRecentWrapper.show()
+}
+
 
 $(document).ready(async function () {
     if (isOnline) {
@@ -90,11 +99,15 @@ $(document).ready(async function () {
             const count = parseInt($commentCounter.text()) + 1
             $commentCounter.text(count)
         })
+        socket.emit("viewing_feed")
+        socket.on("new_post", data => {
+            addRecentPost(data.post)
+        })
         try {
-            const response = await axios.get("/api/feed", {params: {page}})
+            // Fetch first page
+            const response = await axios.get("/api/feed", {params: {lastPostId: null}})
             updateFeed(response.data.posts)
             currentPosts = [...response.data.posts]
-            page += 1
 
             openFeedIDB().then(db => {
                 clearFeedIDB(db).then(() => {
@@ -175,27 +188,30 @@ $(document).ready(async function () {
 
         if (isOnline) {
             const timeDiff = Date.now() - updateFeedTime
+
+            // Fetch another page when scrolled to the bottom
             if (timeDiff > updateFeedGap && $(window).scrollTop() + $(window).height() >= $(document).height()) {
                 updateFeedTime = Date.now()
-
                 $feedEnd.hide()
                 $loadingSpinner.show()
-                const response = await axios.get("/api/feed", {params: {page}})
+
+                const lastPost = currentPosts[currentPosts.length - 1]
+                const response = await axios.get("/api/feed", {params: {lastPostId: lastPost._id}})
                 updateFeed(response.data.posts)
                 currentPosts = [...currentPosts, ...response.data.posts]
-                if (response.data.posts.length > 0) {
-                    page += 1
-                } else {
+                if (response.data.posts.length <= 0) {
                     $feedEnd.show()
                 }
                 $loadingSpinner.hide()
             }
 
+            // Refresh feed
             if (timeDiff > updateFeedGap && $(window).scrollTop() <= 0) {
                 updateFeedTime = Date.now()
 
-                page = 1
                 $feedWrapper.empty()
+                $feedRecentWrapper.empty()
+                $feedRecentWrapper.hide()
                 $feedEnd.hide()
                 $updateSpinner.show()
                 currentPosts.map(post => socket.emit("leaving_plant", {plant_id: post._id}))
@@ -205,7 +221,6 @@ $(document).ready(async function () {
                     updateFeed(response.data.posts)
                     currentPosts = response.data.posts
                     $updateSpinner.hide()
-                    page += 1
                     updateFeedTime = Date.now()
                 } catch (e) {
                     $errorBox.show();
@@ -216,12 +231,15 @@ $(document).ready(async function () {
     });
 
     window.addEventListener("online", async () => {
+        // Clear out recent posts
+        $feedRecentWrapper.empty()
+        $feedRecentWrapper.hide()
+
         const db = await openFeedIDB();
         const posts = await getFeedIDB(db)
         const response = await axios.post("/api/fetch-missing-posts", {lastPostDateTime: posts.length > 0 ? posts[0].createdAt : null})
         currentPosts = [...response.data.newPosts, ...currentPosts]
         currentPosts = currentPosts.slice(0, 10)
-        page = 2
 
         // As the function uses prepend and the array is sorted already the new posts have to be reversed
         updateFeed(response.data.newPosts.reverse(), false)
@@ -239,24 +257,29 @@ $(document).ready(async function () {
 
 let pendingPostsBanner;
 let pendingPostsCount;
+let reconnectBanner;
 document.addEventListener('DOMContentLoaded', async function () {
     pendingPostsCount = $('#pendingPostsCount');
     pendingPostsBanner = $('#pendingPostsBanner');
+    reconnectBanner = $('#reconnect-banner')
 
     if (isOnline) {
         pendingPostsBanner.addClass('d-none');
+        reconnectBanner.addClass('d-none');
     } else {
         const postIdb = await openNewPostIdb();
         const posts = await getPostsFromIDB(postIdb);
 
         const postCount = posts.length;
 
+        reconnectBanner.removeClass('d-none');
         pendingPostsBanner.removeClass('d-none');
         pendingPostsCount.text(postCount);
     }
 
     window.addEventListener('online', async function () {
         pendingPostsBanner.addClass('d-none');
+        reconnectBanner.addClass('d-none');
     });
 
     window.addEventListener('offline', async function () {
@@ -265,6 +288,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         const postCount = posts.length;
 
+        reconnectBanner.removeClass('d-none');
         pendingPostsBanner.removeClass('d-none');
         pendingPostsCount.text(postCount);
     });
@@ -272,4 +296,5 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 window.addEventListener('beforeunload', function (event) {
     currentPosts.map(post => socket.emit("leaving_plant", {plant_id: post._id}))
+    socket.emit("leaving_feed")
 });
