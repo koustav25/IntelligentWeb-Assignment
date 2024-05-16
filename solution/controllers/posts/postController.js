@@ -20,6 +20,8 @@ const mongoose = require("mongoose");
 const mongodb = require("../../model/mongodb");
 const axios = require('axios');
 
+const socket = require("../socket/socket.io")
+
 async function getPost(req, res) {
     const userId = req.user.id;
     const user = await getUserById(userId);
@@ -132,6 +134,7 @@ async function postNewPost(req, res, next) {
         }
 
         const post = await createPost(postObject);
+        socket.broadcastNewPost({post})
 
         const user = await getUserById(userId); // Get the user by ID
 
