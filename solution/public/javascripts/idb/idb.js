@@ -1,6 +1,6 @@
 function openFeedIDB() {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open("feed", 1);
+        const request = indexedDB.open("feed", 3);
 
         request.onerror = function (event) {
             reject(new Error(`Database error: ${event.target}`));
@@ -8,7 +8,14 @@ function openFeedIDB() {
 
         request.onupgradeneeded = function (event) {
             const db = event.target.result;
-            db.createObjectStore('feed', {keyPath: '_id'});
+            if (!db.objectStoreNames.contains('feed')) {
+                db.createObjectStore('feed', {keyPath: '_id'});
+            }
+
+            // Create somewhere to store the cached sort order and filter state
+            if (!db.objectStoreNames.contains('sortState')) {
+                db.createObjectStore('sortState');
+            }
         };
 
         request.onsuccess = function (event) {
@@ -84,6 +91,78 @@ const getFeedIDB = (feedIDB) => {
 
         // Handle error event
         getAllRequest.addEventListener("error", (event) => {
+            reject(event.target.error);
+        });
+    });
+}
+
+/**
+ * Get the current sort state from the IDB
+ * @param feedIDB The feed IDB
+ * @returns {Promise<{filter: number, sort: number}>} The sort state
+ */
+const getSortState = (feedIDB) => {
+    return new Promise((resolve, reject) => {
+        const transaction = feedIDB.transaction(["sortState"]);
+        const sortStateStore = transaction.objectStore("sortState");
+        const getRequest = sortStateStore.get(1);
+
+        getRequest.addEventListener("success", (event) => {
+            resolve(event.target.result);
+        });
+
+        getRequest.addEventListener("error", (event) => {
+            reject(event.target.error);
+        });
+    });
+}
+
+/**
+ * Set the sort state in the IDB
+ * @param feedIDB The feed IDB
+ * @param sortState {filter: number, sort: number} The sort state
+ * @returns {Promise<unknown>} A promise that resolves when the sort state is set
+ */
+const setSortState = (feedIDB, sortState) => {
+    return new Promise((resolve, reject) => {
+        const transaction = feedIDB.transaction(["sortState"], "readwrite");
+        const sortStateStore = transaction.objectStore("sortState");
+        const putRequest = sortStateStore.put(sortState, 1);
+
+        putRequest.addEventListener("success", (event) => {
+            resolve();
+        });
+
+        putRequest.addEventListener("error", (event) => {
+            reject(event.target.error);
+        });
+    });
+}
+
+const resetSortState = (feedIDB) => {
+    return new Promise((resolve, reject) => {
+        const transaction = feedIDB.transaction(["sortState"], "readwrite");
+        const sortStateStore = transaction.objectStore("sortState");
+        const deleteRequest = sortStateStore.delete(1);
+
+        deleteRequest.addEventListener("success", (event) => {
+            const sortState = {
+                filter: undefined,
+                sort: 0
+            };
+
+            const putRequest = sortStateStore.put(sortState, 1);
+
+            putRequest.addEventListener("success", () => {
+                resolve();
+            });
+
+            putRequest.addEventListener("error", (event) => {
+                reject(event.target.error);
+            });
+        });
+
+        deleteRequest.addEventListener("error", (event) => {
             reject(event.target.error);
         });
     });

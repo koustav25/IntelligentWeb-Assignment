@@ -1,8 +1,9 @@
 <%- include("../components/navbar.ejs") %>
-<div class="container-fluid col-xl-6 col-lg-10 col-md-10 col-sm-mt-5">
+<div class="container-fluid col-xl-8 col-lg-10 col-md-10 mt-5">
 
-    <div class="container-fluid col-lg-10 col-md-10 mt-5">
-        <div class="bg-danger text-white p-1 rounded-3 d-flex me-auto ms-auto card justify-content-around mb-3" id="reconnect-banner">
+    <div class="container-fluid mt-5">
+        <div class="bg-danger text-white p-1 rounded-3 d-flex me-auto ms-auto card justify-content-around mb-3"
+             id="reconnect-banner">
             <div class="card-body text-center">
                 <h4>You are offline!</h4>
                 <p>Please reconnect to the internet to see more posts!</p>
@@ -14,33 +15,36 @@
                 <p>These will be uploaded once you are connected to the internet</p>
             </div>
         </div>
-        <form method="GET">
-            <div class="row mb-3">
-                <div class="col">
-                    <div class="input-group">
-                        <label class="input-group-text" for="sortBy">Sort by:</label>
-                        <select class="form-select" id="sortBy">
-                            <option value="">All</option>
-                            <option value="time">Time</option>
-                            <option value="numOfComments">Number of Comments</option>
-                        </select>
+        <div class="row">
+            <form method="GET" class="w-100">
+                <div class="row mb-3">
+                    <div class="col-md-5 mb-3 mb-md-0">
+                        <div class="input-group">
+                            <label class="input-group-text" for="sortBy">Sort by:</label>
+                            <select class="form-select" id="sortBy">
+                                <option value="0" selected>Most Recent</option>
+                                <option value="1">Oldest</option>
+                                <option value="2">Distance Away</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-5 mb-3 mb-md-0">
+                        <div class="input-group">
+                            <label class="input-group-text" for="filterBy">Filter by:</label>
+                            <select class="form-select" id="filterBy">
+                                <option value="-1" selected>All</option>
+                                <option value="0">New</option>
+                                <option value="1">In Progress</option>
+                                <option value="2">Completed</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <button id="applyButton" class="btn btn-primary w-100" type="submit">Apply</button>
                     </div>
                 </div>
-                <div class="col">
-                    <div class="input-group">
-                        <label class="input-group-text" for="filterBy">Filter by:</label>
-                        <select class="form-select" id="filterBy">
-                            <option value="all">All</option>
-                            <option value="completed">Completed</option>
-                            <option value="inProgress">In Progress</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-sm-1">
-                    <button id="applyButton" class="btn btn-primary" type="submit">Apply</button>
-                </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
     <div>
         <div id="error-box">
@@ -84,8 +88,8 @@
     </div>
 </div>
 
+<script src="/javascripts/feed/sortOrdersEnum.js"></script>
 <script src="/javascripts/posts/post_states.js"></script>
 <script src="/javascripts/feed/feed.js"></script>
-<script src="/javascripts/feed/postStatesEnum.js"></script>
 
 <%- include("../components/footer.ejs") %>

@@ -1,22 +1,21 @@
-const { getFeedPosts } = require("../../model/mongodb")
+const {getFeedPosts} = require("../../model/mongodb")
+const {SortOrder} = require("../../model/enum/sortOrders");
 
 const fetchPosts = async (req, res, next) => {
     try {
+        const PAGE_LIMIT = 10;
         const lastPostId = req.query.lastPostId ? req.query.lastPostId : null;
-        const state = req.query.state;
-        const sortBy = req.query.sortBy;
-        let posts;
-        const filters = {};
-        if (state) filters.state = state;
-        if (sortBy) filters.sortBy = sortBy;
-        if (state || sortBy) {
+        const filter = (req.query.filter) ? parseInt(req.query.filter) : undefined;
+        const sortBy = parseInt(req.query.sortBy);
 
-            // If state is provided, apply the state filter
-            posts = await getFeedPosts(lastPostId, 10, filters);
-        } else {
-            // If state is not provided, fetch all posts
-            posts = await getFeedPosts(lastPostId);
-        }
+        let posts;
+
+        const filters = {};
+
+        if (filter !== undefined) filters.state = filter;
+
+        posts = await getFeedPosts(lastPostId, PAGE_LIMIT, filters, sortBy);
+
         res.status(200).json({posts})
     } catch (e) {
         console.log(e)
@@ -24,12 +23,28 @@ const fetchPosts = async (req, res, next) => {
     }
 }
 
-const fetchMissingPosts = async (req,res,next) => {
+const fetchMissingPosts = async (req, res, next) => {
+    const PAGE_LIMIT = 10;
     try {
-        const { lastPostDateTime } = req.body;
-        const newPosts = await getFeedPosts(null, 10, {createdAt: {$gt: new Date(lastPostDateTime)}})
+        const lastPostDateTime = req.body.lastPostDateTime;
+        const filter = (req.body.filter) ? parseInt(req.body.filter) : undefined;
+        const sortBy = parseInt(req.body.sortBy);
+
+        let posts;
+        let filters;
+
+        //If the sort order is by oldest, we need to get the posts that are older than the last post
+        if (sortBy === SortOrder.OLDEST) {
+            filters = {createdAt: {$lt: new Date(lastPostDateTime)}};
+        } else if (sortBy === SortOrder.RECENT) {
+            filters = {createdAt: {$gt: new Date(lastPostDateTime)}};
+        }
+
+        if (filter) filters.state = filter;
+
+        const newPosts = await getFeedPosts(null, 10, filters, sortBy);
         res.status(200).json({newPosts})
-    }catch(e){
+    } catch (e) {
         res.status(500).json({newPosts: []})
     }
 

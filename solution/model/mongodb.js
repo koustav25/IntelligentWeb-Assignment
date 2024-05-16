@@ -9,6 +9,7 @@ const {Post} = require("./schema/post");
 const {Notification} = require("./schema/notification");
 const {NEW} = require("./enum/notificationStates")
 const notificationTypes = require("./enum/notificationTypes")
+const {SortOrder} = require("./enum/sortOrders");
 
 /* Connection Properties */
 const MONGO_USE_LOCAL = process.env.MONGO_USE_LOCAL || false;
@@ -101,31 +102,40 @@ const getPostById = async (id) => {
 }
 /**
  * Fetch batches of 10 of posts with filters and with reference to the date
- * @param lastPostCreatedAt Reference post for the query
+ * @param lastPostId Reference post for the query
  * @param limit Posts per page
  * @param filters Query filters
- * @returns {Promise<Posts>}
+ * @param sortOrder Sort order of the query (Default is RECENT)
+ * @returns {Promise<Post[]>}
  */
-const getFeedPosts = async (lastPostId = null, limit = 10, filters = {}) => {
-    let query = Post.find(filters).sort({createdAt: -1}).limit(limit)
+const getFeedPosts = async (lastPostId = null, limit = 10, filters = {}, sortOrder = SortOrder.RECENT) => {
+    let pipeline = [
+        { $match: filters },
+        { $addFields: { commentsCount: { $size: "$comments" } } } // Add a new field commentsCount
+    ];
+
+    switch (sortOrder) {
+        case SortOrder.RECENT:
+            pipeline.push({ $sort: { createdAt: -1 } });
+            break;
+        case SortOrder.OLDEST:
+            pipeline.push({ $sort: { createdAt: 1 } });
+            break;
+        default:
+            pipeline.push({ $sort: { createdAt: -1 } });
+    }
+
     if (lastPostId) {
-        query = query.find({'_id': {$lt: lastPostId}})
+        if (sortOrder === SortOrder.OLDEST) {
+            pipeline.push({ $match: { '_id': { $gt: new mongoose.Types.ObjectId(lastPostId) } } });
+        } else if (sortOrder === SortOrder.RECENT) {
+            pipeline.push({ $match: { '_id': { $lt: new mongoose.Types.ObjectId(lastPostId) } } });
+        }
     }
 
-    if (filters.state !== undefined) {
-        query = query.where('state').equals(filters.state);
-    }
+    pipeline.push({ $limit: limit });
 
-    if (filters.sortBy === 'time') {
-        query = query.sort({ createdAt: -1 }); // Sort by time (createdAt)
-    } else if (filters.sortBy === 'numOfComments') {
-        let posts = await query.exec();
-        // Sort posts by the length of the comments array in descending order
-        posts.sort((a, b) => b.comments.length - a.comments.length);
-        return posts;
-    }
-
-    return await query.exec()
+    return Post.aggregate(pipeline);
 }
 
 const getPostsBySearchTerms = async (search_text, search_order, limit) => {
