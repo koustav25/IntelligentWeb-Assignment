@@ -8,12 +8,6 @@ function Uint8ToString(u8a) {
     return c.join("");
 }
 
-const PostState = {
-    ALL: undefined,
-    IN_PROGRESS: 1,
-    COMPLETED: 2
-};
-
 const createPostDiv = post => {
     // No image placeholder
     let imgSrc = "https://placehold.co/600x400?text=No Images";
@@ -136,11 +130,6 @@ $(document).ready(async function () {
         $feedWrapper.empty();
 
         if (isOnline) {
-            socket.on("new_comment", data => {
-                const $commentCounter = $(`#comment-counter-${data.post_id}`)
-                const count = parseInt($commentCounter.text()) + 1
-                $commentCounter.text(count)
-            })
             try {
                 const stateValue = selectedValue === "completed" ? PostState.COMPLETED : selectedValue === "inProgress" ? PostState.IN_PROGRESS : PostState.ALL;
                 const sortByValue = sortBy === "" ? undefined : sortBy;
@@ -174,9 +163,6 @@ $(document).ready(async function () {
                     // Apply sortBy filter if needed
                     if (sortBy === "time") {
                         filteredPosts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-
-
                     } else if (sortBy === "numOfComments") {
                         filteredPosts.sort((a, b) => b.comments.length - a.comments.length);
                     }
