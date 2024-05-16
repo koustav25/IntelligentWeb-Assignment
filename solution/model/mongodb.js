@@ -106,10 +106,10 @@ const getPostById = async (id) => {
  * @param filters Query filters
  * @returns {Promise<Posts>}
  */
-const getFeedPosts = async (lastPostCreatedAt = null, limit = 10, filters = {}) => {
+const getFeedPosts = async (lastPostId = null, limit = 10, filters = {}) => {
     let query = Post.find(filters).sort({createdAt: -1}).limit(limit)
-    if (lastPostCreatedAt) {
-        query = query.find({createdAt: {$lt: lastPostCreatedAt}})
+    if (lastPostId) {
+        query = query.find({'_id': {$lt: lastPostId}})
     }
 
     return await query.exec()

@@ -1,8 +1,8 @@
 const { getFeedPosts } = require("../../model/mongodb")
 const fetchPosts = async (req, res, next) => {
     try {
-        const lastPostCreatedAt = req.query.lastPostCreatedAt ? new Date(req.query.lastPostCreatedAt) : null;
-        const posts = await getFeedPosts(lastPostCreatedAt)
+        const lastPostId = req.query.lastPostId ? req.query.lastPostId : null;
+        const posts = await getFeedPosts(lastPostId)
         res.status(200).json({posts})
     }catch (e){
         console.log(e)

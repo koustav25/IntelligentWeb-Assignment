@@ -105,7 +105,7 @@ $(document).ready(async function () {
         })
         try {
             // Fetch first page
-            const response = await axios.get("/api/feed", {params: {lastPostCreatedAt: null}})
+            const response = await axios.get("/api/feed", {params: {lastPostId: null}})
             updateFeed(response.data.posts)
             currentPosts = [...response.data.posts]
 
@@ -144,7 +144,7 @@ $(document).ready(async function () {
                 $loadingSpinner.show()
 
                 const lastPost = currentPosts[currentPosts.length - 1]
-                const response = await axios.get("/api/feed", {params: {lastPostCreatedAt: lastPost.createdAt.toString()}})
+                const response = await axios.get("/api/feed", {params: {lastPostId: lastPost._id}})
                 updateFeed(response.data.posts)
                 currentPosts = [...currentPosts, ...response.data.posts]
                 if (response.data.posts.length <= 0) {
