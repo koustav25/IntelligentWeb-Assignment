@@ -55,7 +55,7 @@ async function postNewPost(req, res, next) {
 
         const images = req.files;
 
-        const identifiedAs = req.body.identifiedAs;
+        const identified_as = req.body.identified_as;
 
         //Check fields exist and are not empty
         if (!title || !description || !seen_at || !height || !spread || !sun_exposure || !has_flowers || !colour || !leaf_type || !seed_type || !location_name || !latitude || !longitude) {
@@ -69,7 +69,7 @@ async function postNewPost(req, res, next) {
         const flower_colour = parseInt(colour.replace("#", ""), 16);
 
         //If an identification has been made, set the state to IN_PROGRESS
-        const state = (!identifiedAs) ? postStates.NEW_POST : postStates.IN_PROGRESS;
+        const state = (!identified_as) ? postStates.NEW_POST : postStates.IN_PROGRESS;
 
         const userId = req.user.id;
 
@@ -101,10 +101,10 @@ async function postNewPost(req, res, next) {
         };
 
         const potentials = [];
-        if (identifiedAs) {
+        if (identified_as) {
             const potentialData =
                 {
-                    name: identifiedAs,
+                    name: identified_as,
                     suggesting_user: userId,
                     upvotes: 1,
                     downvotes: 0,

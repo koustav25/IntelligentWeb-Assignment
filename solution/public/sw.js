@@ -176,6 +176,7 @@ self.addEventListener('sync', async event => {
                     const leaf_type = post.leaf_type;
                     const seed_type = post.seed_type;
                     const images = post.images;
+                    const identified_as = post.identified_as;
 
                     //Prepare formData
                     const formData = new FormData();
@@ -192,7 +193,8 @@ self.addEventListener('sync', async event => {
                     formData.append('flower_colour', colour);
                     formData.append('leaf_type', leaf_type);
                     formData.append('seed_type', seed_type);
-                    for (let i = 0; i < images.length; i++) {
+                    formData.append('identified_as', identified_as);
+                        for (let i = 0; i < images.length; i++) {
                         formData.append('images', images[i]);
                     }
 
@@ -210,7 +212,7 @@ self.addEventListener('sync', async event => {
                         //If successful, check if the post was successfully created
                         if (data._id !== undefined) {
                             //Delete the post from the indexedDB so it doesn't get sent again
-                            deletePostFromIdb(db, post.id);
+                            await deletePostFromIdb(db, post.id);
 
                             const submittedAt = new Date(post.submittedAt)
                             const now = new Date(Date.now())

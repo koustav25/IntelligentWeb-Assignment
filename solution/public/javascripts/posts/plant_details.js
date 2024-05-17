@@ -994,6 +994,8 @@ function openReplyModal(commentID) {
 document.addEventListener('DOMContentLoaded', async () => {
     if (!hasAcceptedSuggestion) return;
 
+    if (typeof acceptedIdentificationID === 'undefined' || acceptedIdentificationID === null) return;
+
     try {
         const response = await axios.get(`/plant/${plantID}/suggestion/${acceptedIdentificationID}/dbpedia`)
 
