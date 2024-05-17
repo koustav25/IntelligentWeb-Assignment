@@ -240,8 +240,7 @@ const addComment = async (postId, data) => {
     }
 
     //Push the new comment into the comments array and return the new comment
-    const post = Post.findOneAndUpdate({_id: postId}, {$push: {comments: comment}}, {new: true});
-
+    const post = await Post.findOneAndUpdate({_id: postId}, {$push: {comments: comment}}, {new: true});
     const notification = await addNotification(post._id, post.posting_user._id, notificationTypes.NEW_COMMENT, post.title, comment.content, data.userID)
     const returnComment = post.comments[post.comments.length - 1];
     return {
