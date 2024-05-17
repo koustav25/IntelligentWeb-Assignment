@@ -486,6 +486,18 @@ const deleteLikeNotificationByCommentId = async (commentID) => {
         notification_type: notificationTypes.NEW_LIKE
     })
 }
+
+const getAllPosts = async () => {
+    return await Post.find()
+}
+
+const deletePostFromDb = async (postID) => {
+    return Post.findByIdAndDelete(postID)
+}
+
+const updatePost = async (postID, data) => {
+    return await Post.findByIdAndUpdate(postID, data);
+}
 module.exports = {
     markAllNotificationAsRead,
     viewNotification,
@@ -514,5 +526,8 @@ module.exports = {
     addNotification,
     getAllNotifications,
     getCommentOwnerId,
-    deleteLikeNotificationByCommentId
+    deleteLikeNotificationByCommentId,
+    getAllPosts,
+    deletePostFromDb,
+    updatePost
 }

@@ -12,7 +12,7 @@ async function getProfile(req, res) {
     const id = req.user.id;
 
     const userDetails = await getUserById(id);
-    res.render('user/profile', {isLoggedIn: req.isLoggedIn, userDetails, postStates});
+    res.render('user/profile', {isLoggedIn: req.isLoggedIn, userDetails, postStates, user: req.user});
 }
 
 async function postNewUserPassword(req, res) {

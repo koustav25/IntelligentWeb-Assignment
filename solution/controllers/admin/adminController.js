@@ -1,18 +1,17 @@
 const {getUsers, getMockFeed, getMockPlants} = require("../../util/mock/mockData");
-const {getAllUsers, getUserById, getUserByIdWithPosts, updateUser} = require("../../model/mongodb");
+const {getAllUsers, getUserById, getUserByIdWithPosts, updateUser, getAllPosts, getPostById,deletePostFromDb, updatePost} = require("../../model/mongodb");
 const roleTypes = require("../../model/enum/roleTypes");
 const postStates = require("../../model/enum/postStates");
-
+const exposureTypes = require("../../model/enum/exposureTypes")
+const leafTypes = require("../../model/enum/leafTypes")
+const seedTypes = require("../../model/enum/seedTypes")
 function getAdminDashboard(req, res) {
-    //TODO: Add admin dashboard rendering logic here
-    //res.render('admin/dashboard', { title: 'Admin Dashboard' });
-
-    res.render("admin/index", {isLoggedIn: req.isLoggedIn})
+    res.render("admin/index", {isLoggedIn: req.isLoggedIn, user:req.user})
 }
 
 async function getAdminUsers(req, res) {
     const users = await getAllUsers()
-    res.render("admin/users", {isLoggedIn: req.isLoggedIn, users, roleTypes})
+    res.render("admin/users", {isLoggedIn: req.isLoggedIn, users, roleTypes, user:req.user})
 }
 
 async function getAdminUserDetails(req, res) {
@@ -20,7 +19,7 @@ async function getAdminUserDetails(req, res) {
 
     const user = (await getUserByIdWithPosts(id));
 
-    res.render("admin/user_details", {isLoggedIn: req.isLoggedIn, userDetails: user, roleTypes,postStates})
+    res.render("admin/user_details", {isLoggedIn: req.isLoggedIn, userDetails: user, roleTypes,postStates, user:req.user})
 }
 
 async function postUserUpdate(req, res) {
@@ -57,34 +56,75 @@ async function postUserUpdate(req, res) {
     }
 }
 
-function getAdminPlants(req, res) {
-    //TODO: Add admin plants rendering logic here
-    const plants = getMockPlants()
-    res.render('admin/plants', { plants, isLoggedIn: req.isLoggedIn });
+async function getAdminPlants(req, res) {
+    const plants = await getAllPosts()
+    res.render('admin/plants', { plants, isLoggedIn: req.isLoggedIn, user:req.user, postStates });
 }
 
-function getAdminPlantDetails(req, res) {
-    //TODO: Add admin plant details rendering logic here
-    //res.render('admin/plant-details', { title: 'Admin Plant Details' });
-
-    res.send('Admin Plant Details');
+async function getAdminPlantDetails(req, res) {
+    const { id } = req.params
+    const post = await getPostById(id)
+    res.render('admin/plant_details', { title: 'Admin Plant Details', post , isLoggedIn: req.isLoggedIn, user: req.user, exposureTypes, leafTypes, seedTypes });
 }
 
-function getAdminSettings(req, res) {
-    //TODO: Add admin settings rendering logic here
-    //res.render('admin/settings', { title: 'Admin Settings' });
+async function deletePost(req,res) {
+    try {
+        if (!req.body.postID) {
+            return res.status(404).send({message: "User not found"});
+        }
+        await deletePostFromDb(req.body.postID)
+        return res.status(200)
+    }catch(e){
+        console.log(e.message)
+        res.status(500).json({})
+    }
 
-    res.send('Admin Settings');
 }
+
+async function editPost(req,res) {
+    try {
+        const {data, postID} = req.body
+        if (!postID || !data) {
+            return res.status(404).send({message: "Post not found"});
+        }
+        const locationData = {
+            location_name: data.location_name,
+            latitude: data.latitude,
+            longitude: data.longitude
+        };
+
+        const postObject = {
+            title: data.title,
+            seen_at: data.seen_at,
+            description: data.description,
+            location: locationData,
+            details: {
+                height: data.height,
+                spread: data.spread,
+                exposure: data.sun_exposure,
+                has_flowers: data.has_flowers,
+                colour: parseInt(data.flower_colour.replace("#", ""), 16),
+                leaf_type: data.leaf_type,
+                seed_type: data.seed_type
+            },
+        }
+
+        await updatePost(postID, postObject)
+        return res.status(200).send()
+    }catch (e){
+        console.log(e.message)
+        res.status(500).json({})
+    }
+}
+
 
 module.exports = {
     getAdminDashboard,
-
     getAdminUsers,
     getAdminUserDetails,
     postUserUpdate,
-
+    deletePost,
     getAdminPlants,
     getAdminPlantDetails,
-    getAdminSettings
+    editPost
 }

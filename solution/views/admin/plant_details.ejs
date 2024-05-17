@@ -15,9 +15,14 @@
                     <form id="postForm" novalidate>
 
                         <div class="row mt-2">
-                            <div class="col-12">
-                                <p class="small m-0 fst-italic mx-2 mb-1">Posting as...</p>
-                                <%- include("../components/user_pill", {user: user}) %>
+                            <div class="col-8">
+                                <p class="small m-0 fst-italic mx-2 mb-1">Post Author</p>
+                                <%- include("../components/user_pill", {user: post.posting_user}) %>
+                            </div>
+                            <div class="col-4 d-flex flex-column justify-content-end">
+                                <button class="btn btn-lg btn-danger w-100" id="delete-post" type="button">
+                                    Delete post
+                                </button>
                             </div>
                         </div>
 
@@ -32,21 +37,30 @@
                                         </div>
 
                                         <div class="mb-3 form-floating">
-                                            <input type="text" class="form-control" id="title" name="title" required>
+                                            <input type="text" class="form-control" id="title" name="title" required
+                                                   value="<%= post.title %>">
                                             <label for="name">Title:</label>
                                         </div>
 
                                         <div class="mb-3 form-floating">
                                             <textarea class="form-control" id="description" name="description" required
-                                                      style="height: 100px; max-height: 250px;"></textarea>
+                                                      style="height: 100px; max-height: 250px;"><%= post.description %></textarea>
                                             <label for="description">Description:</label>
                                         </div>
 
 
                                         <div class="form-floating">
+                                            <%
+                                                const date = new Date(post.seen_at)
+                                                const year = date.getFullYear();
+                                                const month = String(date.getMonth() + 1).padStart(2, '0');
+                                                const day = String(date.getDate()).padStart(2, '0');
+                                                const hours = String(date.getHours()).padStart(2, '0');
+                                                const minutes = String(date.getMinutes()).padStart(2, '0');
+                                            %>
                                             <input type="datetime-local" class="form-control" id="seen_at"
                                                    name="seen_at"
-                                                   required>
+                                                   value="<%= `${year}-${month}-${day}T${hours}:${minutes}` %>">
                                             <label for="seen_at">Seen At:</label>
                                         </div>
                                     </div>
@@ -69,6 +83,7 @@
                                             <div class="col-md-6">
                                                 <div class="form-floating mt-2">
                                                     <input type="number" class="form-control" id="height" name="height"
+                                                           value="<%= post.details.height %>"
                                                            required>
                                                     <label for="height">Height (cm):</label>
                                                 </div>
@@ -77,6 +92,7 @@
                                             <div class="col-md-6">
                                                 <div class="form-floating mt-2">
                                                     <input type="number" class="form-control" id="spread" name="spread"
+                                                           value="<%= post.details.spread %>"
                                                            required>
                                                     <label for="spread">Spread (cm):</label>
                                                 </div>
@@ -95,7 +111,7 @@
                                                     <div class="row">
 
                                                         <div class="col-4">
-                                                            <input class="btn-check" type="radio" name="sun_exposure"
+                                                            <input class="btn-check" type="radio" name="sun_exposure" <%= post.details.exposure == exposureTypes.FULL_SUN ? "checked" : "" %>
                                                                    id="fullSun"
                                                                    value="<%= exposureTypes.FULL_SUN %>"
                                                                    required checked>
@@ -105,7 +121,8 @@
                                                         </div>
 
                                                         <div class="col-4">
-                                                            <input class="btn-check" type="radio" name="sun_exposure"
+                                                            <input class="btn-check" type="radio"
+                                                                   name="sun_exposure" <%= post.details.exposure == exposureTypes.PARTIAL_SUN ? "checked" : "" %>
                                                                    id="partialSun"
                                                                    value="<%= exposureTypes.PARTIAL_SUN %>">
                                                             <label class="btn btn-outline-secondary w-100"
@@ -114,7 +131,8 @@
                                                         </div>
 
                                                         <div class="col-4">
-                                                            <input class="btn-check" type="radio" name="sun_exposure"
+                                                            <input class="btn-check" type="radio"
+                                                                   name="sun_exposure" <%= post.details.exposure == exposureTypes.FULL_SHADE ? "checked" : "" %>
                                                                    id="fullShade"
                                                                    value="<%= exposureTypes.FULL_SHADE %>">
                                                             <label class="btn btn-outline-secondary w-100"
@@ -142,7 +160,8 @@
                                                         <div class="form-check form-switch">
                                                             <label class="form-check-label px-2"
                                                                    for="has_flowers">Yes</label>
-                                                            <input class="form-check-input" type="checkbox"
+                                                            <input class="form-check-input"
+                                                                   type="checkbox" <%= post.details.has_flowers ? "checked" : "" %>
                                                                    role="switch"
                                                                    id="has_flowers"
                                                                    name="has_flowers" style="transform: scale(1.5)">
@@ -161,9 +180,10 @@
                                                 </div>
 
                                                 <div class="col-md-9">
-                                                    <input type="color" class="form-control" id="flower_colour"
+                                                    <input type="color" class="form-control"
+                                                           id="flower_colour"
                                                            name="flower_colour"
-                                                           value="#2A970C">
+                                                           value="#<%= post.details.colour.toString(16) %>">
                                                 </div>
                                             </div>
                                         </div>
@@ -181,7 +201,8 @@
                                                     <div class="col-md-9">
                                                         <div class="row justify-content-center">
                                                             <div class="col-4">
-                                                                <input class="btn-check" type="radio"
+                                                                <input class="btn-check"
+                                                                       type="radio" <%= post.details.leaf_type == leafTypes.SIMPLE_LEAF ? "checked" : "" %>
                                                                        name="leaf_type"
                                                                        id="simple_leaf"
                                                                        value="<%= leafTypes.SIMPLE_LEAF %>"
@@ -192,7 +213,8 @@
                                                             </div>
 
                                                             <div class="col-4">
-                                                                <input class="btn-check" type="radio"
+                                                                <input class="btn-check"
+                                                                       type="radio" <%= post.details.leaf_type == leafTypes.COMPLEX_LEAF ? "checked" : "" %>
                                                                        name="leaf_type"
                                                                        id="complex_leaf"
                                                                        value="<%= leafTypes.COMPLEX_LEAF %>">
@@ -201,10 +223,11 @@
                                                             </div>
 
                                                             <div class="col-4">
-                                                                <input class="btn-check" type="radio"
+                                                                <input class="btn-check"
+                                                                       type="radio" <%= post.details.leaf_type == leafTypes.NO_LEAF ? "checked" : "" %>
                                                                        name="leaf_type"
                                                                        id="none"
-                                                                       value="<%= leafTypes.NO_LEAF %>" checked>
+                                                                       value="<%= leafTypes.NO_LEAF %>">
                                                                 <label class="btn btn-outline-secondary w-100"
                                                                        for="none">None</label>
                                                             </div>
@@ -228,7 +251,8 @@
                                                                    name="seed_type"
                                                                    id="fruit"
                                                                    value="<%= seedTypes.FRUIT %>"
-                                                                   required>
+                                                                    <%= post.details.seed_type == seedTypes.FRUIT ? "checked" : "" %>
+                                                                >
                                                             <label class="btn btn-outline-secondary w-100"
                                                                    for="fruit">Fruit</label>
 
@@ -239,7 +263,9 @@
                                                             <input class="btn-check" type="radio"
                                                                    name="seed_type"
                                                                    id="seed"
-                                                                   value="<%= seedTypes.SEED %>">
+                                                                   value="<%= seedTypes.SEED %>"
+                                                                    <%= post.details.seed_type == seedTypes.SEED ? "checked" : "" %>
+                                                            >
                                                             <label class="btn btn-outline-secondary w-100" for="seed">Seed</label>
 
                                                         </div>
@@ -248,7 +274,10 @@
                                                             <input class="btn-check" type="radio"
                                                                    name="seed_type"
                                                                    id="none"
-                                                                   value="<%= seedTypes.NO_SEED %>" checked>
+                                                                   value="<%= seedTypes.NO_SEED %>"
+                                                                    <%= post.details.seed_type == seedTypes.NO_SEED ? "checked" : "" %>
+
+                                                            >
                                                             <label class="btn btn-outline-secondary w-100" for="none">None</label>
 
                                                         </div>
@@ -257,7 +286,9 @@
                                                             <input class="btn-check" type="radio"
                                                                    name="seed_type"
                                                                    id="unknown"
-                                                                   value="<%= seedTypes.UNKNOWN %>" checked>
+                                                                   value="<%= seedTypes.UNKNOWN %>"
+                                                                    <%= post.details.seed_type == seedTypes.UNKNOWN ? "checked" : "" %>
+                                                            >
                                                             <label class="btn btn-outline-secondary w-100"
                                                                    for="unknown">Unknown/Other</label>
                                                         </div>
@@ -268,21 +299,6 @@
 
                                         <hr class="mx-5">
 
-                                        <div class="form-group mt-2">
-                                            <div class="form-group mt-2">
-                                                <div class="row align-content-center">
-                                                    <div class="col-md-3 my-auto">
-                                                        <p class="my-auto mx-2 w-100 text-center text-md-start">
-                                                            Images:</p>
-                                                    </div>
-
-                                                    <div class="col-md-9">
-                                                        <input type="file" class="form-control-file" id="images"
-                                                               name="images" multiple>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -299,12 +315,15 @@
                                                 </div>
                                             </div>
 
-                                            <input type="hidden" id="latitude" name="latitude" required>
-                                            <input type="hidden" id="longitude" name="longitude" required>
+                                            <input type="hidden" id="latitude" name="latitude" required
+                                                   value="<%= post.location.latitude %>">
+                                            <input type="hidden" id="longitude" name="longitude" required
+                                                   value="<%= post.location.longitude %>">
 
                                             <div class="form-floating my-2">
                                                 <input type="text" class="form-control" id="location_name"
                                                        name="location_name" required
+                                                       value="<%= post.location.location_name %>"
                                                        placeholder="Location Nickname">
                                                 <label for="location_name">Location Nickname:</label>
                                                 <small class="form-text text-muted">This is a nickname for the location
@@ -332,25 +351,43 @@
                                     <div class="card-body">
                                         <div class="row">
                                             <div class="col-12 justify-content-center">
-                                                <p class="text-center m-0">Identification:</p>
-                                                <p class="text-center small">(This section is optional)</p>
+                                                <h5 class="text-center m-0">Identifications</h5>
+                                                <p></p>
+                                            </div>
+                                        </div>
+                                            <% if(post.identification.potentials.length > 0) {
+                                                post.identification.potentials.forEach(i => { %>
+                                                    <div class="card text-center w-50 me-auto ms-auto mt-1 mb-1">
+                                                        <div class="w-50 row me-auto ms-auto">
+                                                            <span class="text-success col-3">+<%= i.upvotes %> </span>
+                                                            <span class="col-6">
+                                                            <%= i.name %>
+
+                                                            </span>
+                                                            <span class="text-danger col-3"> -<%= i.downvotes %></span>
+                                                        </div>
+
+
+                                                    </div>
+                                                <% })
+                                            } else { %>
+                                        <div class="row">
+                                            <div class="card text-center w-50 me-auto ms-auto mt-3 mb-3">
+                                                No suggestions have been made yet.
                                             </div>
                                         </div>
 
-                                        <div class="form-group">
-                                            <label for="identifiedAs">If you know what this plant is, please enter the
-                                                name here:</label>
-                                            <input type="text" class="form-control" id="identifiedAs"
-                                                   name="identifiedAs">
-                                        </div>
+                                            <% } %>
+
+
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-group mt-2">
-                            <button type="submit" class="btn btn-success btn-lg w-100" id="postButton">
-                                Post
+                            <button type="submit" class="btn btn-warning btn-lg w-100" id="postButton">
+                                Edit post
                                 <div class="spinner-grow spinner-grow-sm d-none" role="status" id="postSpinner">
                                     <span class="visually-hidden">Posting...</span>
                                 </div>
@@ -362,8 +399,10 @@
             </div>
         </div>
     </div>
-
-    <script src="/javascripts/posts/create_post.js"></script>
+    <script>
+        const postID = '<%= post._id %>'
+    </script>
+    <script src="/javascripts/admin/create_post.js"></script>
 </div>
 
 <%- include("../components/footer.ejs") %>
