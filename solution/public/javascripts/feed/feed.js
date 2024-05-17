@@ -408,9 +408,13 @@ $(document).ready(async function () {
                         switch (SortOrder.sortStateToInt(selectedSortMode)) {
                             case SortOrder.RECENT:
                                 filteredPosts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                                updateFeed(filteredPosts);
+                                currentPosts = filteredPosts;
                                 break;
                             case SortOrder.OLDEST:
                                 filteredPosts.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                                updateFeed(filteredPosts);
+                                currentPosts = filteredPosts;
                                 break;
                             case SortOrder.DISTANCE:
                                 // Sort by distance
@@ -429,11 +433,15 @@ $(document).ready(async function () {
                                 }
                                 break;
                         }
-
-                        updateFeed(filteredPosts);
-                        currentPosts = filteredPosts;
                     });
                 }
+            } else {
+                //Reset the filter and sort to recent
+                resetSortState(db).then(() => {
+                    console.log("Cached sort state reset!")
+                    //Reload the page to apply the default sort state
+                    location.reload();
+                });
             }
         });
     });
@@ -487,9 +495,13 @@ $(document).ready(async function () {
                     switch (SortOrder.sortStateToInt(selectedSortMode)) {
                         case SortOrder.RECENT:
                             filteredPosts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                            updateFeed(filteredPosts);
+                            currentPosts = filteredPosts;
                             break;
                         case SortOrder.OLDEST:
                             filteredPosts.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                            updateFeed(filteredPosts);
+                            currentPosts = filteredPosts;
                             break;
                         case SortOrder.DISTANCE:
                             // Sort by distance
@@ -514,9 +526,6 @@ $(document).ready(async function () {
                             }
                             break;
                     }
-
-                    updateFeed(filteredPosts);
-                    currentPosts = filteredPosts;
 
                     // Update the sort state in the cache
                     setSortState(db, {
