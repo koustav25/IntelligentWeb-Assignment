@@ -47,7 +47,7 @@
                     <div class="col-md-8">
                         <p class="text-start">
                             <%= post?.location?.location_name %>
-                            <small>(<%= `${post?.location?.latitude}, ${post?.location?.longitude}` %>)</small>
+                            <small>(<%= `${post?.location?.coords.coordinates[1] ?? 0.0}, ${post?.location?.coords.coordinates[0] ?? 0.0}` %>)</small>
                         </p>
                     </div>
                     <div class="col-md-4">

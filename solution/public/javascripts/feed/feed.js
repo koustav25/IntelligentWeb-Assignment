@@ -130,7 +130,7 @@ const addRecentPost = (post) => {
         navigator.geolocation.getCurrentPosition(function (position) {
             lat = position.coords.latitude;
             lon = position.coords.longitude;
-            dist_km = haversine_distance(lat, lon, post.location.coordinates[1], post.location.coordinates[0]);
+            dist_km = haversine_distance(lat, lon, post.location.coords.coordinates[1], post.location.coords.coordinates[0]);
 
             socket.emit("viewing_plant", {plant_id: post._id})
             const $postDiv = $(createPostDiv(post, true, dist_km))
@@ -214,7 +214,7 @@ $(document).ready(async function () {
                     navigator.geolocation.getCurrentPosition(function (position) {
                         lat = position.coords.latitude;
                         lon = position.coords.longitude;
-                        dist_km = haversine_distance(lat, lon, post.location.coordinates[1], post.location.coordinates[0]);
+                        dist_km = haversine_distance(lat, lon, post.location.coords.coordinates[1], post.location.coords.coordinates[0]);
 
                         for (let i = 0; i < posts.length; i++) {
                             $feedWrapper.append($(createPostDiv(posts[i], false, dist_km)))
@@ -281,8 +281,8 @@ async function processMissingPosts(posts, filterValue, sortValue, lat, lon) {
             break;
         case SortOrder.DISTANCE:
             tempPosts.sort((a, b) => {
-                const distanceA = haversine_distance(lat, lon, a.location.coordinates[1], a.location.coordinates[0]);
-                const distanceB = haversine_distance(lat, lon, b.location.coordinates[1], b.location.coordinates[0]);
+                const distanceA = haversine_distance(lat, lon, a.location.coords.coordinates[1], a.location.coords.coordinates[0]);
+                const distanceB = haversine_distance(lat, lon, b.location.coords.coordinates[1], b.location.coords.coordinates[0]);
                 return distanceA - distanceB;
             });
             break;
@@ -459,8 +459,8 @@ $(document).ready(async function () {
                                     const lat = position.coords.latitude;
                                     const lon = position.coords.longitude;
                                     filteredPosts.sort((a, b) => {
-                                        const distanceA = haversine_distance(lat, lon, a.location.coordinates[1], a.location.coordinates[0]);
-                                        const distanceB = haversine_distance(lat, lon, b.location.coordinates[1], b.location.coordinates[0]);
+                                        const distanceA = haversine_distance(lat, lon, a.location.coords.coordinates[1], a.location.coords.coordinates[0]);
+                                        const distanceB = haversine_distance(lat, lon, b.location.coords.coordinates[1], b.location.coords.coordinates[0]);
                                         return distanceA - distanceB;
                                     }, () => handleLocationFailure($sortBy));
                                     updateFeed(filteredPosts);

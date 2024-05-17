@@ -114,8 +114,6 @@ const getPostById = async (id) => {
 const getFeedPosts = async (lastPostId = null, limit = 10, filters = {}, sortOrder = SortOrder.RECENT, userLat = null, userLong = null, lastPostDistance = null) => {
     let pipeline = [];
 
-    console.log(await Post.collection.getIndexes({full: true}))
-
     if (sortOrder === SortOrder.DISTANCE && userLong && userLat) {
         pipeline.push({
             $geoNear: {
