@@ -19,6 +19,11 @@ async function getAdminUserDetails(req, res) {
 
     const user = (await getUserByIdWithPosts(id));
 
+    //Sort the user's posts by date with the most recent first
+    user.posts.sort((a, b) => {
+        return b.createdAt - a.createdAt;
+    });
+
     res.render("admin/user_details", {isLoggedIn: req.isLoggedIn, userDetails: user, roleTypes,postStates, user:req.user})
 }
 
