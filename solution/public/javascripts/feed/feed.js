@@ -394,6 +394,45 @@ $(document).ready(async function () {
                     } else {
                         retrieveFirstPageDataFromServer(sort, filter, null, null);
                     }
+                } else {
+                    getFeedIDB(db).then(posts => {
+                        let filteredPosts = posts;
+
+                        // Apply post filter if a filter other than all is selected
+                        if (selectedFilterMode !== "-1") {
+                            const filterValue = SortOrder.filterStateToInt(selectedFilterMode);
+                            filteredPosts = filteredPosts.filter(post => post.state === filterValue);
+                        }
+
+                        // Apply post sort
+                        switch (SortOrder.sortStateToInt(selectedSortMode)) {
+                            case SortOrder.RECENT:
+                                filteredPosts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                                break;
+                            case SortOrder.OLDEST:
+                                filteredPosts.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                                break;
+                            case SortOrder.DISTANCE:
+                                // Sort by distance
+                                if (navigator.geolocation) {
+                                    navigator.geolocation.getCurrentPosition(async function (position) {
+                                        const lat = position.coords.latitude;
+                                        const lon = position.coords.longitude;
+                                        filteredPosts.sort((a, b) => {
+                                            const distanceA = haversine_distance(lat, lon, a.location.coords.coordinates[1], a.location.coords.coordinates[0]);
+                                            const distanceB = haversine_distance(lat, lon, b.location.coords.coordinates[1], b.location.coords.coordinates[0]);
+                                            return distanceA - distanceB;
+                                        }, () => handleLocationFailure($sortBy));
+                                        updateFeed(filteredPosts);
+                                        currentPosts = filteredPosts;
+                                    });
+                                }
+                                break;
+                        }
+
+                        updateFeed(filteredPosts);
+                        currentPosts = filteredPosts;
+                    });
                 }
             }
         });
