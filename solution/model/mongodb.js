@@ -9,6 +9,7 @@ const {Post} = require("./schema/post");
 const {Notification} = require("./schema/notification");
 const {NEW} = require("./enum/notificationStates")
 const notificationTypes = require("./enum/notificationTypes")
+const {SortOrder} = require("./enum/sortOrders");
 
 /* Connection Properties */
 const MONGO_USE_LOCAL = process.env.MONGO_USE_LOCAL || false;
@@ -101,18 +102,67 @@ const getPostById = async (id) => {
 }
 /**
  * Fetch batches of 10 of posts with filters and with reference to the date
- * @param lastPostCreatedAt Reference post for the query
+ * @param lastPostId Reference post for the query
  * @param limit Posts per page
  * @param filters Query filters
- * @returns {Promise<Posts>}
+ * @param sortOrder Sort order of the query (Default is RECENT)
+ * @param userLat User's latitude (if available and needed)
+ * @param userLong User's longitude (if available and needed)
+ * @param lastPostDistance Distance from the last post (if available and needed)
+ * @returns {Promise<Post[]>}
  */
-const getFeedPosts = async (lastPostId = null, limit = 10, filters = {}) => {
-    let query = Post.find(filters).sort({createdAt: -1}).limit(limit)
-    if (lastPostId) {
-        query = query.find({'_id': {$lt: lastPostId}})
+const getFeedPosts = async (lastPostId = null, limit = 10, filters = {}, sortOrder = SortOrder.RECENT, userLat = null, userLong = null, lastPostDistance = null) => {
+    let pipeline = [];
+
+    if (sortOrder === SortOrder.DISTANCE && userLong && userLat) {
+        pipeline.push({
+            $geoNear: {
+                near: { type: "Point", coordinates: [ userLong, userLat ] },
+                distanceField: "distance",
+                spherical: true,
+                key: "location.coords" // specify the field that contains the GeoJSON data
+            }
+        });
     }
 
-    return await query.exec()
+    pipeline.push(
+        { $match: filters },
+        { $addFields: { commentsCount: { $size: "$comments" } } } // Add a new field commentsCount
+    );
+
+    switch (sortOrder) {
+        case SortOrder.RECENT:
+            pipeline.push({ $sort: { createdAt: -1 } });
+            break;
+        case SortOrder.OLDEST:
+            pipeline.push({ $sort: { createdAt: 1 } });
+            break;
+        case SortOrder.DISTANCE:
+            pipeline.push({ $sort: { distance: 1 } });
+            break;
+        default:
+            pipeline.push({ $sort: { createdAt: -1 } });
+    }
+
+    if (lastPostId) {
+        if (sortOrder === SortOrder.OLDEST) {
+            pipeline.push({ $match: { '_id': { $gt: new mongoose.Types.ObjectId(lastPostId) } } });
+        } else if (sortOrder === SortOrder.RECENT) {
+            pipeline.push({ $match: { '_id': { $lt: new mongoose.Types.ObjectId(lastPostId) } } });
+        }
+    }
+
+    if (lastPostDistance) {
+        if (sortOrder === SortOrder.DISTANCE) {
+            //This needs to be less than, as sorting by distance is ascending, and the distance should be less than the last post distance
+            //in order to appear at the top of the list
+            pipeline.push({ $match: { distance: { $lt: lastPostDistance } } });
+        }
+    }
+
+    pipeline.push({ $limit: limit });
+
+    return Post.aggregate(pipeline);
 }
 
 const getPostsBySearchTerms = async (search_text, search_order, limit) => {

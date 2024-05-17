@@ -55,7 +55,7 @@ async function postNewPost(req, res, next) {
 
         const images = req.files;
 
-        const identifiedAs = req.body.identifiedAs;
+        const identified_as = req.body.identified_as;
 
         //Check fields exist and are not empty
         if (!title || !description || !seen_at || !height || !spread || !sun_exposure || !has_flowers || !colour || !leaf_type || !seed_type || !location_name || !latitude || !longitude) {
@@ -69,7 +69,7 @@ async function postNewPost(req, res, next) {
         const flower_colour = parseInt(colour.replace("#", ""), 16);
 
         //If an identification has been made, set the state to IN_PROGRESS
-        const state = (!identifiedAs) ? postStates.NEW_POST : postStates.IN_PROGRESS;
+        const state = (!identified_as) ? postStates.NEW_POST : postStates.IN_PROGRESS;
 
         const userId = req.user.id;
 
@@ -83,17 +83,28 @@ async function postNewPost(req, res, next) {
             });
         }
 
+        let lat = parseFloat(latitude);
+        //Normalize the location to be between -90 and 90
+        const newLat = Math.max(-90, Math.min(90, lat));
+
+        let lon = parseFloat(longitude);
+        //Normalize the longitude to be between -180 and 180
+        const newLon = ((lon + 180) % 360 + 360) % 360 - 180;
+
         const locationData = {
             location_name: location_name,
-            latitude: latitude,
-            longitude: longitude
+            coords: {
+                type: "Point", // The type of the coordinate// The coordinates of the location
+                // The order of the coordinates is longitude, latitude
+                coordinates: [newLon, newLat]
+            }
         };
 
         const potentials = [];
-        if (identifiedAs) {
+        if (identified_as) {
             const potentialData =
                 {
-                    name: identifiedAs,
+                    name: identified_as,
                     suggesting_user: userId,
                     upvotes: 1,
                     downvotes: 0,

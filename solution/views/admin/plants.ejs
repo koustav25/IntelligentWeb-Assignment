@@ -1,40 +1,42 @@
 <%- include("../components/navbar.ejs") %>
-<div class="container mt-5 overflow-x-scroll">
+<div class="container mt-5">
     <h1>Manage Plants</h1>
-    <table class="table table-striped table-hover" id="plant_table">
-        <thead>
-        <tr>
-            <th class="text-center">Post Title</th>
-            <th class="text-center">Author</th>
-            <th class="text-center">Identification Status</th>
-            <th class="text-center">Created At</th>
-            <th class="text-center">Details</th>
-        </tr>
-        </thead>
-        <tbody>
-        <% plants.forEach(function(plant) { %>
-            <tr class="text-center">
-                <td><%= plant.title %></td>
-                <td><%= plant.posting_user.username %> </td>
-                <td>
-                    <span class="w-50 btn <%= postStates.postStateToColor(plant.state, "btn-") %>"><%= postStates.postStateToString(plant.state) %> </span>
-                </td>
-                <td><%= new Date(plant.createdAt).toLocaleDateString('en-GB', {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                        hour: "numeric",
-                        minute: "numeric"
-                    })
-                    %>
-                </td>
-                <td>
-                    <a href="/admin/plants/<%= plant._id %>" class="btn btn-primary btn-sm">View Details</a>
-                </td>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover" id="plant_table">
+            <thead>
+            <tr>
+                <th class="text-center">Post Title</th>
+                <th class="text-center">Author</th>
+                <th class="text-center">Identification Status</th>
+                <th class="text-center">Created At</th>
+                <th class="text-center">Details</th>
             </tr>
-        <% }); %>
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+            <% plants.forEach(function(plant) { %>
+                <tr class="text-center">
+                    <td><%= plant.title %></td>
+                    <td><%= plant.posting_user.username %> </td>
+                    <td>
+                        <span class="w-50 btn <%= postStates.postStateToColor(plant.state, "btn-") %>"><%= postStates.postStateToString(plant.state) %> </span>
+                    </td>
+                    <td><%= new Date(plant.createdAt).toLocaleDateString('en-GB', {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                            hour: "numeric",
+                            minute: "numeric"
+                        })
+                        %>
+                    </td>
+                    <td>
+                        <a href="/admin/plants/<%= plant._id %>" class="btn btn-primary btn-sm">View Details</a>
+                    </td>
+                </tr>
+            <% }); %>
+            </tbody>
+        </table>
+    </div>
 </div>
 <script src="/javascripts/admin/posts.js"></script>
 <%- include("../components/footer.ejs") %>

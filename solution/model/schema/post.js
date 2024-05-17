@@ -111,13 +111,17 @@ const postSchema = new mongoose.Schema({
                 type: String,
                 required: true
             },
-            latitude: {
-                type: Number,
-                required: true
-            },
-            longitude: {
-                type: Number,
-                required: true
+            coords: {
+                type: {
+                    type: String,
+                    enum: ['Point'],
+                    required: true
+                },
+                coordinates: {
+                    type: [Number],
+                    required: true,
+                    index: '2dsphere'
+                }
             }
         },
         details: {
@@ -189,6 +193,18 @@ const postSchema = new mongoose.Schema({
 
 postSchema.plugin(require('mongoose-autopopulate'));
 
+postSchema.index({"location.coords": "2dsphere"});
+
+const Post = mongoose.model('Post', postSchema);
+
+Post.on('index', function (err) {
+    if (err) {
+        console.error("Error creating index for Post model: ", err);
+    } else {
+        console.log("Successfully created index for Post model");
+    }
+});
+
 module.exports = {
-    Post: mongoose.model('Post', postSchema),
+    Post
 }

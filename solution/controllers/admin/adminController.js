@@ -19,6 +19,11 @@ async function getAdminUserDetails(req, res) {
 
     const user = (await getUserByIdWithPosts(id));
 
+    //Sort the user's posts by date with the most recent first
+    user.posts.sort((a, b) => {
+        return b.createdAt - a.createdAt;
+    });
+
     res.render("admin/user_details", {isLoggedIn: req.isLoggedIn, userDetails: user, roleTypes,postStates, user:req.user})
 }
 
@@ -87,10 +92,22 @@ async function editPost(req,res) {
         if (!postID || !data) {
             return res.status(404).send({message: "Post not found"});
         }
+
+        let lat = parseFloat(data.latitude);
+        //Normalize the location to be between -90 and 90
+        const newLat = Math.max(-90, Math.min(90, lat));
+
+        let lon = parseFloat(data.longitude);
+        //Normalize the longitude to be between -180 and 180
+        const newLon = ((lon + 180) % 360 + 360) % 360 - 180;
+
         const locationData = {
             location_name: data.location_name,
-            latitude: data.latitude,
-            longitude: data.longitude
+            coords: {
+                type: "Point", // The type of the coordinate// The coordinates of the location
+                // The order of the coordinates is longitude, latitude
+                coordinates: [newLon, newLat]
+            }
         };
 
         const postObject = {

@@ -12,6 +12,12 @@ async function getProfile(req, res) {
     const id = req.user.id;
 
     const userDetails = await getUserById(id);
+
+    //Sort the user's posts by date with the most recent first
+    userDetails.posts.sort((a, b) => {
+        return b.createdAt - a.createdAt;
+    });
+
     res.render('user/profile', {isLoggedIn: req.isLoggedIn, userDetails, postStates, user: req.user});
 }
 

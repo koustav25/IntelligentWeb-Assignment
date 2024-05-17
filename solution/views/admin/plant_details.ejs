@@ -316,9 +316,9 @@
                                             </div>
 
                                             <input type="hidden" id="latitude" name="latitude" required
-                                                   value="<%= post.location.latitude %>">
+                                                   value="<%= post.location?.coords.coordinates[1] ?? 0.0 %>">
                                             <input type="hidden" id="longitude" name="longitude" required
-                                                   value="<%= post.location.longitude %>">
+                                                   value="<%= post.location?.coords.coordinates[0] ?? 0.0 %>">
 
                                             <div class="form-floating my-2">
                                                 <input type="text" class="form-control" id="location_name"

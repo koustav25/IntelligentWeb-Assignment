@@ -78,6 +78,7 @@ async function handleFormSubmit(event) {
         const colour = document.getElementById('flower_colour').value;
         const leaf_type = $('input[name="leaf_type"]:checked').val();
         const seed_type = $('input[name="seed_type"]:checked').val();
+        const identified_as = $('input[name="identifiedAs"]').val();
 
         const details = {
             height,
@@ -112,6 +113,7 @@ async function handleFormSubmit(event) {
             leaf_type,
             seed_type,
             images,
+            identified_as,
             submittedAt: Date.now()
         }
 
