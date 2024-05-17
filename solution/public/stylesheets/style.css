@@ -97,6 +97,17 @@ body {
     scale: 100%;
 }
 
+#feed-recent-wrapper::after {
+    content: "";
+    display: block;
+    position: absolute;
+    height: 1px;
+    width: 100%;
+    background-color: black;
+    bottom: -26px;
+    left: 0;
+}
+
 .notification-icon {
     transition: 0.5s;
 
