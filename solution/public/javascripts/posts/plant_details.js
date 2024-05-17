@@ -24,6 +24,48 @@ document.addEventListener('DOMContentLoaded', function () {
 
     postMarker = L.marker([postCoords.latitude, postCoords.longitude]).addTo(map);
 
+    postMarker.setIcon(L.divIcon({
+        className: 'post-map-icon',
+        iconSize: [20, 20],
+        iconAnchor: [10, 10],
+        popupAnchor: [0, -10],
+        html: '<i class="fa-solid fa-leaf fa-2x text-success"></i>'
+    }));
+
+    //Get the current user's location and add another marker to the map
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => {
+            const userMarker = L.marker([position.coords.latitude, position.coords.longitude]).addTo(map);
+
+            //Calculate the distance between the user and the post
+            const distance = userMarker.getLatLng().distanceTo(postMarker.getLatLng());
+
+            //Calculate the string to show, either as meters or kilometers depending on the distance
+            let distanceString = distance < 1000 ? `${distance.toFixed(2)}m` : `${(distance / 1000).toFixed(2)}km`;
+
+            //Add a popup to the user marker with the distance
+            userMarker.bindPopup(`You are ${distanceString} away from the plant`).openPopup();
+
+            //Change the marker icon to a red icon
+            userMarker.setIcon(L.divIcon({
+                className: 'user-map-icon',
+                iconSize: [20, 20],
+                iconAnchor: [10, 10],
+                popupAnchor: [0, -10],
+                html: '<i class="fa-solid fa-user fa-2x text-primary-emphasis"></i>'
+            }));
+
+            //Move the market backwards so it is behind the post marker
+            userMarker.setZIndexOffset(-1);
+
+            //Center the map back on the post marker
+            map.setView(postMarker.getLatLng());
+
+            //Zoom out slightly so both markers are visible if the user is close to the post
+            map.setZoom(12);
+        });
+    }
+
 
     //On suggestion modal closed,
     $('#suggestIdentificationModal').on('hidden.bs.modal', function () {
