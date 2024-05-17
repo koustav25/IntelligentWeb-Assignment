@@ -26,10 +26,10 @@ document.addEventListener('DOMContentLoaded', function() {
         isOnline = false
     });
 
-    window.addEventListener('online', (e) => {
+    window.addEventListener('online',  (e) => {
         $offlineBox.hide();
         $searchWarn.addClass('d-none');
         $searchBar.removeClass('d-none');
         isOnline = true
-    });
+    })
 });

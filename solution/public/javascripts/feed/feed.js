@@ -197,6 +197,7 @@ $(document).ready(async function () {
                     updateFeedIDB(db, currentPosts).then(() => console.log("Updated feed cached!"))
                 })
             })
+            sendNotification("Your feed has been updated.")
         }
     })
 });

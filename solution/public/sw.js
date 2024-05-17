@@ -4,6 +4,16 @@ importScripts('/javascripts/idb/idb.js');
 importScripts('/javascripts/idb/posting_idb.js');
 importScripts('/javascripts/idb/comments_idb.js');
 
+/**
+ * Util function to send notification with the service worker interface
+ * @param body Content of the notification
+ */
+const sendSWNotification = async (body) => {
+    await self.registration.showNotification("Plants App", {body, icon: "/images/logo.png"})
+}
+
+// Threshold which determines if a form was submitted offline or online
+const submittedOfflineThreshold = 30000
 self.addEventListener('install', event => {
     console.log('Service Worker: Installing....');
     event.waitUntil((async () => {
@@ -19,6 +29,7 @@ self.addEventListener('install', event => {
                 '/javascripts/bootstrap.bundle.min.js',
                 '/javascripts/navbar/navbar.js',
                 '/javascripts/service_worker/activate_sw.js',
+                '/javascripts/service_worker/utils.js',
                 '/javascripts/feed/feed.js',
                 '/javascripts/idb/idb.js',
                 "/javascripts/leaflet.js",
@@ -30,8 +41,8 @@ self.addEventListener('install', event => {
                 '/images/logo.png',
             ]);
             console.log('Service Worker: App Shell Cached');
-        } catch {
-            console.log("error occurred while caching...")
+        } catch (e){
+            console.log(e)
         }
 
     })());
@@ -195,11 +206,17 @@ self.addEventListener('sync', async event => {
                         } else {
                             console.log("Service Worker: Sync Error: ", response.statusText)
                         }
-                    }).then(data => {
+                    }).then(async data => {
                         //If successful, check if the post was successfully created
                         if (data._id !== undefined) {
                             //Delete the post from the indexedDB so it doesn't get sent again
                             deletePostFromIdb(db, post.id);
+
+                            const submittedAt = new Date(post.submittedAt)
+                            const now = new Date(Date.now())
+                            if(now - submittedAt >= submittedOfflineThreshold){
+                                sendSWNotification(`Your ${posts.length > 1 ? "posts have" : "post has"} been successfully uploaded to the server.`)
+                            }
                         }
                     }).catch(error => {
                         console.log("Service Worker: Sync Error: ", error);
@@ -224,8 +241,7 @@ self.addEventListener('sync', async event => {
                     const post_id = comment.post_id;
                     const user_id = comment.user_id;
                     const text = comment.text;
-
-                    //Send the comment to the server
+                        //Send the comment to the server
                     fetch(`http://localhost:3000/plant/${post_id}/comment`, {
                         method: 'POST',
                         headers: {
@@ -237,6 +253,7 @@ self.addEventListener('sync', async event => {
                             temp_id: temp_id
                         })
                     }).then(response => {
+                        console.log(response)
                         if (response.ok) {
                             return response.json();
                         } else {
@@ -251,6 +268,12 @@ self.addEventListener('sync', async event => {
 
                         //Delete the comment from the indexedDB so it doesn't get sent again
                         await deleteCommentFromIdb(db, comment.id);
+
+                        const submittedAt = new Date(comment.submittedAt)
+                        const now = new Date(Date.now())
+                        if(now - submittedAt >= submittedOfflineThreshold){
+                            sendSWNotification(`Your ${comments.length > 1 ? "comments have" : "comment has"} been successfully uploaded to the server.`)
+                        }
                     }).catch(error => {
                         console.log("Service Worker: Sync Error: ", error);
                     });
@@ -300,6 +323,12 @@ self.addEventListener('sync', async event => {
 
                         //Delete the reply from the indexedDB so it doesn't get sent again
                         await deleteReplyFromIdb(db, reply.id);
+
+                        const submittedAt = new Date(reply.submittedAt)
+                        const now = new Date(Date.now())
+                        if(now - submittedAt >= submittedOfflineThreshold){
+                            sendSWNotification(`Your ${replies.length > 1 ? "replies have" : "reply has"} been successfully uploaded to the server.`)
+                        }
                     }).catch(error => {
                         console.log("Service Worker: Sync Error: ", error);
                     });
