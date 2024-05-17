@@ -13,6 +13,8 @@ $updateSpinner.hide()
 $notificationsEnd.hide()
 
 let page = 0
+let sortValue = 'mostRecent';
+let filterValue = 'allPosts';
 socket = io()
 let updateNotificationTime = Date.now()
 
@@ -69,7 +71,7 @@ const markAsRead = async (wrapper, envelope, id) => {
 
 const appendNotification = (n, append = true) => {
     const $nTag = $(getNotificationHTML(n))
-    if(append){
+    if (append) {
         $notificationsWrapper.append($nTag)
     } else {
         $notificationsWrapper.prepend($nTag)
@@ -87,14 +89,50 @@ const updateNotifications = (notifications) => {
     }
 }
 
+const fetchNotifications = (resetPage = false) => {
+    if (resetPage) {
+        page = 0;
+        $notificationsWrapper.empty();
+    }
+
+    sortValue = $("#sort").val();
+    filterValue = $("#filter").val();
+
+    axios.get(`/api/get-notifications`, {
+        params: {
+            page,
+            sort: sortValue,
+            filter: filterValue
+        }
+    })
+        .then(response => {
+            const notifications = response.data.notifications;
+            if (notifications.length > 0) {
+                notifications.forEach(notification => {
+                    appendNotification(notification);
+                });
+                page++;
+            } else {
+                $notificationsEnd.show();
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching notifications:', error);
+            $errorBox.show();
+        });
+}
+
+
 window.addEventListener("load", async e => {
     try {
         const firstPageNotifications = await axios.get("/api/get-notifications", {params: {page}})
         updateNotifications(firstPageNotifications.data.notifications)
         page += 1
-        $loadingSpinner.hide()
     } catch (e) {
         console.log(e)
+        $errorBox.show();
+    } finally {
+        $loadingSpinner.hide();
     }
 
 
@@ -119,6 +157,11 @@ window.addEventListener("load", async e => {
         $(`#${data.notificationID}`).remove()
         $notificationCounter.text(parseInt($notificationCounter.text()) - 1)
     })
+    $('#applyFilters').click(() => {
+        $notificationsWrapper.empty();
+        $notificationsEnd.hide();
+        fetchNotifications(true);
+    });
 })
 
 $(window).scroll(async function () {
@@ -128,42 +171,64 @@ $(window).scroll(async function () {
         updateNotificationTime = Date.now()
 
         $notificationsEnd.hide()
+
         $loadingSpinner.show()
         try {
-            const newNotifications = await axios.get("/api/get-notifications", {params: {page}})
-            updateNotifications(newNotifications.data.notifications)
+            const newNotifications = await axios.get("/api/get-notifications", {
+                params: {
+                    page,
+                    sort: sortValue,
+                    filter: filterValue
+                }
+            })
+
 
             if (newNotifications.data.notifications.length > 0) {
+                updateNotifications(newNotifications.data.notifications);
                 page += 1
             } else {
                 $notificationsEnd.show()
             }
-            $loadingSpinner.hide()
         } catch (e) {
             $errorBox.show();
             console.log(e)
+        } finally {
+            $loadingSpinner.hide();
         }
-
-
     }
 
     if (timeDiff > updateNotificationsGap && $(window).scrollTop() <= 0) {
         updateNotificationTime = Date.now()
-
-        page = 0
-        $notificationsWrapper.empty()
-        $notificationsEnd.hide()
-        $updateSpinner.show()
+        $updateSpinner.show();
         try {
-            const updateNotificationPage = await axios.get("/api/get-notifications", {params: {page}})
-            updateNotifications(updateNotificationPage.data.notifications)
-            $updateSpinner.hide()
-            page += 1
+            page = 0;
+            $notificationsWrapper.empty();
+            $notificationsEnd.hide()
+
+            const newNotifications = await axios.get("/api/get-notifications", {
+                params: {
+                    page,
+                    sort: sortValue,
+                    filter: filterValue
+                }
+            });
+
+            updateNotifications(newNotifications.data.notifications);
+
+            if (newNotifications.data.notifications.length > 0) {
+                page++;
+            } else {
+                $notificationsEnd.show();
+            }
         } catch (e) {
-            console.log(e)
+            console.log(e);
             $errorBox.show();
+        } finally {
+            $updateSpinner.hide();
         }
-
     }
-
 });
+
+
+
+

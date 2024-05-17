@@ -5,12 +5,14 @@ const {promisify} = require('node:util');
 const {randomBytes, pbkdf2} = require('node:crypto');
 const roleTypes = require("../../model/enum/roleTypes");
 const pbkdf2Promise = promisify(pbkdf2);
+const { notificationTypes } = require('../../model/enum/notificationTypes');
+
 
 async function getProfile(req, res) {
     const id = req.user.id;
 
     const userDetails = await getUserById(id);
-    res.render('user/profile', {isLoggedIn: req.isLoggedIn, userDetails, postStates});
+    res.render('user/profile', {isLoggedIn: req.isLoggedIn, userDetails, postStates, user: req.user});
 }
 
 async function postNewUserPassword(req, res) {
@@ -86,10 +88,61 @@ async function updateProfile(req,res){
     }
 }
 
+/**
+ * Retrieves and renders the notifications for the logged-in user.
+ * This function fetches the user's notifications, sorts them by date in descending order,
+ * formats them for the view, and then renders the notifications page.
+ * @param req
+ * @param res
+ * @returns {Promise<void>}
+ */
 async function getNotifications(req, res) {
+    try {
+        const userId = req.user.id;
 
-    res.render('user/notifications', {title: 'Notifications',user: req.user, isLoggedIn: req.isLoggedIn});
+        const sortByDate = req.query.sortByDate || 'mostRecent';
+        const notificationType = req.query.notificationTypes || 'allPosts';
+        let sortDirection = sortByDate === 'oldest' ? 1 : -1;
+
+        let filters = {};
+        if (notificationType === 'yourPosts') {
+            filters.notification_type = { $in: [notificationTypes.NEW_COMMENT, notificationTypes.NEW_REPLY] };
+        } else if (notificationType === 'commentedPosts') {
+            filters.notification_type = notificationTypes.NEW_REPLY;
+        }
+
+        const notifications = await getAllNotifications(userId, filters, sortDirection);
+
+        const preparedNotifications = notifications.map(notification => {
+
+            return {
+                ...notification,
+                date: notification.createdAt,
+                title: notification.content.title,
+                content: notification.content.body,
+                seen: notification.seen
+            };
+        });
+
+        res.render('user/notifications', {
+            title: 'Your Notifications',
+            notifications: preparedNotifications,
+            isLoggedIn: req.isLoggedIn,
+            user: req.user
+        });
+    } catch (error) {
+        console.error('Failed to retrieve notifications:', error);
+        res.status(500).render('user/notifications', {
+            title: 'Your Notifications',
+            notifications: [],
+            isLoggedIn: req.isLoggedIn,
+            user: req.user,
+            error: 'Failed to load notifications.'
+        });
+    }
 }
+
+
 
 
 module.exports = {
@@ -97,4 +150,5 @@ module.exports = {
     postNewUserPassword,
     updateProfile,
     getNotifications
+
 }

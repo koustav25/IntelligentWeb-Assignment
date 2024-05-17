@@ -307,7 +307,10 @@ async function processMissingPosts(posts, filterValue, sortValue, lat, lon) {
     if (response.data.newPosts.length > 0) {
         openFeedIDB().then(db => {
             clearFeedIDB(db).then(() => {
-                updateFeedIDB(db, currentPosts).then(() => console.log("Updated feed cached!"))
+                updateFeedIDB(db, currentPosts).then(() => {
+                    console.log("Updated feed cached!")
+                    sendNotification("Your feed has been updated.")
+                })
             })
         })
     }

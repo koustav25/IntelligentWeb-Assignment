@@ -19,7 +19,7 @@ const {
   serializeUser,
   deserializeUser, sessionErrorHandler, sessionSetup
 } = require("./auth/passportAuth");
-const { isAuthenticated, authInfo} = require("./middlewares/auth")
+const { isAuthenticated, authInfo,isAdmin} = require("./middlewares/auth")
 
 const app = express();
 
@@ -61,7 +61,7 @@ app.use('/', authRouter);
 app.use('/', authInfo, indexRouter);
 app.use('/', isAuthenticated, userRouter);
 app.use('/', isAuthenticated, postsRouter);
-app.use('/admin', isAuthenticated, adminRouter);
+app.use('/admin', isAuthenticated, isAdmin, adminRouter);
 app.use('/api', isAuthenticated, apiRouter)
 
 //Only add debug routes if not in production

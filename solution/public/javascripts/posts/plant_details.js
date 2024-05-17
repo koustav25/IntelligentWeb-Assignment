@@ -217,6 +217,7 @@ async function addNewComment() {
         text: newCommentText,
         user_id: userID,
         post_id: plantID,
+        submittedAt: Date.now()
     };
 
     try {
@@ -255,7 +256,8 @@ async function addNewReply() {
         text: newReplyText,
         user_id: userID,
         comment_id: commentID,
-        plant_id: plantID
+        plant_id: plantID,
+        submittedAt: Date.now()
     };
 
     try {

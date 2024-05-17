@@ -1,14 +1,6 @@
 let marker;
+const deleteBtn = document.getElementById("delete-post")
 document.addEventListener('DOMContentLoaded', function () {
-    // Setting date input value to today's date
-    let today = new Date();
-    const dd = String(today.getDate()).padStart(2, '0');
-    const mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
-    const yyyy = today.getFullYear();
-    today = yyyy + '-' + mm + '-' + dd;
-
-    document.getElementById('seen_at').value = today;
-
     const mymap = L.map('map').setView([51.505, -0.09], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
@@ -34,6 +26,16 @@ document.addEventListener('DOMContentLoaded', function () {
             alert("Geolocation is not supported by this browser.");
         }
     });
+
+    deleteBtn.addEventListener("click", async e => {
+        try {
+            await axios.post("/admin/plant/delete", {postID})
+            window.location.href = `/admin/plants`;
+        } catch (e) {
+            console.log(e)
+        }
+
+    })
 
     $('#postForm').submit(handleFormSubmit);
 });
@@ -79,24 +81,6 @@ async function handleFormSubmit(event) {
         const leaf_type = $('input[name="leaf_type"]:checked').val();
         const seed_type = $('input[name="seed_type"]:checked').val();
 
-        const details = {
-            height,
-            spread,
-            sun_exposure,
-            has_flowers,
-            colour,
-            leaf_type,
-            seed_type
-        };
-
-        const imageInput = document.getElementById('images');
-        const images = imageInput.files;
-
-        if (images.length > 10) {
-            alert('You can only upload a maximum of 10 images');
-            return;
-        }
-
         const post_info = {
             title,
             seen_at,
@@ -111,21 +95,19 @@ async function handleFormSubmit(event) {
             flower_colour: colour,
             leaf_type,
             seed_type,
-            images,
             submittedAt: Date.now()
         }
 
-        const db = await openNewPostIdb();
-        await addNewPostToIdb(db, post_info);
+        await axios.post("/admin/plant/edit", {postID, data: post_info})
 
         setTimeout(() => {
-            //$postButton.removeClass('disabled');
+            $postButton.removeClass('disabled');
             $postSpinner.addClass('d-none');
 
             setTimeout(() => {
-                window.location.href = `/feed`;
+                window.location.href = `/admin/plants/${postID}`;
             }, 1000);
-        }, 3000);
+        }, 1000);
 
     } catch (error) {
         console.error(error);
