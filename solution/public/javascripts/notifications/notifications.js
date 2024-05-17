@@ -13,8 +13,8 @@ $updateSpinner.hide()
 $notificationsEnd.hide()
 
 let page = 0
-let sortByDate = 'mostRecent';
-let notificationType = 'allPosts';
+let sortValue = 'mostRecent';
+let filterValue = 'allPosts';
 socket = io()
 let updateNotificationTime = Date.now()
 
@@ -71,7 +71,7 @@ const markAsRead = async (wrapper, envelope, id) => {
 
 const appendNotification = (n, append = true) => {
     const $nTag = $(getNotificationHTML(n))
-    if(append){
+    if (append) {
         $notificationsWrapper.append($nTag)
     } else {
         $notificationsWrapper.prepend($nTag)
@@ -95,14 +95,14 @@ const fetchNotifications = (resetPage = false) => {
         $notificationsWrapper.empty();
     }
 
-    sortByDate = $("#sortByDate").val();
-    notificationType = $("#notificationType").val();
+    sortValue = $("#sort").val();
+    filterValue = $("#filter").val();
 
     axios.get(`/api/get-notifications`, {
         params: {
             page,
-            sortByDate,
-            notificationType
+            sort: sortValue,
+            filter: filterValue
         }
     })
         .then(response => {
@@ -131,7 +131,7 @@ window.addEventListener("load", async e => {
     } catch (e) {
         console.log(e)
         $errorBox.show();
-    }finally {
+    } finally {
         $loadingSpinner.hide();
     }
 
@@ -170,13 +170,15 @@ $(window).scroll(async function () {
     if (timeDiff > updateNotificationsGap && $(window).scrollTop() + $(window).height() >= $(document).height()) {
         updateNotificationTime = Date.now()
 
+        $notificationsEnd.hide()
+
         $loadingSpinner.show()
         try {
             const newNotifications = await axios.get("/api/get-notifications", {
                 params: {
                     page,
-                    sortByDate,
-                    notificationType
+                    sort: sortValue,
+                    filter: filterValue
                 }
             })
 
@@ -190,9 +192,9 @@ $(window).scroll(async function () {
         } catch (e) {
             $errorBox.show();
             console.log(e)
+        } finally {
+            $loadingSpinner.hide();
         }
-        $loadingSpinner.hide();
-
     }
 
     if (timeDiff > updateNotificationsGap && $(window).scrollTop() <= 0) {
@@ -201,10 +203,18 @@ $(window).scroll(async function () {
         try {
             page = 0;
             $notificationsWrapper.empty();
+            $notificationsEnd.hide()
+
             const newNotifications = await axios.get("/api/get-notifications", {
-                params: {page, sortByDate, notificationType}
+                params: {
+                    page,
+                    sort: sortValue,
+                    filter: filterValue
+                }
             });
+
             updateNotifications(newNotifications.data.notifications);
+
             if (newNotifications.data.notifications.length > 0) {
                 page++;
             } else {
@@ -213,8 +223,9 @@ $(window).scroll(async function () {
         } catch (e) {
             console.log(e);
             $errorBox.show();
+        } finally {
+            $updateSpinner.hide();
         }
-        $loadingSpinner.hide();
     }
 });
 

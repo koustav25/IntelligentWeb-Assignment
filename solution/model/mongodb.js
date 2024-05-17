@@ -429,13 +429,15 @@ const addNotification = async (targetPostId, targetUserId, notificationType, not
     return newNotification
 }
 
-const getAllNotifications = async (userId, page = 0, limit = 10) => {
-    return await Notification.find({target_user: userId}).populate({
+const getAllNotifications = async (userId, page = 0, limit = 10, filter, sort) => {
+    const filters = filter;
+    filters.target_user = userId;
+    return await Notification.find(filters).populate({
         path: 'target_post',
         populate: {
             path: 'posting_user'
         }
-    }).sort({createdAt: -1}).skip(page * limit).limit(limit)
+    }).sort({createdAt: sort}).skip(page * limit).limit(limit)
 }
 
 const getNotificationCount = async (userId) => {
