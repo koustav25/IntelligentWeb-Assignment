@@ -10,11 +10,13 @@ const fetchPosts = async (req, res, next) => {
 
         let latitude = null;
         let longitude = null;
+        let lastPostDistance = null;
 
         if (sortBy === SortOrder.DISTANCE) {
             //Get the latitude and longitude of the user from the request
             latitude = req.query.lat;
             longitude = req.query.lon;
+            lastPostDistance = req.query.lastPostDistance;
 
             //If the latitude and longitude are not provided, set the latitude and longitude to null
             if (latitude === undefined || longitude === undefined) {
@@ -33,6 +35,21 @@ const fetchPosts = async (req, res, next) => {
                 latitude = null;
                 longitude = null;
             }
+
+            //If the last post distance is not provided, set it to null
+            if (lastPostDistance === undefined) {
+                lastPostDistance = null;
+            }
+
+            //If the last post distance is provided, convert it to a number
+            if (lastPostDistance !== null) {
+                lastPostDistance = parseFloat(lastPostDistance);
+            }
+
+            //If the last post distance is not a valid number, set it to null
+            if (isNaN(lastPostDistance)) {
+                lastPostDistance = null;
+            }
         }
 
         let posts;
@@ -41,7 +58,7 @@ const fetchPosts = async (req, res, next) => {
 
         if (filter !== undefined) filters.state = filter;
 
-        posts = await getFeedPosts(lastPostId, PAGE_LIMIT, filters, sortBy, latitude, longitude);
+        posts = await getFeedPosts(lastPostId, PAGE_LIMIT, filters, sortBy, latitude, longitude, lastPostDistance);
 
         res.status(200).json({posts})
     } catch (e) {
@@ -91,16 +108,60 @@ const fetchMissingPosts = async (req, res, next) => {
         let posts;
         let filters;
 
+        let latitude = null;
+        let longitude = null;
+        let lastPostDistance = null;
+
         //If the sort order is by oldest, we need to get the posts that are older than the last post
         if (sortBy === SortOrder.OLDEST) {
             filters = {createdAt: {$lt: new Date(lastPostDateTime)}};
         } else if (sortBy === SortOrder.RECENT) {
             filters = {createdAt: {$gt: new Date(lastPostDateTime)}};
+        } else if (sortBy === SortOrder.DISTANCE) {
+            //Get the latitude and longitude of the user from the request
+            latitude = req.body.lat;
+            longitude = req.body.lon;
+            lastPostDistance = req.body.lastPostDistance;
+
+            //If the latitude and longitude are not provided, set the latitude and longitude to null
+            if (latitude === undefined || longitude === undefined) {
+                latitude = null;
+                longitude = null;
+            }
+
+            //If the latitude and longitude are provided, convert them to numbers
+            if (latitude !== null && longitude !== null) {
+                latitude = parseFloat(latitude);
+                longitude = parseFloat(longitude);
+            }
+
+            //If the latitude and longitude are not valid numbers, set them to null
+            if (isNaN(latitude) || isNaN(longitude)) {
+                latitude = null;
+                longitude = null;
+            }
+
+            //If the last post distance is not provided, set it to null
+            if (lastPostDistance === undefined) {
+                lastPostDistance = null;
+            }
+
+            //If the last post distance is provided, convert it to a number
+            if (lastPostDistance !== null) {
+                lastPostDistance = parseFloat(lastPostDistance);
+            }
+
+            //If the last post distance is not a valid number, set it to null
+            if (isNaN(lastPostDistance)) {
+                lastPostDistance = null;
+            }
+
+            filters = {createdAt: {$lt: new Date(lastPostDateTime)}};
         }
 
         if (filter) filters.state = filter;
 
-        const newPosts = await getFeedPosts(null, 10, filters, sortBy);
+        const newPosts = await getFeedPosts(null, PAGE_LIMIT, filters, sortBy, latitude, longitude, lastPostDistance);
         res.status(200).json({newPosts})
     } catch (e) {
         res.status(500).json({newPosts: []})

@@ -108,9 +108,10 @@ const getPostById = async (id) => {
  * @param sortOrder Sort order of the query (Default is RECENT)
  * @param userLat User's latitude (if available and needed)
  * @param userLong User's longitude (if available and needed)
+ * @param lastPostDistance Distance from the last post (if available and needed)
  * @returns {Promise<Post[]>}
  */
-const getFeedPosts = async (lastPostId = null, limit = 10, filters = {}, sortOrder = SortOrder.RECENT, userLat = null, userLong = null) => {
+const getFeedPosts = async (lastPostId = null, limit = 10, filters = {}, sortOrder = SortOrder.RECENT, userLat = null, userLong = null, lastPostDistance = null) => {
     let pipeline = [];
 
     console.log(await Post.collection.getIndexes({full: true}))
@@ -150,6 +151,14 @@ const getFeedPosts = async (lastPostId = null, limit = 10, filters = {}, sortOrd
             pipeline.push({ $match: { '_id': { $gt: new mongoose.Types.ObjectId(lastPostId) } } });
         } else if (sortOrder === SortOrder.RECENT) {
             pipeline.push({ $match: { '_id': { $lt: new mongoose.Types.ObjectId(lastPostId) } } });
+        }
+    }
+
+    if (lastPostDistance) {
+        if (sortOrder === SortOrder.DISTANCE) {
+            //This needs to be less than, as sorting by distance is ascending, and the distance should be less than the last post distance
+            //in order to appear at the top of the list
+            pipeline.push({ $match: { distance: { $lt: lastPostDistance } } });
         }
     }
 

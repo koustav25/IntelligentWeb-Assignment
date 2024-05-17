@@ -24,3 +24,7 @@ function haversine_distance(lat1, lon1, lat2, lon2) {
 
     return d;
 }
+
+function degreesToRadians(degrees) {
+    return degrees * Math.PI / 180;
+}

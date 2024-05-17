@@ -36,7 +36,11 @@ function Uint8ToString(u8a) {
     return c.join("");
 }
 
-const createPostDiv = (post, toRecent = false) => {
+const createPostDiv = (post, toRecent = false, dist_km = "Unknown") => {
+    //If dist_km is a number, round it to 2 decimal places
+    if (typeof dist_km === "number") {
+        dist_km = dist_km.toFixed(2)
+    }
     // No image placeholder
     let imgSrc = "https://placehold.co/600x400?text=No Images";
     if (post.images && post.images.length && post.images.length > 0) {
@@ -51,8 +55,10 @@ const createPostDiv = (post, toRecent = false) => {
         </div>
         <div class="col-sm-8 d-flex flex-column justify-content-between align-items-start">
             <div class="d-flex justify-content-between w-100 mb-2">
-                <h3 class="m-0"> ${post.title}</h3>
-                <span class="align-self-center">${new Date(post.createdAt).toLocaleDateString('en-GB', {
+            <div>
+                <h3 class="m-0"> ${post.title}</h3> <p class="small">(<span class="fw-bold">${dist_km}</span>  km away)</p>
+                </div>
+                <span class="">${new Date(post.createdAt).toLocaleDateString('en-GB', {
         day: "numeric",
         month: "short",
         year: "numeric",
@@ -65,8 +71,9 @@ const createPostDiv = (post, toRecent = false) => {
             </div>
             <div class="d-flex justify-content-between mt-3 w-100">
                 <div class="align-self-center">
-                    Identification:
+                    <p>Identification:
                     <span class="text-shadow ${postStates.postStateToColor(post.state, "text-")}">${postStates.postStateToString(post.state)}</span>
+                    </p>
                 </div>
                 <div class="btn btn-warning">Comments: <span id="comment-counter-${post._id}">${post.comments.length}</span></div>
                 <a class="btn btn-primary" href="/plant/${post._id}">See more</a>
@@ -75,10 +82,15 @@ const createPostDiv = (post, toRecent = false) => {
     </div>`
 }
 
-const updateFeed = (posts, append = true) => {
+function displayPosts(posts, append, lat, long) {
     for (let i = 0; i < posts.length; i++) {
+        dist_km = "Unknown"
+        if (lat && long) {
+            dist_km = haversine_distance(lat, long, posts[i].location.coords.coordinates[1], posts[i].location.coords.coordinates[0]);
+        }
+
         socket.emit("viewing_plant", {plant_id: posts[i]._id})
-        const $newPost = $(createPostDiv(posts[i]))
+        const $newPost = $(createPostDiv(posts[i], false, dist_km))
         if (append) {
             $feedWrapper.append($newPost)
         } else {
@@ -89,14 +101,50 @@ const updateFeed = (posts, append = true) => {
             $feedWrapper.children().last().remove()
         }
     }
+}
+
+const updateFeed = (posts, append = true) => {
+    //If the user's location is available, calculate the distance between the user and the post
+    let lat = 0;
+    let lon = 0;
+    let dist_km = "Unknown"
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function (position) {
+            lat = position.coords.latitude;
+            lon = position.coords.longitude;
+
+            displayPosts(posts, append, lat, lon);
+        }, function () {
+            displayPosts(posts, append, null, null);
+        });
+    }
 
 }
 
 const addRecentPost = (post) => {
-    socket.emit("viewing_plant", {plant_id: post._id})
-    const $postDiv = $(createPostDiv(post, true))
-    $feedRecentWrapper.prepend($postDiv)
-    $feedRecentWrapper.show()
+    //If the user's location is available, calculate the distance between the user and the post
+    let lat = 0;
+    let lon = 0;
+    let dist_km = "Unknown"
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function (position) {
+            lat = position.coords.latitude;
+            lon = position.coords.longitude;
+            dist_km = haversine_distance(lat, lon, post.location.coordinates[1], post.location.coordinates[0]);
+
+            socket.emit("viewing_plant", {plant_id: post._id})
+            const $postDiv = $(createPostDiv(post, true, dist_km))
+            $feedRecentWrapper.prepend($postDiv)
+            $feedRecentWrapper.show()
+        }, function () {
+            dist_km = "Unknown"
+
+            socket.emit("viewing_plant", {plant_id: post._id})
+            const $postDiv = $(createPostDiv(post, true, dist_km))
+            $feedRecentWrapper.prepend($postDiv)
+            $feedRecentWrapper.show()
+        });
+    }
 }
 
 function registerSockets() {
@@ -115,6 +163,7 @@ async function retrieveFirstPageDataFromServer(sortValue, filterValue, lat, lon)
     try {
         // Fetch first page
         const response = await getPostsFromApi(null, filterValue, sortValue, lat, lon);
+
         currentPosts = [...response.data.posts]
 
         openFeedIDB().then(db => {
@@ -157,8 +206,26 @@ $(document).ready(async function () {
 
         openFeedIDB().then(db => {
             getFeedIDB(db).then(posts => {
-                for (let i = 0; i < posts.length; i++) {
-                    $feedWrapper.append($(createPostDiv(posts[i])))
+                //If the user's location is available, calculate the distance between the user and the post
+                let lat = 0;
+                let lon = 0;
+                let dist_km = "Unknown"
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function (position) {
+                        lat = position.coords.latitude;
+                        lon = position.coords.longitude;
+                        dist_km = haversine_distance(lat, lon, post.location.coordinates[1], post.location.coordinates[0]);
+
+                        for (let i = 0; i < posts.length; i++) {
+                            $feedWrapper.append($(createPostDiv(posts[i], false, dist_km)))
+                        }
+                    }, function () {
+                        dist_km = "Unknown"
+
+                        for (let i = 0; i < posts.length; i++) {
+                            $feedWrapper.append($(createPostDiv(posts[i], false, dist_km)))
+                        }
+                    });
                 }
                 currentPosts = posts;
             })
@@ -202,12 +269,32 @@ function handleLocationFailure($sortBy) {
 }
 
 async function processMissingPosts(posts, filterValue, sortValue, lat, lon) {
+    //The posts may not be sorted as expected, so we first need to sort the posts based on the selected sort order
+    //First, shallow copy the posts array so we can reorder it
+    const tempPosts = [...posts]
+    switch (sortValue) {
+        case SortOrder.RECENT:
+            tempPosts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            break;
+        case SortOrder.OLDEST:
+            tempPosts.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            break;
+        case SortOrder.DISTANCE:
+            tempPosts.sort((a, b) => {
+                const distanceA = haversine_distance(lat, lon, a.location.coordinates[1], a.location.coordinates[0]);
+                const distanceB = haversine_distance(lat, lon, b.location.coordinates[1], b.location.coordinates[0]);
+                return distanceA - distanceB;
+            });
+            break;
+    }
+
     const response = await axios.post("/api/fetch-missing-posts", {
-        lastPostDateTime: posts.length > 0 ? posts[0].createdAt : null,
+        lastPostDateTime: tempPosts.length > 0 ? tempPosts[0].createdAt : null,
         filter: filterValue,
         sortBy: sortValue,
         lat: lat,
-        lon: lon
+        lon: lon,
+        lastPostDistance: tempPosts.length > 0 ? tempPosts[0].distance : null
     })
 
     currentPosts = [...response.data.newPosts, ...currentPosts]
@@ -226,22 +313,23 @@ async function processMissingPosts(posts, filterValue, sortValue, lat, lon) {
     }
 }
 
-async function getPostsFromApi(lastPostId, filterValue, sortByValue, lat, lon) {
+async function getPostsFromApi(lastPostId, filterValue, sortByValue, lat, lon, lastPostDistance = null) {
     const response = await axios.get("/api/feed", {
         params: {
             lastPostId: lastPostId,
             filter: filterValue,
             sortBy: sortByValue,
             lat: lat,
-            lon: lon
+            lon: lon,
+            lastPostDistance: lastPostDistance
         }
     });
     updateFeed(response.data.posts);
     return response;
 }
 
-async function fetchNewPosts(filterValue, sortByValue, lat, lon) {
-    const response = await getPostsFromApi(null, filterValue, sortByValue, lat, lon);
+async function fetchNewPosts(filterValue, sortByValue, lat, lon, lastPostDistance = null) {
+    const response = await getPostsFromApi(null, filterValue, sortByValue, lat, lon, lastPostDistance);
     currentPosts = [...response.data.posts];
 
     openFeedIDB().then(db => {
@@ -257,8 +345,8 @@ async function fetchNewPosts(filterValue, sortByValue, lat, lon) {
     });
 }
 
-async function fetchNextPosts(lastPostId, filterValue, sortByValue, lat, lon) {
-    const response = await getPostsFromApi(lastPostId, filterValue, sortByValue, lat, lon);
+async function fetchNextPosts(lastPostId, filterValue, sortByValue, lat, lon, lastPostDistance = null) {
+    const response = await getPostsFromApi(lastPostId, filterValue, sortByValue, lat, lon, lastPostDistance);
     currentPosts = [...currentPosts, ...response.data.posts]
     if (response.data.posts.length <= 0) {
         $feedEnd.show()
@@ -420,7 +508,7 @@ $(document).ready(async function () {
                     navigator.geolocation.getCurrentPosition(async function (position) {
                         const lat = position.coords.latitude;
                         const lon = position.coords.longitude;
-                        await fetchNextPosts(lastPost._id, filterValue, sortByValue, lat, lon);
+                        await fetchNextPosts(lastPost._id, filterValue, sortByValue, lat, lon, lastPost.distance);
                     }, () => handleLocationFailure($sortBy));
                 } else {
                     await fetchNextPosts(lastPost._id, filterValue, sortByValue, null, null);
